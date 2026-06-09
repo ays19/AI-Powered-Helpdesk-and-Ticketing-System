@@ -12,6 +12,7 @@ export const auth = betterAuth({
         enabled: true,
         disableSignUp: true,
     },
+    trustedOrigins: process.env.CLIENT_URL ? [process.env.CLIENT_URL] : [],
     plugins: [
         admin({
             defaultRole: UserRole.AGENT,
