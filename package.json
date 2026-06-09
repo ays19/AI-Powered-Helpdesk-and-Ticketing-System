@@ -9,7 +9,8 @@
     "dev:all": "bun run dev & bun run dev:client",
     "build:client": "cd client && bun run build",
     "start": "bun run src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:seed": "bun run prisma/src/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

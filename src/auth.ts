@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin } from "better-auth/plugins";
 import { db } from "./db";
+import { UserRole } from "./types";
 
 export const auth = betterAuth({
     database: prismaAdapter(db, {
@@ -10,4 +12,9 @@ export const auth = betterAuth({
         enabled: true,
         disableSignUp: true,
     },
+    plugins: [
+        admin({
+            defaultRole: UserRole.AGENT,
+        }),
+    ],
 });
