@@ -552,3 +552,19 @@ body {
   font-weight: 500;
   color: var(--text-secondary);
 }
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.form-group .input-error {
+  border-color: var(--danger);
+}
+
+.form-group .input-error:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(255, 77, 106, 0.25);
+}

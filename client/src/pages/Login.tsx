@@ -1,28 +1,41 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { authClient } from '../lib/auth-client';
 import '../index.css';
 
+const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
     setError('');
 
-    const { error } = await authClient.signIn.email({
-      email,
-      password,
+    const { error: signInError } = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
     });
 
-    if (error) {
-      setError(error.message || 'Login failed');
-      setLoading(false);
+    if (signInError) {
+      setError(signInError.message || 'Login failed');
     } else {
       navigate('/');
     }
@@ -37,35 +50,35 @@ export default function Login() {
         </div>
         <h2>Sign In</h2>
         {error && <div className="error-alert">{error}</div>}
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-              required
+              {...register('email')}
+              placeholder="abc@example.com"
+              className={errors.email ? 'input-error' : ''}
             />
+            {errors.email && <span className="field-error">{errors.email.message}</span>}
           </div>
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              {...register('password')}
               placeholder="••••••••"
-              required
+              className={errors.password ? 'input-error' : ''}
             />
+            {errors.password && <span className="field-error">{errors.password.message}</span>}
           </div>
           <button
             type="submit"
             className="btn btn-primary login-btn"
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
       </div>
