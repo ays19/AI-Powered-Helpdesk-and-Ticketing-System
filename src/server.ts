@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth";
 import { ticketRouter } from './routes/tickets';
 
 const app = express();
@@ -8,6 +10,10 @@ const PORT = process.env.PORT || 4000;
 
 // --------------- Middleware ---------------
 app.use(cors());
+
+// Better Auth API Route
+app.all("/api/auth/*", toNodeHandler(auth));
+
 app.use(express.json());
 
 // --------------- API Routes ---------------
