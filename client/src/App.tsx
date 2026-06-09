@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './types';
 import TicketCard from './components/TicketCard';
 import CreateTicketModal from './components/CreateTicketModal';
+import { authClient } from './lib/auth-client';
+import Login from './pages/Login';
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
-export default function App() {
+function Home() {
+  const { data: session, isPending } = authClient.useSession();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -24,8 +28,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    if (session) {
+      fetchTickets();
+    }
+  }, [session]);
 
   const handleCreate = async (body: CreateTicketBody) => {
     const res = await fetch('/api/tickets', {
@@ -53,6 +59,23 @@ export default function App() {
     fetchTickets();
   };
 
+  if (isPending) {
+    return (
+      <div className="loader" style={{ height: '100vh' }}>
+        <div className="spinner" />
+        <p>Loading session…</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
+
   const filteredTickets =
     filterStatus === 'all'
       ? tickets
@@ -74,9 +97,15 @@ export default function App() {
             <span className="logo-icon">🎫</span>
             <h1>Helpdesk</h1>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + New Ticket
-          </button>
+          <div className="header-actions">
+            <span className="user-name">Welcome, {session.user.name}</span>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+              + New Ticket
+            </button>
+            <button className="btn btn-ghost" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -127,5 +156,16 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </Router>
   );
 }

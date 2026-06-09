@@ -489,8 +489,66 @@ body {
   .stats-bar {
     gap: 6px;
   }
-  .stat-chip {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-  }
+}
+
+/* ======== Login ======== */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-primary);
+}
+
+.login-card {
+  background: var(--bg-card);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+
+.login-logo {
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.error-alert {
+  background: rgba(255, 77, 106, 0.15);
+  color: var(--danger);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 77, 106, 0.3);
+  text-align: center;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
