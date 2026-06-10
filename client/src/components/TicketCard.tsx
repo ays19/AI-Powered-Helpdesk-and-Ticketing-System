@@ -13,29 +13,43 @@ const PRIORITY_EMOJI: Record<string, string> = {
   critical: '🔴',
 };
 
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  open: 'bg-[rgba(78,205,196,0.15)] text-status-open',
+  'in-progress': 'bg-[rgba(249,168,38,0.15)] text-status-in-progress',
+  resolved: 'bg-[rgba(108,99,255,0.15)] text-status-resolved',
+  closed: 'bg-[rgba(107,107,138,0.15)] text-status-closed',
+};
+
+const PRIORITY_BEFORE_CLASSES: Record<string, string> = {
+  low: 'before:bg-priority-low',
+  medium: 'before:bg-priority-medium',
+  high: 'before:bg-priority-high',
+  critical: 'before:bg-priority-critical',
+};
+
 export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) {
   return (
-    <div className={`ticket-card priority-${ticket.priority}`}>
-      <div className="ticket-header">
-        <span className="ticket-id">#{ticket.id}</span>
-        <span className={`badge status-${ticket.status}`}>{ticket.status}</span>
+    <div className={`bg-bg-card border border-border-color rounded-lg p-6 transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-[3px] hover:shadow-md hover:border-accent before:content-[''] before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:rounded-l-[4px] ${PRIORITY_BEFORE_CLASSES[ticket.priority]}`}>
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-[0.75rem] font-bold text-text-muted">#{ticket.id}</span>
+        <span className={`px-[10px] py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[ticket.status]}`}>{ticket.status}</span>
       </div>
 
-      <h3 className="ticket-title">{ticket.title}</h3>
-      <p className="ticket-desc">{ticket.description}</p>
+      <h3 className="text-[1rem] font-semibold mb-2 leading-[1.4]">{ticket.title}</h3>
+      <p className="text-[0.85rem] text-text-secondary mb-4 line-clamp-2">{ticket.description}</p>
 
-      <div className="ticket-meta">
-        <span className="priority-badge">
+      <div className="flex items-center justify-between mb-4 text-[0.8rem]">
+        <span className="capitalize font-medium">
           {PRIORITY_EMOJI[ticket.priority]} {ticket.priority}
         </span>
-        <span className="ticket-date">
+        <span className="text-text-muted">
           {new Date(ticket.createdAt).toLocaleDateString()}
         </span>
       </div>
 
-      <div className="ticket-actions">
+      <div className="flex gap-[10px] items-center pt-4 border-t border-border-color">
         <select
-          className="status-select"
+          className="flex-1 py-[6px] px-3 border border-border-color rounded-sm bg-bg-secondary text-text-primary font-sans text-[0.8rem] cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
           value={ticket.status}
           onChange={(e) => onStatusChange(ticket.id, e.target.value as TicketStatus)}
         >
@@ -44,7 +58,10 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
           <option value="resolved">Resolved</option>
           <option value="closed">Closed</option>
         </select>
-        <button className="btn btn-danger btn-sm" onClick={() => onDelete(ticket.id)}>
+        <button 
+          className="bg-danger text-white hover:bg-danger-hover inline-flex items-center gap-[6px] px-3 py-[6px] border-none rounded-md font-sans text-[0.75rem] font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap" 
+          onClick={() => onDelete(ticket.id)}
+        >
           Delete
         </button>
       </div>

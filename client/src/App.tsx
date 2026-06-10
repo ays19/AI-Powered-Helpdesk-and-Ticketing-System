@@ -61,8 +61,8 @@ function Home() {
 
   if (isPending) {
     return (
-      <div className="loader" style={{ height: '100vh' }}>
-        <div className="spinner" />
+      <div className="flex flex-col items-center justify-center py-20 text-text-muted gap-4" style={{ height: '100vh' }}>
+        <div className="w-9 h-9 border-[3px] border-border-color border-t-accent rounded-full animate-spin-slow" />
         <p>Loading session…</p>
       </div>
     );
@@ -90,53 +90,63 @@ function Home() {
   };
 
   return (
-    <div className="app">
-      <header className="header">
-        <div className="header-content">
-          <div className="logo">
-            <span className="logo-icon">🎫</span>
-            <h1>Helpdesk</h1>
+    <div>
+      <header className="bg-gradient-to-br from-bg-secondary to-bg-card border-b border-border-color backdrop-blur-[20px] sticky top-0 z-[100]">
+        <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-[1.8rem] drop-shadow-[0_0_8px_var(--color-accent-glow)]">🎫</span>
+            <h1 className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em]">Helpdesk</h1>
           </div>
-          <div className="header-actions">
-            <span className="user-name">Welcome, {session.user.name}</span>
-            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+          <div className="flex items-center gap-4">
+            <span className="text-[0.9rem] font-medium text-text-secondary">Welcome, {session.user.name}</span>
+            <button 
+              className="inline-flex items-center gap-[6px] px-5 py-[10px] border-none rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[1px] hover:shadow-[0_0_40px_var(--color-accent-glow)]" 
+              onClick={() => setShowModal(true)}
+            >
               + New Ticket
             </button>
-            <button className="btn btn-ghost" onClick={handleSignOut}>
+            <button 
+              className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary" 
+              onClick={handleSignOut}
+            >
               Sign Out
             </button>
           </div>
         </div>
       </header>
 
-      <main className="main">
+      <main className="max-w-[1200px] mx-auto py-8 px-6">
         {/* Stats Bar */}
-        <div className="stats-bar">
+        <div className="flex gap-[10px] flex-wrap mb-8">
           {(['all', ...STATUS_OPTIONS] as const).map((s) => (
             <button
               key={s}
-              className={`stat-chip ${filterStatus === s ? 'active' : ''} status-${s}`}
+              className={`flex items-center gap-2 py-2 px-4 border rounded-xl font-sans text-[0.8rem] font-medium cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] capitalize ${
+                filterStatus === s 
+                  ? 'bg-accent border-accent text-white shadow-glow' 
+                  : 'bg-bg-secondary border-border-color text-text-secondary hover:bg-bg-hover hover:border-accent hover:text-text-primary'
+              }`}
               onClick={() => setFilterStatus(s)}
             >
-              <span className="stat-label">{s}</span>
-              <span className="stat-count">{counts[s]}</span>
+              <span>{s}</span>
+              <span className="bg-[rgba(255,255,255,0.15)] py-[2px] px-2 rounded-full text-[0.75rem] font-bold">{counts[s]}</span>
             </button>
           ))}
         </div>
 
         {/* Ticket List */}
         {loading ? (
-          <div className="loader">
-            <div className="spinner" />
+          <div className="flex flex-col items-center justify-center py-20 text-text-muted gap-4">
+            <div className="w-9 h-9 border-[3px] border-border-color border-t-accent rounded-full animate-spin-slow" />
             <p>Loading tickets…</p>
           </div>
         ) : filteredTickets.length === 0 ? (
-          <div className="empty">
-            <span className="empty-icon">📭</span>
+          <div className="text-center py-20 text-text-muted">
+            <span className="text-[3rem] block mb-3">📭</span>
             <p>No tickets found</p>
           </div>
         ) : (
-          <div className="ticket-grid">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
             {filteredTickets.map((ticket) => (
               <TicketCard
                 key={ticket.id}
