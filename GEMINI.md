@@ -32,12 +32,20 @@ When you need to look up documentation for the libraries used in this project (R
   - **Role Enum**: `admin` and `agent` (defined in [types/index.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/src/types/index.ts)).
 - **Database Seeding**: Because public signup is disabled, the seeding script ([seed.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/prisma/src/seed.ts)) uses `auth.api.createUser()` on the backend, which bypasses registration restrictions and handles hashing/account creation correctly.
 - **Frontend Integration**:
-  - Auth Client helper defined in [auth-client.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/lib/auth-client.ts).
+  - Auth Client helper defined in [auth-client.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/lib/auth-client.ts). Uses `adminClient` plugin to support client-side role definitions.
   - Uses `authClient.useSession()` for checking login state and user metadata.
   - Form submission targets `authClient.signIn.email({ email, password })`.
 
+### Pages & Routing
+- **Admin Users Page**: A page located at `/users` ([client/src/pages/Users.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/pages/Users.tsx)) with a simple "Users" heading:
+  - Accessible only to administrators (`session.user.role === UserRole.ADMIN`).
+  - Automatically redirects unauthenticated users to `/login`.
+  - Displays a clean "Access Denied" view for authenticated users who are not administrators.
+  - Added navigation links in [App.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/App.tsx) that conditionally render the `/users` link for administrators.
 
 ## Lessons Learned & Gotchas
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).
+- **Better Auth Role Type Safety on Client**: To read and type custom fields (like `role` via the admin plugin) on the client, you must register the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
+
 

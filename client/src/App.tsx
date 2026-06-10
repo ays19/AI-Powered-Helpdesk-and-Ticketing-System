@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './types';
+import { UserRole } from './types';
 import TicketCard from './components/TicketCard';
 import CreateTicketModal from './components/CreateTicketModal';
 import { authClient } from './lib/auth-client';
 import Login from '@/pages/Login';
+import Users from '@/pages/Users';
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
@@ -99,6 +101,14 @@ function Home() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-[0.9rem] font-medium text-text-secondary">Welcome, {session.user.name}</span>
+            {session.user.role === UserRole.ADMIN && (
+              <Link 
+                to="/users"
+                className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary"
+              >
+                Users
+              </Link>
+            )}
             <button 
               className="inline-flex items-center gap-[6px] px-5 py-[10px] border-none rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[1px] hover:shadow-[0_0_40px_var(--color-accent-glow)]" 
               onClick={() => setShowModal(true)}
@@ -174,6 +184,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/users" element={<Users />} />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
