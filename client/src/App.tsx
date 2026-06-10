@@ -4,7 +4,7 @@ import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './t
 import TicketCard from './components/TicketCard';
 import CreateTicketModal from './components/CreateTicketModal';
 import { authClient } from './lib/auth-client';
-import Login from './pages/Login';
+import Login from '@/pages/Login';
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 

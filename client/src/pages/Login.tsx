@@ -3,11 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { authClient } from '../lib/auth-client';
-import '../index.css';
+import { Loader2, LogIn, Mail, Lock, AlertCircle, Ticket } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const loginSchema = z.object({
-  email: z.email({ error: 'Invalid email format' }).min(1, { error: 'Email is required' }),
+  email: z.email({ error: 'Please enter a valid email address' }),
   password: z.string().min(1, { error: 'Password is required' }),
 });
 
@@ -36,60 +47,131 @@ export default function Login() {
     });
 
     if (signInError) {
-      setError(signInError.message || 'Login failed');
+      setError(signInError.message || 'Login failed. Please try again.');
     } else {
       navigate('/');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5 bg-bg-primary">
-      <div className="bg-bg-card p-10 rounded-lg border border-border-color w-full max-w-[400px] shadow-lg">
-        <div className="flex items-center gap-3 justify-center mb-6">
-          <span className="text-[1.8rem] drop-shadow-[0_0_8px_var(--color-accent-glow)]">🎫</span>
-          <h1 className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em]">Helpdesk</h1>
+    <div className="dark relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-12">
+      {/* Animated gradient orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 -top-32 h-96 w-96 animate-[pulse_6s_ease-in-out_infinite] rounded-full bg-[#6c63ff]/15 blur-[128px]" />
+        <div className="absolute -bottom-32 -right-32 h-96 w-96 animate-[pulse_8s_ease-in-out_infinite_1s] rounded-full bg-[#a78bfa]/15 blur-[128px]" />
+        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 animate-[pulse_7s_ease-in-out_infinite_0.5s] rounded-full bg-[#8b5cf6]/10 blur-[100px]" />
+      </div>
+
+      {/* Grid pattern overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+        }}
+      />
+
+      <div className="relative z-10 w-full max-w-md animate-[fadeIn_0.5s_ease]">
+        {/* Logo & Branding */}
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#8b5cf6] shadow-[0_0_40px_rgba(108,99,255,0.3)]">
+            <Ticket className="size-7 text-white" />
+          </div>
+          <div className="text-center">
+            <h1 className="bg-gradient-to-br from-[#6c63ff] to-[#a78bfa] bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+              Helpdesk
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              AI-powered ticketing system
+            </p>
+          </div>
         </div>
-        <h2 className="text-center mb-6 text-[1.5rem] font-bold">Sign In</h2>
-        {error && <div className="bg-[rgba(255,77,106,0.15)] text-danger p-3 rounded-md mb-5 text-[0.85rem] border border-[rgba(255,77,106,0.3)] text-center">{error}</div>}
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="mb-5">
-            <label htmlFor="email" className="block text-[0.85rem] font-semibold text-text-secondary mb-[6px]">Email</label>
-            <input
-              id="email"
-              type="email"
-              {...register('email')}
-              placeholder="abc@example.com"
-              className={`w-full py-[10px] px-[14px] border rounded-md bg-bg-secondary text-text-primary font-sans text-[0.9rem] transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none placeholder:text-text-muted ${
-                errors.email 
-                  ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.25)]' 
-                  : 'border-border-color focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]'
-              }`}
-            />
-            {errors.email && <span className="text-danger text-[0.75rem] mt-1 block">{errors.email.message}</span>}
-          </div>
-          <div className="mb-5">
-            <label htmlFor="password" className="block text-[0.85rem] font-semibold text-text-secondary mb-[6px]">Password</label>
-            <input
-              id="password"
-              type="password"
-              {...register('password')}
-              placeholder="••••••••"
-              className={`w-full py-[10px] px-[14px] border rounded-md bg-bg-secondary text-text-primary font-sans text-[0.9rem] transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none placeholder:text-text-muted ${
-                errors.password 
-                  ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.25)]' 
-                  : 'border-border-color focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]'
-              }`}
-            />
-            {errors.password && <span className="text-danger text-[0.75rem] mt-1 block">{errors.password.message}</span>}
-          </div>
-          <button
-            type="submit"
-            className="bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[1px] hover:shadow-[0_0_40px_var(--color-accent-glow)] inline-flex items-center gap-[6px] border-none rounded-md font-sans font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap w-full justify-center mt-[10px] p-3 text-[1rem]"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+
+        {/* Login Card */}
+        <Card className="border-border/50 bg-card/80 shadow-2xl shadow-black/20 backdrop-blur-xl">
+          <CardHeader className="pb-2 text-center">
+            <CardTitle className="text-xl font-semibold">Welcome back</CardTitle>
+            <CardDescription>
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-5">
+                <AlertCircle className="size-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-5">
+              {/* Email Field */}
+              <div className="grid gap-2">
+                <Label htmlFor="login-email">Email</Label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    className="h-10 pl-9"
+                    {...register('email')}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="grid gap-2">
+                <Label htmlFor="login-password">Password</Label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    aria-invalid={!!errors.password}
+                    className="h-10 pl-9"
+                    {...register('password')}
+                  />
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password.message}</p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className="mt-1 w-full bg-gradient-to-r from-[#6c63ff] to-[#8b5cf6] text-white shadow-[0_0_24px_rgba(108,99,255,0.25)] transition-all hover:shadow-[0_0_40px_rgba(108,99,255,0.35)] hover:brightness-110"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Signing in…
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="size-4" />
+                    Sign In
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          Secure login powered by Better Auth
+        </p>
       </div>
     </div>
   );

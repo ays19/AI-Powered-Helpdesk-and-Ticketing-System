@@ -4,7 +4,7 @@
 - **Runtime**: Bun
 - **Backend**: Express 4 + TypeScript
 - **Frontend**: React 18 + Vite + TypeScript
-- **Styling**: Vanilla CSS
+- **Styling**: Tailwind CSS v4 + shadcn/ui (default theme, base-nova style)
 
 ## Tools & Context
 ### Documentation Fetching with Context7
