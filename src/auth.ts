@@ -12,7 +12,9 @@ export const auth = betterAuth({
         enabled: true,
         disableSignUp: true,
     },
-    trustedOrigins: process.env.CLIENT_URL ? [process.env.CLIENT_URL] : [],
+    trustedOrigins: [
+        process.env.CLIENT_URL || process.env.TRUSTED_ORIGINS || "http://localhost:5173"
+    ],
     plugins: [
         admin({
             defaultRole: UserRole.AGENT,
