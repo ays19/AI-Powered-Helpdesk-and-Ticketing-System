@@ -3,5 +3,7 @@ dist/
 .env
 *.log
 bun.lock
+e2e/test-results/
+playwright-report/
 
 /src/generated/prisma
