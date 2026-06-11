@@ -4,23 +4,42 @@ import path from 'path';
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
 import { ticketRouter } from './routes/tickets';
+import { authMiddleware } from './middleware/auth';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// --------------- Middleware ---------------
+// --------------- Security Middleware ---------------
+app.use(helmet());
 app.use(cors({
   origin: process.env.CLIENT_URL || process.env.TRUSTED_ORIGINS || 'http://localhost:5173',
   credentials: true
 }));
 
+// Rate Limiting
+const generalLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 30, // Limit each IP to 100 requests per windowMs
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+});
+
+const authLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  limit: 10, // Limit each IP to 10 requests per hour for auth
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+});
+
 // Better Auth API Route
-app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*", authLimit, toNodeHandler(auth));
 
 app.use(express.json());
 
 // --------------- API Routes ---------------
-app.use('/api/tickets', ticketRouter);
+app.use('/api/tickets', generalLimit, authMiddleware, ticketRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
@@ -45,3 +64,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
