@@ -18,12 +18,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate Limiting
+// Rate Limiting (Only active in production)
 const generalLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 30, // Limit each IP to 100 requests per windowMs
+  limit: 30, // Limit each IP to 30 requests per windowMs
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
 });
 
 const authLimit = rateLimit({
@@ -31,6 +32,7 @@ const authLimit = rateLimit({
   limit: 10, // Limit each IP to 10 requests per hour for auth
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
 });
 
 // Better Auth API Route

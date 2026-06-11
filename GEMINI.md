@@ -43,9 +43,21 @@ When you need to look up documentation for the libraries used in this project (R
   - Displays a clean "Access Denied" view for authenticated users who are not administrators.
   - Added navigation links in [App.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/App.tsx) that conditionally render the `/users` link for administrators.
 
+### Testing
+- **E2E Testing Framework**: Playwright (`@playwright/test`).
+- **Test Database**: Separate PostgreSQL database `helpdesk_test` (configured in `.env.test`).
+- **Database Setup**: Managed via `bun run test:db:setup` which runs `prisma migrate reset --force` to deploy all migrations (creating `_prisma_migrations` metadata table) and then seeds the database.
+- **Playwright Execution**: Playwright automatically boots the test database, backend Express server (in test environment), and client Vite server using its `webServer` configuration.
+
+### Rate Limiting
+- **Configuration**: Standard `express-rate-limit` middleware on auth and standard routes.
+- **Environment Behavior**: Configured with a `skip` callback (`skip: () => process.env.NODE_ENV !== 'production'`) so rate limits are only enforced in the production environment.
+
 ## Lessons Learned & Gotchas
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).
 - **Better Auth Role Type Safety on Client**: To read and type custom fields (like `role` via the admin plugin) on the client, you must register the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
+- **Prisma Migrations on Test DB**: Using `prisma db push` does not generate the metadata table `_prisma_migrations`. To ensure it is tracked properly, use `prisma migrate reset --force` instead when configuring or setting up the test database.
+
 
 
