@@ -1,10 +1,44 @@
 import { Navigate, Link } from 'react-router-dom';
 import { authClient } from '@/lib/auth-client';
 import { UserRole } from '@/types';
-import { ShieldAlert, Users as UsersIcon, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, Users as UsersIcon, ArrowLeft, Mail, User as UserIcon, Calendar, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (session && session.user.role === UserRole.ADMIN) {
+      fetchUsers();
+    }
+  }, [session]);
 
   if (isPending) {
     return (
@@ -19,7 +53,6 @@ export default function Users() {
     return <Navigate to="/login" replace />;
   }
 
-  // Check if role is admin. Better-auth admin plugin adds `role` to the user object.
   const isAdmin = session.user.role === UserRole.ADMIN;
 
   if (!isAdmin) {
@@ -86,6 +119,79 @@ export default function Users() {
               Users
             </h1>
           </div>
+
+          {error && (
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger">
+              <AlertCircle className="size-5" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          )}
+
+          <Card className="border-border-color bg-bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-semibold text-text-primary">User Directory</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <div className="w-8 h-8 border-[3px] border-border-color border-t-accent rounded-full animate-spin-slow" />
+                  <p className="text-text-secondary text-sm">Loading users...</p>
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-text-secondary">No users found.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-border-color text-text-secondary text-xs uppercase tracking-wider font-semibold">
+                        <th className="px-4 py-3">User</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Role</th>
+                        <th className="px-4 py-3">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-color">
+                      {users.map((user) => (
+                        <tr key={user.id} className="hover:bg-bg-hover/50 transition-colors group">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent group-hover:bg-accent/20 transition-colors">
+                                <UserIcon className="size-4" />
+                              </div>
+                              <span className="font-medium text-text-primary">{user.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-2 text-text-secondary text-sm">
+                              <Mail className="size-3.5" />
+                              {user.email}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                              user.role === UserRole.ADMIN 
+                                ? 'bg-accent/20 text-accent border border-accent/30' 
+                                : 'bg-bg-secondary text-text-secondary border border-border-color'
+                            }`}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-2 text-text-secondary text-sm">
+                              <Calendar className="size-3.5" />
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
