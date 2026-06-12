@@ -5,6 +5,7 @@
 - **Backend**: Express 4 + TypeScript
 - **Frontend**: React 18 + Vite + TypeScript + TanStack Query v5 + Axios
 - **Styling**: Tailwind CSS v4 + shadcn/ui (default theme, base-nova style)
+- **Component Testing**: Vitest v4 + React Testing Library + jsdom
 
 ## Tools & Context
 ### Documentation Fetching with Context7
@@ -17,6 +18,34 @@ When you need to look up documentation for the libraries used in this project (R
 4. Use the fetched documentation to write code or answer questions.
 
 *Do not use Context7 for refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.*
+
+### Writing Component Tests
+Component tests live in the `client/` directory and use **Vitest** as the test runner and **React Testing Library** for rendering and querying the DOM.
+
+#### Setup & Configuration
+- **Vitest config**: [client/vitest.config.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/vitest.config.ts) — merges Vite config, sets `environment: 'jsdom'`, and points to the setup file.
+- **Setup file**: [client/vitest.setup.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/vitest.setup.ts) — imports `@testing-library/jest-dom` to register custom DOM matchers globally.
+- **TypeScript**: `tsconfig.json` includes `"vitest/globals"` and `"@testing-library/jest-dom"` in `types`.
+
+#### File Conventions
+- Place test files in a `__tests__/` folder co-located with the component being tested (e.g. `client/src/pages/__tests__/Users.test.tsx`).
+- Use the naming convention `<ComponentName>.test.tsx`.
+
+#### Test Render Helper
+- Use the shared `renderWithQuery` helper from [client/src/test-utils.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/test-utils.tsx) instead of manually wrapping components in providers.
+- It wraps the component in both `QueryClientProvider` (with `retry: false`) and `MemoryRouter`.
+- Import it as: `import { renderWithQuery } from '@/test-utils';`
+
+#### Mocking Patterns
+- **Mock `authClient`**: `vi.mock('@/lib/auth-client', () => ({ authClient: { useSession: vi.fn() } }))` — then control its return value per test with `(authClient.useSession as any).mockReturnValue(...)`.
+- **Mock `axios`**: `vi.mock('axios')` — then control calls with `(axios.get as any).mockResolvedValue({ data: [...] })` or `.mockRejectedValue(new Error(...))` per test.
+- Call `vi.resetAllMocks()` in `beforeEach` to ensure test isolation.
+
+#### Scripts
+| Script | Command | When to use |
+|---|---|---|
+| `bun run test` | `vitest run` | CI / verify all tests pass once |
+| `bun run test:watch` | `vitest` | **Writing tests** — reruns on every file save |
 
 ### Writing E2E Tests with e2e-test-writer
 When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ticketing System, use the **e2e-test-writer** skill:
@@ -64,6 +93,7 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).
 - **Better Auth Role Type Safety on Client**: To read and type custom fields (like `role` via the admin plugin) on the client, you must register the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
+- **jest-dom TypeScript types**: For `toBeInTheDocument()` and other jest-dom matchers to be recognised by `tsc`, both `"vitest/globals"` and `"@testing-library/jest-dom"` must be present in the `types` array in `client/tsconfig.json`. Missing either will cause TS2339 errors during `bun run build`.
 
 
 
