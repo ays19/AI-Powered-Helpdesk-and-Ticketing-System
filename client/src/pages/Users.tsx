@@ -5,6 +5,7 @@ import { ShieldAlert, Users as UsersIcon, ArrowLeft, Mail, User as UserIcon, Cal
 import { useState } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface User {
@@ -118,28 +119,45 @@ export default function Users() {
               <CardTitle className="text-lg font-semibold text-text-primary">User Directory</CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 gap-4">
-                  <div className="w-8 h-8 border-[3px] border-border-color border-t-accent rounded-full animate-spin-slow" />
-                  <p className="text-text-secondary text-sm">Loading users...</p>
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-text-secondary">No users found.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-border-color text-text-secondary text-xs uppercase tracking-wider font-semibold">
-                        <th className="px-4 py-3">User</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Role</th>
-                        <th className="px-4 py-3">Joined</th>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border-color text-text-secondary text-xs uppercase tracking-wider font-semibold">
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3">Email</th>
+                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-color">
+                    {isLoading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i}>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="h-8 w-8 rounded-full" />
+                              <Skeleton className="h-4 w-28" />
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-4 w-40" />
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-5 w-16 rounded-full" />
+                          </td>
+                          <td className="px-4 py-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : users.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-center py-12 text-text-secondary">
+                          No users found.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-color">
-                      {users.map((user) => (
+                    ) : (
+                      users.map((user) => (
                         <tr key={user.id} className="hover:bg-bg-hover/50 transition-colors group">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
@@ -171,11 +189,11 @@ export default function Users() {
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </CardContent>
           </Card>
         </div>

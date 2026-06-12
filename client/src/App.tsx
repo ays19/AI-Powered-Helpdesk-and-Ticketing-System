@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient
 import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './types';
 import { UserRole } from './types';
 import TicketCard from './components/TicketCard';
+import TicketSkeleton from './components/TicketSkeleton';
 import CreateTicketModal from './components/CreateTicketModal';
 import { authClient } from './lib/auth-client';
 import Login from '@/pages/Login';
@@ -105,7 +106,9 @@ function Home() {
         <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-[1.8rem] drop-shadow-[0_0_8px_var(--color-accent-glow)]">🎫</span>
-            <h1 className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em]">Helpdesk</h1>
+            <Link to="/" className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em] hover:opacity-90">
+              Helpdesk
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-[0.9rem] font-medium text-text-secondary">Welcome, {session.user.name}</span>
@@ -152,11 +155,11 @@ function Home() {
           ))}
         </div>
 
-        {/* Ticket List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-text-muted gap-4">
-            <div className="w-9 h-9 border-[3px] border-border-color border-t-accent rounded-full animate-spin-slow" />
-            <p>Loading tickets…</p>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TicketSkeleton key={i} />
+            ))}
           </div>
         ) : filteredTickets.length === 0 ? (
           <div className="text-center py-20 text-text-muted">
