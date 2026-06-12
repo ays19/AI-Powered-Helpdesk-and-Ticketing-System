@@ -3,7 +3,7 @@
 ## Tech Stack
 - **Runtime**: Bun
 - **Backend**: Express 4 + TypeScript
-- **Frontend**: React 18 + Vite + TypeScript
+- **Frontend**: React 18 + Vite + TypeScript + TanStack Query v5 + Axios
 - **Styling**: Tailwind CSS v4 + shadcn/ui (default theme, base-nova style)
 
 ## Tools & Context
@@ -54,14 +54,16 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
 - **Configuration**: Standard `express-rate-limit` middleware on auth and standard routes.
 - **Environment Behavior**: Configured with a `skip` callback (`skip: () => process.env.NODE_ENV !== 'production'`) so rate limits are only enforced in the production environment.
 
+### Data Fetching & State Management
+- **Axios & TanStack Query**: The client uses Axios as the HTTP client and `@tanstack/react-query` (v5) for managing server state.
+  - The application is wrapped with `QueryClientProvider` in [App.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/App.tsx).
+  - Use the `useQuery` hook for retrieving data and `useMutation` hooks for state modification requests (POST, PATCH, DELETE, etc.).
+  - Ensure to call `queryClient.invalidateQueries({ queryKey: [...] })` inside mutation success callbacks to trigger automatic cache invalidation and UI updates.
+
 ## Lessons Learned & Gotchas
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).
 - **Better Auth Role Type Safety on Client**: To read and type custom fields (like `role` via the admin plugin) on the client, you must register the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
-
-
-
-gister the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
 
 
 

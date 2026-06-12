@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './types';
 import { UserRole } from './types';
 import TicketCard from './components/TicketCard';
@@ -12,53 +14,59 @@ const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'clos
 
 function Home() {
   const { data: session, isPending } = authClient.useSession();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all');
+  const queryClient = useQueryClient();
+  const { data: tickets = [], isLoading: loading } = useQuery<Ticket[]>({
+    queryKey: ['tickets'],
+    queryFn: async () => {
+      const res = await axios.get<Ticket[]>('/api/tickets');
+      return res.data;
+    },
+    enabled: !!session,
+  });
 
-  const fetchTickets = async () => {
-    try {
-      const res = await fetch('/api/tickets');
-      const data = await res.json();
-      setTickets(data);
-    } catch (err) {
-      console.error('Failed to fetch tickets', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: async (body: CreateTicketBody) => {
+      const res = await axios.post('/api/tickets', body);
+      return res.data;
+    },
+    onSuccess: () => {
+      setShowModal(false);
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
 
-  useEffect(() => {
-    if (session) {
-      fetchTickets();
-    }
-  }, [session]);
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: TicketStatus }) => {
+      const res = await axios.patch(`/api/tickets/${id}`, { status });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axios.delete(`/api/tickets/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
 
   const handleCreate = async (body: CreateTicketBody) => {
-    const res = await fetch('/api/tickets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      setShowModal(false);
-      fetchTickets();
-    }
+    createMutation.mutate(body);
   };
 
   const handleStatusChange = async (id: string, status: TicketStatus) => {
-    await fetch(`/api/tickets/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    fetchTickets();
+    statusMutation.mutate({ id, status });
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/tickets/${id}`, { method: 'DELETE' });
-    fetchTickets();
+    deleteMutation.mutate(id);
   };
 
   if (isPending) {
@@ -179,14 +187,18 @@ function Home() {
   );
 }
 
+const queryClientInstance = new QueryClient();
+
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClientInstance}>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </Router>
+    </QueryClientProvider>
   );
 }

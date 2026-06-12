@@ -2,7 +2,9 @@ import { Navigate, Link } from 'react-router-dom';
 import { authClient } from '@/lib/auth-client';
 import { UserRole } from '@/types';
 import { ShieldAlert, Users as UsersIcon, ArrowLeft, Mail, User as UserIcon, Calendar, AlertCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface User {
@@ -15,30 +17,14 @@ interface User {
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (session && session.user.role === UserRole.ADMIN) {
-      fetchUsers();
-    }
-  }, [session]);
+  const { data: users = [], isLoading, error } = useQuery<User[]>({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const response = await axios.get<User[]>('/api/users');
+      return response.data;
+    },
+    enabled: !!session && session.user.role === UserRole.ADMIN,
+  });
 
   if (isPending) {
     return (
@@ -123,7 +109,7 @@ export default function Users() {
           {error && (
             <div className="flex items-center gap-3 p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger">
               <AlertCircle className="size-5" />
-              <p className="text-sm font-medium">{error}</p>
+              <p className="text-sm font-medium">{error instanceof Error ? error.message : 'An unknown error occurred'}</p>
             </div>
           )}
 
