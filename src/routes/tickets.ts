@@ -4,6 +4,20 @@ import { db as prisma } from '../db';
 import type { CreateTicketBody } from '../types';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/async-handler';
+import { z } from 'zod';
+
+const CreateTicketSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(255),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+});
+
+const UpdateTicketSchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  status: z.enum(['open', 'in-progress', 'resolved', 'closed']).optional(),
+});
 
 export const ticketRouter = Router();
 
@@ -29,17 +43,12 @@ ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Res
 
 // POST /api/tickets
 ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, CreateTicketBody>, res: Response) => {
-  const { title, description, priority } = req.body;
-  if (!title) {
-    res.status(400).json({ error: 'Title is required' });
-    return;
-  }
+  const validatedData = CreateTicketSchema.parse(req.body);
   
   const ticket = await prisma.ticket.create({
     data: {
-      title,
-      description: description || '',
-      priority: priority || 'medium',
+      ...validatedData,
+      description: validatedData.description || '',
       status: 'open',
     },
   });
@@ -48,9 +57,11 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 
 // PATCH /api/tickets/:id
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const validatedData = UpdateTicketSchema.parse(req.body);
+  
   const ticket = await prisma.ticket.update({
     where: { id: req.params.id },
-    data: req.body,
+    data: validatedData,
   });
   res.json(ticket);
 }));

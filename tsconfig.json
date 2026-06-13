@@ -18,8 +18,11 @@
     "noImplicitOverride": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "paths": {
+      "core": ["./core/src/index.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "*.ts"],
+  "include": ["src/**/*.ts", "core/src/**/*.ts", "*.ts"],
   "exclude": ["node_modules", "client"]
 }

@@ -17,7 +17,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "core": ["../core/src/index.ts"]
     },
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },

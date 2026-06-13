@@ -79,9 +79,16 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
   - Displays a clean "Access Denied" view for authenticated users who are not administrators.
   - Added navigation links in [App.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/App.tsx) that conditionally render the `/users` link for administrators.
 
-### Rate Limiting
-- **Configuration**: Standard `express-rate-limit` middleware on auth and standard routes.
-- **Environment Behavior**: Configured with a `skip` callback (`skip: () => process.env.NODE_ENV !== 'production'`) so rate limits are only enforced in the production environment.
+### Data Validation
+- **Library**: Zod.
+- **Usage**: All incoming request bodies (POST, PATCH) must be validated using Zod schemas before processing to ensure type safety and data integrity.
+- **Shared Validation Schemas**:
+  - Validation schemas shared between the client and the server (such as form inputs that match API payloads) are located in the local workspace package `core` (e.g. [core/src/schemas](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/core/src/schemas)).
+  - To define a new schema:
+    1. Create/update a schema file in `core/src/schemas/`.
+    2. Export it from `core/src/index.ts`.
+    3. Import it using `import { ... } from 'core'` in both the server (`src/`) and the client (`client/src/`).
+  - Forms on the client should be built using `react-hook-form` and `@hookform/resolvers/zod` with these shared schemas (e.g. `CreateUserModal` in [Users.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/pages/Users.tsx)).
 
 ### Data Fetching & State Management
 - **Axios & TanStack Query**: The client uses Axios as the HTTP client and `@tanstack/react-query` (v5) for managing server state.

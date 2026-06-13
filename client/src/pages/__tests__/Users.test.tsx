@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { renderWithQuery } from '@/test-utils';
 import Users from '../Users';
 import { authClient } from '@/lib/auth-client';
@@ -22,6 +22,7 @@ const mockAxiosGet = axios.get as any;
 describe('Users Component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    (axios.isAxiosError as any).mockImplementation((err: any) => err && !!err.isAxiosError);
   });
 
   it('renders loading session state when session is pending', () => {
@@ -59,7 +60,7 @@ describe('Users Component', () => {
 
     renderWithQuery(<Users />);
     expect(screen.getByText('Access Denied')).toBeInTheDocument();
-    expect(screen.getByText('This page is only accessible to administrators. Please contact your system administrator if you believe this is an error.')).toBeInTheDocument();
+    expect(screen.getByText('This page is only accessible to administrators.')).toBeInTheDocument();
     expect(screen.queryByText('User Directory')).not.toBeInTheDocument();
   });
 
@@ -168,5 +169,147 @@ describe('Users Component', () => {
     expect(screen.getByText('alice@test.com')).toBeInTheDocument();
     expect(screen.getByText('Bob Admin')).toBeInTheDocument();
     expect(screen.getByText('bob@test.com')).toBeInTheDocument();
+  });
+
+  describe('CreateUserModal validation and submission', () => {
+    beforeEach(() => {
+      // Mock session to be admin so we can see the create user button
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: 'admin-1',
+            name: 'Admin User',
+            email: 'admin@test.com',
+            role: UserRole.ADMIN,
+          },
+        },
+        isPending: false,
+      });
+      mockAxiosGet.mockResolvedValue({ data: [] });
+    });
+
+    it('opens and closes the modal correctly', async () => {
+      renderWithQuery(<Users />);
+      
+      // Modal should not be present initially
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      // Click trigger button
+      const openBtn = screen.getByRole('button', { name: /Create User/i });
+      fireEvent.click(openBtn);
+
+      // Modal should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Click cancel button inside modal
+      const cancelBtn = screen.getByRole('button', { name: /Cancel/i });
+      fireEvent.click(cancelBtn);
+
+      // Modal should be closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('displays validation errors for invalid inputs', async () => {
+      renderWithQuery(<Users />);
+
+      // Open modal
+      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
+
+      // Find the inputs and the submit button
+      const nameInput = screen.getByLabelText('Name');
+      const emailInput = screen.getByLabelText('Email');
+      const passwordInput = screen.getByLabelText('Password');
+      
+      // Get the submit button (it's the second one with "Create User" text)
+      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
+      const submitBtn = submitButtons[1];
+      expect(submitBtn).toBeInTheDocument();
+
+      // Submit empty form
+      fireEvent.click(submitBtn!);
+
+      // Check for validation errors (min 3 chars for name, email format, min 8 chars for password)
+      expect(await screen.findByText('Name must be at least 3 characters long.')).toBeInTheDocument();
+      expect(await screen.findByText('A valid email address is required.')).toBeInTheDocument();
+      expect(await screen.findByText('Password must be at least 8 characters long.')).toBeInTheDocument();
+
+      // Fill in invalid values
+      fireEvent.change(nameInput, { target: { value: 'Ab' } });
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+      fireEvent.change(passwordInput, { target: { value: 'short' } });
+
+      // Check that error messages are still there or updated
+      expect(await screen.findByText('Name must be at least 3 characters long.')).toBeInTheDocument();
+      expect(await screen.findByText('A valid email address is required.')).toBeInTheDocument();
+      expect(await screen.findByText('Password must be at least 8 characters long.')).toBeInTheDocument();
+    });
+
+    it('submits successfully when fields are valid', async () => {
+      const mockPost = vi.fn().mockResolvedValue({ data: { id: 'new-user', name: 'John Doe' } });
+      vi.mocked(axios.post).mockImplementation(mockPost);
+
+      renderWithQuery(<Users />);
+
+      // Open modal
+      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
+
+      // Fill in valid values
+      fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'John Doe' } });
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'john@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'securepassword123' } });
+
+      // Click submit
+      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
+      const submitBtn = submitButtons[1];
+      expect(submitBtn).toBeInTheDocument();
+      fireEvent.click(submitBtn!);
+
+      // Expect axios.post to be called with correct data
+      await vi.waitFor(() => {
+        expect(mockPost).toHaveBeenCalledWith('/api/users', {
+          name: 'John Doe',
+          email: 'john@example.com',
+          password: 'securepassword123',
+        });
+      });
+
+      // The modal should close
+      await vi.waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+
+    it('renders server-side errors on failure', async () => {
+      const serverErrorMessage = 'Email already exists';
+      vi.mocked(axios.post).mockRejectedValue({
+        isAxiosError: true,
+        response: {
+          data: { error: serverErrorMessage },
+        },
+      });
+
+      renderWithQuery(<Users />);
+
+      // Open modal
+      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
+
+      // Fill in valid values
+      fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'John Doe' } });
+      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'john@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'securepassword123' } });
+
+      // Click submit
+      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
+      const submitBtn = submitButtons[1];
+      expect(submitBtn).toBeInTheDocument();
+      fireEvent.click(submitBtn!);
+
+      // Expect error alert to render the server error
+      const serverErrAlert = await screen.findByText(serverErrorMessage);
+      expect(serverErrAlert).toBeInTheDocument();
+
+      // Modal should remain open
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
   });
 });
