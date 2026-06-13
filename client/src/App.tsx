@@ -10,6 +10,9 @@ import CreateTicketModal from './components/CreateTicketModal';
 import { authClient } from './lib/auth-client';
 import Login from '@/pages/Login';
 import Users from '@/pages/Users';
+import ProtectedRoute from '@/components/ProtectedRoute';
+
+axios.defaults.withCredentials = true;
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
@@ -198,8 +201,10 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/" element={<Home />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
         </Routes>
       </Router>
     </QueryClientProvider>

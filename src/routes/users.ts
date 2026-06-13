@@ -9,3 +9,6 @@ userRouter.get('/', asyncHandler(UserController.getUsers));
 
 // POST /api/users
 userRouter.post('/', asyncHandler(UserController.createUser));
+
+// PUT /api/users/:id
+userRouter.put('/:id', asyncHandler(UserController.updateUser));

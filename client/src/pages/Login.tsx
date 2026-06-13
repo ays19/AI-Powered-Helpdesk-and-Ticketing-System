@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+
+  useEffect(() => {
+    if (session) {
+      navigate('/', { replace: true });
+    }
+  }, [session, navigate]);
 
   const {
     register,
@@ -48,8 +55,6 @@ export default function Login() {
 
     if (signInError) {
       setError(signInError.message || 'Login failed. Please try again.');
-    } else {
-      navigate('/');
     }
   };
 

@@ -6,11 +6,14 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { CreateUserButton } from '../components/CreateUserModal';
+import UserModal, { CreateUserButton } from '../components/UserModal';
 import UserTable from '../components/UserTable';
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
   const { data: users = [], isLoading, error } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: async () => {
@@ -19,6 +22,21 @@ export default function Users() {
     },
     enabled: !!session && session.user.role === UserRole.ADMIN,
   });
+
+  const handleOpenCreateModal = () => {
+    setEditingUser(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (user: User) => {
+    setEditingUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+  };
 
   if (isPending) {
     return (
@@ -73,7 +91,7 @@ export default function Users() {
               </div>
               <h1 className="text-3xl font-extrabold bg-gradient-to-br from-text-primary to-text-secondary bg-clip-text text-transparent tracking-tight">Users</h1>
             </div>
-            <CreateUserButton />
+            <CreateUserButton onClick={handleOpenCreateModal} />
           </div>
 
           {error && (
@@ -86,11 +104,19 @@ export default function Users() {
           <Card className="border-border-color bg-bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-4"><CardTitle className="text-lg font-semibold text-text-primary">User Directory</CardTitle></CardHeader>
             <CardContent>
-              <UserTable users={users} isLoading={isLoading} />
+              <UserTable users={users} isLoading={isLoading} onEdit={handleOpenEditModal} />
             </CardContent>
           </Card>
         </div>
       </main>
+
+      {isModalOpen && (
+        <UserModal 
+          user={editingUser || undefined} 
+          onClose={handleCloseModal} 
+          title={editingUser ? 'Edit User' : 'Create User'} 
+        />
+      )}
     </div>
   );
 }

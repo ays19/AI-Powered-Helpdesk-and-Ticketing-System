@@ -14,7 +14,7 @@ vi.mock('@/lib/auth-client', () => ({
 
 vi.mock('axios');
 
-describe('Users Page - Create User Modal', () => {
+describe('Users Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock session as Admin to access the page and see the button
@@ -37,8 +37,33 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
-    // Check if the modal title is visible (specifically the heading)
-    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
+  });
+
+  it('should show the Edit User modal when the edit button in the table is clicked', async () => {
+    const mockUsers = [
+      {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'agent',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+    ];
+    (axios.get as any).mockResolvedValue({ data: mockUsers });
+
+    renderWithQuery(<Users />);
+
+    const editButton = await screen.findByRole('button', { name: /edit Test User/i });
+    fireEvent.click(editButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit user/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/Name/i)).toHaveValue('Test User');
+      expect(screen.getByLabelText(/Email/i)).toHaveValue('test@example.com');
+    });
   });
 
   it('should hide the modal when clicking the overlay (outside the modal)', async () => {
@@ -47,9 +72,10 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
-    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
 
-    // The overlay is the fixed div that closes the modal
     const overlay = screen.getByTestId('modal-overlay');
     fireEvent.click(overlay);
 
@@ -65,7 +91,9 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
-    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
 
@@ -80,7 +108,9 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
-    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
 
     const closeButton = screen.getByRole('button', { name: /close dialog/i });
     fireEvent.click(closeButton);
@@ -96,14 +126,17 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
+
     const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
     if (!submitButton) throw new Error('Submit button not found');
-    
     fireEvent.click(submitButton);
 
-    expect(screen.getByText(/Name must be at least 3 characters long/i)).toBeInTheDocument();
-    expect(screen.getByText(/A valid email address is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/Password must be at least 8 characters long/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Name must be at least 3 characters long/i)).toBeInTheDocument();
+    expect(await screen.findByText(/A valid email address is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Password must be at least 8 characters long/i)).toBeInTheDocument();
   });
 
   it('should call the API and close the modal on successful submission', async () => {
@@ -113,9 +146,15 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
+
     fireEvent.change(screen.getByLabelText(/Name/i), { target: { value: 'Test User' } });
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+    
+    const passwordInput = screen.getByLabelText(/Password/i, { selector: 'input' });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
     const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
     if (!submitButton) throw new Error('Submit button not found');
@@ -143,9 +182,15 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
+
     fireEvent.change(screen.getByLabelText(/Name/i), { target: { value: 'Test User' } });
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'exists@example.com' } });
-    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+    
+    const passwordInput = screen.getByLabelText(/Password/i, { selector: 'input' });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
     const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
     if (!submitButton) throw new Error('Submit button not found');
@@ -162,7 +207,11 @@ describe('Users Page - Create User Modal', () => {
     const createButton = screen.getByRole('button', { name: /create user/i });
     fireEvent.click(createButton);
 
-    const passwordInput = screen.getByLabelText(/Password/i);
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+    });
+
+    const passwordInput = screen.getByLabelText(/Password/i, { selector: 'input' });
     expect(passwordInput).toHaveAttribute('type', 'password');
 
     const toggleButton = screen.getByRole('button', { name: /show password/i });

@@ -1,13 +1,14 @@
 import { User, UserRole } from '@/types';
-import { Mail, User as UserIcon, Calendar } from 'lucide-react';
+import { Mail, User as UserIcon, Calendar, Pencil } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserTableProps {
   users: User[];
   isLoading: boolean;
+  onEdit: (user: User) => void;
 }
 
-export default function UserTable({ users, isLoading }: UserTableProps) {
+export default function UserTable({ users, isLoading, onEdit }: UserTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
@@ -17,6 +18,7 @@ export default function UserTable({ users, isLoading }: UserTableProps) {
             <th className="px-4 py-3">Email</th>
             <th className="px-4 py-3">Role</th>
             <th className="px-4 py-3">Joined</th>
+            <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-color">
@@ -32,11 +34,12 @@ export default function UserTable({ users, isLoading }: UserTableProps) {
                 <td className="px-4 py-4"><Skeleton className="h-4 w-40" /></td>
                 <td className="px-4 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
                 <td className="px-4 py-4"><Skeleton className="h-4 w-20" /></td>
+                <td className="px-4 py-4"><Skeleton className="h-8 w-8 rounded-lg ml-auto" /></td>
               </tr>
             ))
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={4} className="text-center py-12 text-text-secondary">
+              <td colSpan={5} className="text-center py-12 text-text-secondary">
                 No users found.
               </td>
             </tr>
@@ -72,6 +75,15 @@ export default function UserTable({ users, isLoading }: UserTableProps) {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </div>
                 </td>
+                <td className="px-4 py-4 text-right">
+                  <button 
+                    onClick={() => onEdit(user)}
+                    className="p-2 rounded-lg text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors opacity-0 group-hover:opacity-100"
+                    aria-label={`Edit ${user.name}`}
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                </td>
               </tr>
             ))
           )}
@@ -80,3 +92,4 @@ export default function UserTable({ users, isLoading }: UserTableProps) {
     </div>
   );
 }
+

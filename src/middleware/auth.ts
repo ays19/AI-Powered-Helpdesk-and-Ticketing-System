@@ -21,10 +21,16 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
       return;
     }
 
-    req.user = session.user;
+    req.user = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      role: session.user.role ?? 'agent',
+    };
     next();
   } catch (error) {
     console.error('Auth Middleware Error:', error);
     res.status(500).json({ error: 'Internal Server Error during authentication' });
   }
 };
+
