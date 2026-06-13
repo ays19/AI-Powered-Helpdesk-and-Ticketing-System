@@ -74,7 +74,12 @@ function CreateUserModal({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" aria-hidden="true" onClick={onClose} />
+      <div 
+        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" 
+        aria-hidden="true" 
+        onClick={onClose} 
+        data-testid="modal-overlay"
+      />
       <div role="dialog" aria-modal="true" aria-labelledby="create-user-title" className="fixed inset-0 z-[201] flex items-center justify-center p-4">
         <div className="w-full max-w-md rounded-2xl bg-bg-card border border-border-color shadow-2xl animate-[slideUp_0.2s_cubic-bezier(0.16,1,0.3,1)]">
           <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-color">

@@ -56,8 +56,22 @@ app.get('*', (_req, res) => {
 });
 
 // --------------- Error Handler ---------------
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
+
+  // Handle Prisma unique constraint violations (P2002)
+  if (err.code === 'P2002') {
+    res.status(409).json({ error: 'Email already exists' });
+    return;
+  }
+
+  // Handle Better Auth / Other duplicate email errors
+  const message = err.message?.toLowerCase() || '';
+  if (message.includes('already exists') || message.includes('unique constraint')) {
+    res.status(409).json({ error: 'Email already exists' });
+    return;
+  }
+
   res.status(500).json({ error: 'Internal Server Error' });
 });
 

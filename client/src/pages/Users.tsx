@@ -1,13 +1,13 @@
 import { Navigate, Link } from 'react-router-dom';
-import { authClient } from '@/lib/auth-client';
-import { UserRole, type User } from '@/types';
+import { authClient } from '../lib/auth-client';
+import { UserRole, type User } from '../types';
 import { ShieldAlert, Users as UsersIcon, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreateUserButton } from '@/components/CreateUserModal';
-import UserTable from '@/components/UserTable';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { CreateUserButton } from '../components/CreateUserModal';
+import UserTable from '../components/UserTable';
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();

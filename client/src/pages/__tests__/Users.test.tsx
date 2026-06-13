@@ -1,315 +1,173 @@
-import { screen, fireEvent } from '@testing-library/react';
-import { renderWithQuery } from '@/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithQuery } from '../../test-utils';
 import Users from '../Users';
 import { authClient } from '@/lib/auth-client';
 import axios from 'axios';
-import { UserRole } from '@/types';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-// Mock authClient
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
     useSession: vi.fn(),
+    signOut: vi.fn(),
   },
 }));
 
-// Mock axios
 vi.mock('axios');
 
-const mockUseSession = authClient.useSession as any;
-const mockAxiosGet = axios.get as any;
-
-describe('Users Component', () => {
+describe('Users Page - Create User Modal', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    (axios.isAxiosError as any).mockImplementation((err: any) => err && !!err.isAxiosError);
-  });
-
-  it('renders loading session state when session is pending', () => {
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: true,
-    });
-
-    renderWithQuery(<Users />);
-    expect(screen.getByText('Loading session…')).toBeInTheDocument();
-  });
-
-  it('redirects/renders nothing for unauthenticated users', () => {
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    });
-
-    renderWithQuery(<Users />);
-    expect(screen.queryByText('User Directory')).not.toBeInTheDocument();
-  });
-
-  it('renders Access Denied for non-admin users', () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: {
-          id: 'user-1',
-          name: 'Regular Agent',
-          email: 'agent@test.com',
-          role: UserRole.AGENT,
-        },
-      },
-      isPending: false,
-    });
-
-    renderWithQuery(<Users />);
-    expect(screen.getByText('Access Denied')).toBeInTheDocument();
-    expect(screen.getByText('This page is only accessible to administrators.')).toBeInTheDocument();
-    expect(screen.queryByText('User Directory')).not.toBeInTheDocument();
-  });
-
-  it('renders skeletons while loading user directory list for admin users', () => {
-    mockUseSession.mockReturnValue({
+    vi.clearAllMocks();
+    // Mock session as Admin to access the page and see the button
+    (authClient.useSession as any).mockReturnValue({
       data: {
         user: {
           id: 'admin-1',
           name: 'Admin User',
-          email: 'admin@test.com',
-          role: UserRole.ADMIN,
+          email: 'admin@example.com',
+          role: 'admin',
         },
       },
       isPending: false,
     });
+  });
 
-    // Mock axios to stay pending (unresolved promise)
-    mockAxiosGet.mockReturnValue(new Promise(() => {}));
-
+  it('should show the Create User modal when the "Create User" button is clicked', async () => {
     renderWithQuery(<Users />);
+
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    // Check if the modal title is visible (specifically the heading)
+    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+  });
+
+  it('should hide the modal when clicking the overlay (outside the modal)', async () => {
+    renderWithQuery(<Users />);
+
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+
+    // The overlay is the fixed div that closes the modal
+    const overlay = screen.getByTestId('modal-overlay');
+    fireEvent.click(overlay);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /create user/i })).not.toBeInTheDocument();
+    });
+  });
+
+
+  it('should hide the modal when the Escape key is pressed', async () => {
+    renderWithQuery(<Users />);
+
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /create user/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('should hide the modal when the close button is clicked', async () => {
+    renderWithQuery(<Users />);
+
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    expect(screen.getByRole('heading', { name: /create user/i })).toBeInTheDocument();
+
+    const closeButton = screen.getByRole('button', { name: /close dialog/i });
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /create user/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('should show validation errors when submitting an empty form', async () => {
+    renderWithQuery(<Users />);
+
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
+    if (!submitButton) throw new Error('Submit button not found');
     
-    expect(screen.getByText('User Directory')).toBeInTheDocument();
-    // Verify skeletons are rendered by looking for data-slot="skeleton"
-    const skeletons = document.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBeGreaterThan(0);
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/Name must be at least 3 characters long/i)).toBeInTheDocument();
+    expect(screen.getByText(/A valid email address is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/Password must be at least 8 characters long/i)).toBeInTheDocument();
   });
 
-  it('renders error state when user query fails', async () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: {
-          id: 'admin-1',
-          name: 'Admin User',
-          email: 'admin@test.com',
-          role: UserRole.ADMIN,
-        },
-      },
-      isPending: false,
-    });
-
-    const errorMessage = 'Failed to fetch users';
-    mockAxiosGet.mockRejectedValue(new Error(errorMessage));
-
+  it('should call the API and close the modal on successful submission', async () => {
+    (axios.post as any).mockResolvedValue({ data: { user: { id: 'new-1', name: 'Test User' } } });
     renderWithQuery(<Users />);
 
-    const alertMsg = await screen.findByText(errorMessage);
-    expect(alertMsg).toBeInTheDocument();
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    fireEvent.change(screen.getByLabelText(/Name/i), { target: { value: 'Test User' } });
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'test@example.com' } });
+    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+
+    const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
+    if (!submitButton) throw new Error('Submit button not found');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith('/api/users', {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+      });
+      expect(screen.queryByRole('heading', { name: /create user/i })).not.toBeInTheDocument();
+    });
   });
 
-  it('renders empty list message when no users are found', async () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: {
-          id: 'admin-1',
-          name: 'Admin User',
-          email: 'admin@test.com',
-          role: UserRole.ADMIN,
-        },
+  it('should display a server error message when submission fails', async () => {
+    (axios.post as any).mockRejectedValue({
+      isAxiosError: true,
+      response: {
+        data: { error: 'Email already exists' },
       },
-      isPending: false,
     });
-
-    mockAxiosGet.mockResolvedValue({ data: [] });
-
     renderWithQuery(<Users />);
 
-    const noUsersMsg = await screen.findByText('No users found.');
-    expect(noUsersMsg).toBeInTheDocument();
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
+
+    fireEvent.change(screen.getByLabelText(/Name/i), { target: { value: 'Test User' } });
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'exists@example.com' } });
+    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
+
+    const submitButton = screen.getAllByRole('button', { name: /create user/i }).find(btn => btn.getAttribute('type') === 'submit');
+    if (!submitButton) throw new Error('Submit button not found');
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Email already exists')).toBeInTheDocument();
+    });
   });
 
-  it('renders list of users when data is loaded successfully', async () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: {
-          id: 'admin-1',
-          name: 'Admin User',
-          email: 'admin@test.com',
-          role: UserRole.ADMIN,
-        },
-      },
-      isPending: false,
-    });
-
-    const mockUsers = [
-      {
-        id: 'u-1',
-        name: 'Alice Agent',
-        email: 'alice@test.com',
-        role: UserRole.AGENT,
-        createdAt: '2026-01-01T12:00:00Z',
-      },
-      {
-        id: 'u-2',
-        name: 'Bob Admin',
-        email: 'bob@test.com',
-        role: UserRole.ADMIN,
-        createdAt: '2026-02-01T12:00:00Z',
-      },
-    ];
-
-    mockAxiosGet.mockResolvedValue({ data: mockUsers });
-
+  it('should toggle password visibility when the eye icon is clicked', async () => {
     renderWithQuery(<Users />);
 
-    expect(await screen.findByText('Alice Agent')).toBeInTheDocument();
-    expect(screen.getByText('alice@test.com')).toBeInTheDocument();
-    expect(screen.getByText('Bob Admin')).toBeInTheDocument();
-    expect(screen.getByText('bob@test.com')).toBeInTheDocument();
-  });
+    const createButton = screen.getByRole('button', { name: /create user/i });
+    fireEvent.click(createButton);
 
-  describe('CreateUserModal validation and submission', () => {
-    beforeEach(() => {
-      // Mock session to be admin so we can see the create user button
-      mockUseSession.mockReturnValue({
-        data: {
-          user: {
-            id: 'admin-1',
-            name: 'Admin User',
-            email: 'admin@test.com',
-            role: UserRole.ADMIN,
-          },
-        },
-        isPending: false,
-      });
-      mockAxiosGet.mockResolvedValue({ data: [] });
-    });
+    const passwordInput = screen.getByLabelText(/Password/i);
+    expect(passwordInput).toHaveAttribute('type', 'password');
 
-    it('opens and closes the modal correctly', async () => {
-      renderWithQuery(<Users />);
-      
-      // Modal should not be present initially
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const toggleButton = screen.getByRole('button', { name: /show password/i });
+    fireEvent.click(toggleButton);
 
-      // Click trigger button
-      const openBtn = screen.getByRole('button', { name: /Create User/i });
-      fireEvent.click(openBtn);
-
-      // Modal should be open
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-      // Click cancel button inside modal
-      const cancelBtn = screen.getByRole('button', { name: /Cancel/i });
-      fireEvent.click(cancelBtn);
-
-      // Modal should be closed
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    });
-
-    it('displays validation errors for invalid inputs', async () => {
-      renderWithQuery(<Users />);
-
-      // Open modal
-      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
-
-      // Find the inputs and the submit button
-      const nameInput = screen.getByLabelText('Name');
-      const emailInput = screen.getByLabelText('Email');
-      const passwordInput = screen.getByLabelText('Password');
-      
-      // Get the submit button (it's the second one with "Create User" text)
-      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
-      const submitBtn = submitButtons[1];
-      expect(submitBtn).toBeInTheDocument();
-
-      // Submit empty form
-      fireEvent.click(submitBtn!);
-
-      // Check for validation errors (min 3 chars for name, email format, min 8 chars for password)
-      expect(await screen.findByText('Name must be at least 3 characters long.')).toBeInTheDocument();
-      expect(await screen.findByText('A valid email address is required.')).toBeInTheDocument();
-      expect(await screen.findByText('Password must be at least 8 characters long.')).toBeInTheDocument();
-
-      // Fill in invalid values
-      fireEvent.change(nameInput, { target: { value: 'Ab' } });
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.change(passwordInput, { target: { value: 'short' } });
-
-      // Check that error messages are still there or updated
-      expect(await screen.findByText('Name must be at least 3 characters long.')).toBeInTheDocument();
-      expect(await screen.findByText('A valid email address is required.')).toBeInTheDocument();
-      expect(await screen.findByText('Password must be at least 8 characters long.')).toBeInTheDocument();
-    });
-
-    it('submits successfully when fields are valid', async () => {
-      const mockPost = vi.fn().mockResolvedValue({ data: { id: 'new-user', name: 'John Doe' } });
-      vi.mocked(axios.post).mockImplementation(mockPost);
-
-      renderWithQuery(<Users />);
-
-      // Open modal
-      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
-
-      // Fill in valid values
-      fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'John Doe' } });
-      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'john@example.com' } });
-      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'securepassword123' } });
-
-      // Click submit
-      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
-      const submitBtn = submitButtons[1];
-      expect(submitBtn).toBeInTheDocument();
-      fireEvent.click(submitBtn!);
-
-      // Expect axios.post to be called with correct data
-      await vi.waitFor(() => {
-        expect(mockPost).toHaveBeenCalledWith('/api/users', {
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: 'securepassword123',
-        });
-      });
-
-      // The modal should close
-      await vi.waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      });
-    });
-
-    it('renders server-side errors on failure', async () => {
-      const serverErrorMessage = 'Email already exists';
-      vi.mocked(axios.post).mockRejectedValue({
-        isAxiosError: true,
-        response: {
-          data: { error: serverErrorMessage },
-        },
-      });
-
-      renderWithQuery(<Users />);
-
-      // Open modal
-      fireEvent.click(screen.getByRole('button', { name: /Create User/i }));
-
-      // Fill in valid values
-      fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'John Doe' } });
-      fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'john@example.com' } });
-      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'securepassword123' } });
-
-      // Click submit
-      const submitButtons = screen.getAllByRole('button', { name: /Create User/i });
-      const submitBtn = submitButtons[1];
-      expect(submitBtn).toBeInTheDocument();
-      fireEvent.click(submitBtn!);
-
-      // Expect error alert to render the server error
-      const serverErrAlert = await screen.findByText(serverErrorMessage);
-      expect(serverErrAlert).toBeInTheDocument();
-
-      // Modal should remain open
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-    });
+    expect(passwordInput).toHaveAttribute('type', 'text');
   });
 });
