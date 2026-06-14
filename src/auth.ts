@@ -11,8 +11,8 @@ const softDeletePlugin = {
     hooks: {
         before: [
             {
-                matcher: (ctx) => ctx.path.startsWith("/sign-in/email"),
-                handler: async (ctx) => {
+                matcher: (ctx: any) => ctx.path.startsWith("/sign-in/email"),
+                handler: async (ctx: any) => {
                     const email = ctx.data?.email || ctx.body?.email;
                     if (!email) return;
 

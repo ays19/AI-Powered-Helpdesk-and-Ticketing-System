@@ -90,12 +90,19 @@ enum TicketPriority {
   critical
 }
 
+enum TicketCategory {
+  general_question
+  technical_question
+  refund_request
+}
+
 model Ticket {
   id            String         @id @default(uuid())
   title         String
   description   String
   status        TicketStatus   @default(open)
   priority      TicketPriority @default(medium)
+  category      TicketCategory @default(general_question)
   customerEmail String?
   userId        String?
   user          User?          @relation(fields: [userId], references: [id])

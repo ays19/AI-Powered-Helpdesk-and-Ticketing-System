@@ -12,6 +12,7 @@ const ticketSchema = z.object({
   title: z.string().min(1, { error: 'Title is required' }).max(100, { error: 'Title is too long' }),
   description: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high', 'critical'] as const),
+  category: z.enum(['general_question', 'technical_question', 'refund_request'] as const),
 });
 
 type TicketFormValues = z.infer<typeof ticketSchema>;
@@ -23,7 +24,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
     formState: { errors, isSubmitting },
   } = useForm<TicketFormValues>({
     resolver: zodResolver(ticketSchema),
-    defaultValues: { title: '', description: '', priority: 'medium' },
+    defaultValues: { title: '', description: '', priority: 'medium', category: 'general_question' },
     mode: 'onChange',
   });
 
@@ -32,6 +33,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
       title: data.title.trim(),
       description: data.description?.trim(),
       priority: data.priority,
+      category: data.category,
     });
   };
 
@@ -96,6 +98,24 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               <option value="critical">Critical</option>
             </select>
             {errors.priority && <span className="text-danger text-[0.75rem] mt-1 block">{errors.priority.message}</span>}
+          </div>
+
+          <div className="mb-5">
+            <label htmlFor="category" className="block text-[0.85rem] font-semibold text-text-secondary mb-[6px]">Category</label>
+            <select
+              id="category"
+              {...register('category')}
+              className={`w-full py-[10px] px-[14px] border rounded-md bg-bg-secondary text-text-primary font-sans text-[0.9rem] transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none placeholder:text-text-muted ${
+                errors.category 
+                  ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.25)]' 
+                  : 'border-border-color focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]'
+              }`}
+            >
+              <option value="general_question">General Question</option>
+              <option value="technical_question">Technical Question</option>
+              <option value="refund_request">Refund Request</option>
+            </select>
+            {errors.category && <span className="text-danger text-[0.75rem] mt-1 block">{errors.category.message}</span>}
           </div>
 
           <div className="flex justify-end gap-[10px] pt-2">

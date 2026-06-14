@@ -70,6 +70,15 @@ export const TicketPriority: {
 
 export type TicketPriority = (typeof TicketPriority)[keyof typeof TicketPriority]
 
+
+export const TicketCategory: {
+  general_question: 'general_question',
+  technical_question: 'technical_question',
+  refund_request: 'refund_request'
+};
+
+export type TicketCategory = (typeof TicketCategory)[keyof typeof TicketCategory]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -83,6 +92,10 @@ export const TicketStatus: typeof $Enums.TicketStatus
 export type TicketPriority = $Enums.TicketPriority
 
 export const TicketPriority: typeof $Enums.TicketPriority
+
+export type TicketCategory = $Enums.TicketCategory
+
+export const TicketCategory: typeof $Enums.TicketCategory
 
 /**
  * ##  Prisma Client ʲˢ
@@ -5804,6 +5817,7 @@ export namespace Prisma {
     description: string | null
     status: $Enums.TicketStatus | null
     priority: $Enums.TicketPriority | null
+    category: $Enums.TicketCategory | null
     customerEmail: string | null
     userId: string | null
     createdAt: Date | null
@@ -5816,6 +5830,7 @@ export namespace Prisma {
     description: string | null
     status: $Enums.TicketStatus | null
     priority: $Enums.TicketPriority | null
+    category: $Enums.TicketCategory | null
     customerEmail: string | null
     userId: string | null
     createdAt: Date | null
@@ -5828,6 +5843,7 @@ export namespace Prisma {
     description: number
     status: number
     priority: number
+    category: number
     customerEmail: number
     userId: number
     createdAt: number
@@ -5842,6 +5858,7 @@ export namespace Prisma {
     description?: true
     status?: true
     priority?: true
+    category?: true
     customerEmail?: true
     userId?: true
     createdAt?: true
@@ -5854,6 +5871,7 @@ export namespace Prisma {
     description?: true
     status?: true
     priority?: true
+    category?: true
     customerEmail?: true
     userId?: true
     createdAt?: true
@@ -5866,6 +5884,7 @@ export namespace Prisma {
     description?: true
     status?: true
     priority?: true
+    category?: true
     customerEmail?: true
     userId?: true
     createdAt?: true
@@ -5951,6 +5970,7 @@ export namespace Prisma {
     description: string
     status: $Enums.TicketStatus
     priority: $Enums.TicketPriority
+    category: $Enums.TicketCategory
     customerEmail: string | null
     userId: string | null
     createdAt: Date
@@ -5980,6 +6000,7 @@ export namespace Prisma {
     description?: boolean
     status?: boolean
     priority?: boolean
+    category?: boolean
     customerEmail?: boolean
     userId?: boolean
     createdAt?: boolean
@@ -5993,6 +6014,7 @@ export namespace Prisma {
     description?: boolean
     status?: boolean
     priority?: boolean
+    category?: boolean
     customerEmail?: boolean
     userId?: boolean
     createdAt?: boolean
@@ -6006,6 +6028,7 @@ export namespace Prisma {
     description?: boolean
     status?: boolean
     priority?: boolean
+    category?: boolean
     customerEmail?: boolean
     userId?: boolean
     createdAt?: boolean
@@ -6019,13 +6042,14 @@ export namespace Prisma {
     description?: boolean
     status?: boolean
     priority?: boolean
+    category?: boolean
     customerEmail?: boolean
     userId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "status" | "priority" | "customerEmail" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["ticket"]>
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "status" | "priority" | "category" | "customerEmail" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["ticket"]>
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Ticket$userArgs<ExtArgs>
   }
@@ -6047,6 +6071,7 @@ export namespace Prisma {
       description: string
       status: $Enums.TicketStatus
       priority: $Enums.TicketPriority
+      category: $Enums.TicketCategory
       customerEmail: string | null
       userId: string | null
       createdAt: Date
@@ -6480,6 +6505,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Ticket", 'String'>
     readonly status: FieldRef<"Ticket", 'TicketStatus'>
     readonly priority: FieldRef<"Ticket", 'TicketPriority'>
+    readonly category: FieldRef<"Ticket", 'TicketCategory'>
     readonly customerEmail: FieldRef<"Ticket", 'String'>
     readonly userId: FieldRef<"Ticket", 'String'>
     readonly createdAt: FieldRef<"Ticket", 'DateTime'>
@@ -7002,6 +7028,7 @@ export namespace Prisma {
     description: 'description',
     status: 'status',
     priority: 'priority',
+    category: 'category',
     customerEmail: 'customerEmail',
     userId: 'userId',
     createdAt: 'createdAt',
@@ -7114,6 +7141,20 @@ export namespace Prisma {
    * Reference to a field of type 'TicketPriority[]'
    */
   export type ListEnumTicketPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketPriority[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TicketCategory'
+   */
+  export type EnumTicketCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketCategory'>
+    
+
+
+  /**
+   * Reference to a field of type 'TicketCategory[]'
+   */
+  export type ListEnumTicketCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketCategory[]'>
     
 
 
@@ -7446,6 +7487,7 @@ export namespace Prisma {
     description?: StringFilter<"Ticket"> | string
     status?: EnumTicketStatusFilter<"Ticket"> | $Enums.TicketStatus
     priority?: EnumTicketPriorityFilter<"Ticket"> | $Enums.TicketPriority
+    category?: EnumTicketCategoryFilter<"Ticket"> | $Enums.TicketCategory
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
@@ -7459,6 +7501,7 @@ export namespace Prisma {
     description?: SortOrder
     status?: SortOrder
     priority?: SortOrder
+    category?: SortOrder
     customerEmail?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -7475,6 +7518,7 @@ export namespace Prisma {
     description?: StringFilter<"Ticket"> | string
     status?: EnumTicketStatusFilter<"Ticket"> | $Enums.TicketStatus
     priority?: EnumTicketPriorityFilter<"Ticket"> | $Enums.TicketPriority
+    category?: EnumTicketCategoryFilter<"Ticket"> | $Enums.TicketCategory
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
@@ -7488,6 +7532,7 @@ export namespace Prisma {
     description?: SortOrder
     status?: SortOrder
     priority?: SortOrder
+    category?: SortOrder
     customerEmail?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -7506,6 +7551,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Ticket"> | string
     status?: EnumTicketStatusWithAggregatesFilter<"Ticket"> | $Enums.TicketStatus
     priority?: EnumTicketPriorityWithAggregatesFilter<"Ticket"> | $Enums.TicketPriority
+    category?: EnumTicketCategoryWithAggregatesFilter<"Ticket"> | $Enums.TicketCategory
     customerEmail?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
     userId?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
@@ -7864,6 +7910,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -7876,6 +7923,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     userId?: string | null
     createdAt?: Date | string
@@ -7888,6 +7936,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7900,6 +7949,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7912,6 +7962,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     userId?: string | null
     createdAt?: Date | string
@@ -7924,6 +7975,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7935,6 +7987,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8285,6 +8338,13 @@ export namespace Prisma {
     not?: NestedEnumTicketPriorityFilter<$PrismaModel> | $Enums.TicketPriority
   }
 
+  export type EnumTicketCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketCategory | EnumTicketCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketCategoryFilter<$PrismaModel> | $Enums.TicketCategory
+  }
+
   export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -8296,6 +8356,7 @@ export namespace Prisma {
     description?: SortOrder
     status?: SortOrder
     priority?: SortOrder
+    category?: SortOrder
     customerEmail?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -8308,6 +8369,7 @@ export namespace Prisma {
     description?: SortOrder
     status?: SortOrder
     priority?: SortOrder
+    category?: SortOrder
     customerEmail?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -8320,6 +8382,7 @@ export namespace Prisma {
     description?: SortOrder
     status?: SortOrder
     priority?: SortOrder
+    category?: SortOrder
     customerEmail?: SortOrder
     userId?: SortOrder
     createdAt?: SortOrder
@@ -8344,6 +8407,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTicketPriorityFilter<$PrismaModel>
     _max?: NestedEnumTicketPriorityFilter<$PrismaModel>
+  }
+
+  export type EnumTicketCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketCategory | EnumTicketCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketCategoryWithAggregatesFilter<$PrismaModel> | $Enums.TicketCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTicketCategoryFilter<$PrismaModel>
+    _max?: NestedEnumTicketCategoryFilter<$PrismaModel>
   }
 
   export type AccountCreateNestedManyWithoutUserInput = {
@@ -8538,6 +8611,10 @@ export namespace Prisma {
     set?: $Enums.TicketPriority
   }
 
+  export type EnumTicketCategoryFieldUpdateOperationsInput = {
+    set?: $Enums.TicketCategory
+  }
+
   export type UserUpdateOneWithoutTicketsNestedInput = {
     create?: XOR<UserCreateWithoutTicketsInput, UserUncheckedCreateWithoutTicketsInput>
     connectOrCreate?: UserCreateOrConnectWithoutTicketsInput
@@ -8726,6 +8803,13 @@ export namespace Prisma {
     not?: NestedEnumTicketPriorityFilter<$PrismaModel> | $Enums.TicketPriority
   }
 
+  export type NestedEnumTicketCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketCategory | EnumTicketCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketCategoryFilter<$PrismaModel> | $Enums.TicketCategory
+  }
+
   export type NestedEnumTicketStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TicketStatus | EnumTicketStatusFieldRefInput<$PrismaModel>
     in?: $Enums.TicketStatus[] | ListEnumTicketStatusFieldRefInput<$PrismaModel>
@@ -8744,6 +8828,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTicketPriorityFilter<$PrismaModel>
     _max?: NestedEnumTicketPriorityFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTicketCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TicketCategory | EnumTicketCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TicketCategory[] | ListEnumTicketCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumTicketCategoryWithAggregatesFilter<$PrismaModel> | $Enums.TicketCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTicketCategoryFilter<$PrismaModel>
+    _max?: NestedEnumTicketCategoryFilter<$PrismaModel>
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -8818,6 +8912,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8829,6 +8924,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8932,6 +9028,7 @@ export namespace Prisma {
     description?: StringFilter<"Ticket"> | string
     status?: EnumTicketStatusFilter<"Ticket"> | $Enums.TicketStatus
     priority?: EnumTicketPriorityFilter<"Ticket"> | $Enums.TicketPriority
+    category?: EnumTicketCategoryFilter<"Ticket"> | $Enums.TicketCategory
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
@@ -9219,6 +9316,7 @@ export namespace Prisma {
     description: string
     status?: $Enums.TicketStatus
     priority?: $Enums.TicketPriority
+    category?: $Enums.TicketCategory
     customerEmail?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -9299,6 +9397,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9310,6 +9409,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9321,6 +9421,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
+    category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

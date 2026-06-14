@@ -174,6 +174,7 @@ exports.Prisma.TicketScalarFieldEnum = {
   description: 'description',
   status: 'status',
   priority: 'priority',
+  category: 'category',
   customerEmail: 'customerEmail',
   userId: 'userId',
   createdAt: 'createdAt',
@@ -211,6 +212,12 @@ exports.TicketPriority = exports.$Enums.TicketPriority = {
   medium: 'medium',
   high: 'high',
   critical: 'critical'
+};
+
+exports.TicketCategory = exports.$Enums.TicketCategory = {
+  general_question: 'general_question',
+  technical_question: 'technical_question',
+  refund_request: 'refund_request'
 };
 
 exports.Prisma.ModelName = {
