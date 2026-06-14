@@ -12,3 +12,6 @@ userRouter.post('/', asyncHandler(UserController.createUser));
 
 // PUT /api/users/:id
 userRouter.put('/:id', asyncHandler(UserController.updateUser));
+
+// DELETE /api/users/:id
+userRouter.delete('/:id', asyncHandler(UserController.deleteUser));

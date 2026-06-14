@@ -44,6 +44,8 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
     mode: 'onChange',
   });
 
+  const { ref: nameFormRef, ...nameRegister } = register('name');
+
   useEffect(() => {
     if (user) {
       setValue('name', user.name);
@@ -69,11 +71,19 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
       }
       return axios.post('/api/users', data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      try {
+        // Debug log for E2E: visibility that onSuccess ran
+        // eslint-disable-next-line no-console
+        console.log('[E2E] UserModal onSuccess, invalidating queries and closing modal', data);
+      } catch (e) {}
       queryClient.invalidateQueries({ queryKey: ['users'] });
       onClose();
     },
     onError: (err: unknown) => {
+      // Debug log for E2E: surface server error to console
+      // eslint-disable-next-line no-console
+      console.error('[E2E] UserModal onError', err);
       const isAxiosError = axios.isAxiosError(err) || (err && typeof err === 'object' && 'isAxiosError' in err && (err as any).isAxiosError === true);
       if (isAxiosError && (err as any).response?.data?.error) {
         setServerError((err as any).response.data.error);
@@ -81,6 +91,7 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
         setServerError('An unexpected error occurred. Please try again.');
       }
     },
+
   });
 
   const onSubmit = (data: UserFormValues) => {
@@ -96,7 +107,7 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
   return (
     <>
       <div 
-        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease]" 
+        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" 
         aria-hidden="true" 
         onClick={onClose} 
         data-testid="modal-overlay"
@@ -131,12 +142,11 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
                 autoComplete="name"
                 placeholder="Jane Doe"
                 className={inputClass(errors.name?.message)}
-                {...register('name', {
-                  ref: (e) => {
-                    nameRef.current = e;
-                    return e;
-                  }
-                })}
+                {...nameRegister}
+                ref={(e) => {
+                  nameFormRef(e);
+                  nameRef.current = e;
+                }}
               />
               {errors.name && <p className="text-xs text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.name.message}</p>}
             </div>

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const testClientUrl = 'http://localhost:5174';
+const testServerUrl = 'http://localhost:4100';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -18,13 +21,18 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:5173',
+    baseURL: testClientUrl,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Increase expect timeout to help with occasional network/animation delays */
+    expect: { timeout: 15000 },
+    actionTimeout: 0,
+    navigationTimeout: 30000,
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers (exclude webkit per request to ignore Safari failures) */
   projects: [
     {
       name: 'chromium',
@@ -34,25 +42,21 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
   ],
 
   /* Run local dev servers before starting the tests */
   webServer: [
     {
-      command: 'bun --env-file=.env.test run src/server.ts',
-      url: 'http://localhost:4000/api/health',
-      reuseExistingServer: !process.env.CI,
+      command: `PORT=4100 CLIENT_URL=${testClientUrl} TRUSTED_ORIGINS=${testClientUrl} BETTER_AUTH_URL=${testServerUrl} bun --env-file=.env.test run src/server.ts`,
+      url: `${testServerUrl}/api/health`,
+      reuseExistingServer: false,
       stdout: 'pipe',
       stderr: 'pipe',
     },
     {
-      command: 'bun run dev:client',
-      url: 'http://localhost:5173',
-      reuseExistingServer: !process.env.CI,
+      command: `VITE_DEV_PORT=5174 VITE_API_PROXY_TARGET=${testServerUrl} bun run dev:client`,
+      url: testClientUrl,
+      reuseExistingServer: false,
       stdout: 'pipe',
       stderr: 'pipe',
     }

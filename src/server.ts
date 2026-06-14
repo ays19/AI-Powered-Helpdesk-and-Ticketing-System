@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
+import { db } from "./db";
 import { ticketRouter } from './routes/tickets';
 import { userRouter } from './routes/users';
 import { authMiddleware } from './middleware/auth';
@@ -22,7 +23,7 @@ app.use(cors({
 // Rate Limiting
 const generalLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per windowMs
+  limit: process.env.NODE_ENV === 'test' ? 10000 : 100, // Limit each IP to 100 requests per windowMs (high for tests)
   standardHeaders: 'draft-7',
   legacyHeaders: false,
 });

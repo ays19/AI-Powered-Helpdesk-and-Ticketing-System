@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
 import UserModal from '../UserModal';
+import { UserRole } from '../../types';
 
 vi.mock('axios');
 
@@ -77,7 +78,7 @@ describe('UserModal Component', () => {
       id: 'user-123',
       name: 'Jane Smith',
       email: 'jane@example.com',
-      role: 'agent',
+      role: UserRole.AGENT,
       createdAt: '2026-01-01T00:00:00Z',
     };
 

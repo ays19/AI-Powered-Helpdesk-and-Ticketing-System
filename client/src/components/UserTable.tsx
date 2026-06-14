@@ -1,14 +1,15 @@
 import { User, UserRole } from '@/types';
-import { Mail, User as UserIcon, Calendar, Pencil } from 'lucide-react';
+import { Mail, User as UserIcon, Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserTableProps {
   users: User[];
   isLoading: boolean;
   onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
-export default function UserTable({ users, isLoading, onEdit }: UserTableProps) {
+export default function UserTable({ users, isLoading, onEdit, onDelete }: UserTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
@@ -76,13 +77,24 @@ export default function UserTable({ users, isLoading, onEdit }: UserTableProps) 
                   </div>
                 </td>
                 <td className="px-4 py-4 text-right">
-                  <button 
-                    onClick={() => onEdit(user)}
-                    className="p-2 rounded-lg text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors opacity-0 group-hover:opacity-100"
-                    aria-label={`Edit ${user.name}`}
-                  >
-                    <Pencil className="size-4" />
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button 
+                      onClick={() => onEdit(user)}
+                      className="p-2 rounded-lg text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors opacity-100"
+                      aria-label={`Edit ${user.name}`}
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDelete(user)}
+                      disabled={user.role === UserRole.ADMIN}
+                      className="p-2 rounded-lg text-text-secondary hover:bg-bg-hover hover:text-destructive transition-colors opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                      aria-label={`Delete ${user.name}`}
+                      title={user.role === UserRole.ADMIN ? "Cannot delete admin users" : undefined}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

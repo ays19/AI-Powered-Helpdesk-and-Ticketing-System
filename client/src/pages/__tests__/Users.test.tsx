@@ -4,6 +4,7 @@ import { renderWithQuery } from '../../test-utils';
 import Users from '../Users';
 import { authClient } from '@/lib/auth-client';
 import axios from 'axios';
+import { UserRole } from '../../types';
 
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
@@ -24,7 +25,7 @@ describe('Users Page', () => {
           id: 'admin-1',
           name: 'Admin User',
           email: 'admin@example.com',
-          role: 'admin',
+          role: UserRole.ADMIN,
         },
       },
       isPending: false,
@@ -48,7 +49,7 @@ describe('Users Page', () => {
         id: 'user-1',
         name: 'Test User',
         email: 'test@example.com',
-        role: 'agent',
+        role: UserRole.AGENT,
         createdAt: '2026-01-01T00:00:00Z',
       },
     ];
@@ -63,6 +64,29 @@ describe('Users Page', () => {
       expect(screen.getByRole('heading', { name: /edit user/i })).toBeInTheDocument();
       expect(screen.getByLabelText(/Name/i)).toHaveValue('Test User');
       expect(screen.getByLabelText(/Email/i)).toHaveValue('test@example.com');
+    });
+  });
+
+  it('should show the Delete User modal when the delete button in the table is clicked for a non-admin user', async () => {
+    const mockUsers = [
+      {
+        id: 'user-1',
+        name: 'Agent User',
+        email: 'agent@example.com',
+        role: UserRole.AGENT,
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+    ];
+    (axios.get as any).mockResolvedValue({ data: mockUsers });
+
+    renderWithQuery(<Users />);
+
+    const deleteButton = await screen.findByRole('button', { name: /Delete Agent User/i });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /delete user/i })).toBeInTheDocument();
+      expect(screen.getAllByText('Agent User').length).toBeGreaterThan(1);
     });
   });
 

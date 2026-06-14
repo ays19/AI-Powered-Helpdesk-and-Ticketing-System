@@ -101,6 +101,7 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).
 - **Better Auth Role Type Safety on Client**: To read and type custom fields (like `role` via the admin plugin) on the client, you must register the corresponding plugin (e.g. `adminClient()`) in the client's `createAuthClient` call. Otherwise, typescript will not know about the field on `session.user`.
 - **jest-dom TypeScript types**: For `toBeInTheDocument()` and other jest-dom matchers to be recognised by `tsc`, both `"vitest/globals"` and `"@testing-library/jest-dom"` must be present in the `types` array in `client/tsconfig.json`. Missing either will cause TS2339 errors during `bun run build`.
+- **Role Enum Usage**: Avoid using hardcoded magic strings like `'admin'` or `'agent'` for roles. Always import and use the `UserRole` enum (defined in `client/src/types.ts` for the client and `src/types/index.ts` for the server) to ensure strict type safety across components, page checks, and testing mocks.
 
 
 

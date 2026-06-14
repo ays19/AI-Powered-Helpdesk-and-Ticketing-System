@@ -13,8 +13,11 @@ export const UserController = {
       return;
     }
 
-    // 2. Fetch users from database
+    // 2. Fetch users from database, excluding soft-deleted users
     const users = await prisma.user.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
         id: true,
         name: true,
@@ -109,5 +112,79 @@ export const UserController = {
     }
 
     res.json(updatedUser);
+  },
+
+  async deleteUser(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+
+    // 1. Authorization Check: Only ADMIN can delete users
+    if (req.user?.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Forbidden: Administrator access required' });
+      return;
+    }
+
+    // 2. Check if user exists and is not an admin
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    if (user.role === UserRole.ADMIN) {
+      res.status(403).json({ error: 'Administrative accounts cannot be deleted' });
+      return;
+    }
+
+    // 3. Soft delete the user and revoke sessions
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      }),
+      prisma.session.deleteMany({
+        where: { userId: id },
+      }),
+    ]);
+
+    // 4. Also try to disable/delete the account in the auth provider if API is available.
+    // This is best-effort and will not fail the request if the auth API doesn't expose these methods.
+    try {
+      const anyApi: any = (auth as any).api;
+      if (anyApi) {
+        if (typeof anyApi.disableUser === 'function') {
+          // Some SDKs expose a disableUser-like method
+          await anyApi.disableUser({ userId: id });
+        } else if (typeof anyApi.deleteUser === 'function') {
+          // Fallback to deleteUser if available
+          await anyApi.deleteUser({ userId: id });
+        }
+
+        // Also attempt to reset the user's password in the auth provider so old credentials stop working.
+        if (typeof anyApi.setUserPassword === 'function') {
+          const randomPwd = Math.random().toString(36).slice(2, 14);
+          try {
+            await anyApi.setUserPassword({
+              body: {
+                userId: id,
+                newPassword: randomPwd,
+              },
+            });
+          } catch (pwErr) {
+            // Ignore password reset failure — not critical
+            // eslint-disable-next-line no-console
+            console.warn('Failed to reset password for deleted user (ignored):', pwErr);
+          }
+        }
+      }
+    } catch (err) {
+      // Log but don't fail — deletion already soft-deletes in our DB
+      // eslint-disable-next-line no-console
+      console.warn('Auth provider disable/delete user call failed (ignored):', err);
+    }
+
+    res.json({ message: 'User successfully deleted' });
   },
 };

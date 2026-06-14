@@ -12,8 +12,8 @@ import { test, expect } from '@playwright/test';
  */
 
 const AUTH_USER = {
-  email: 'admin@example.com',
-  password: 'password123',
+  email: 'test-admin@example.com',
+  password: 'testpassword123',
 };
 
 test.describe('Authentication System', () => {

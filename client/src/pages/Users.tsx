@@ -8,11 +8,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import UserModal, { CreateUserButton } from '../components/UserModal';
 import UserTable from '../components/UserTable';
+import DeleteUserModal from '../components/DeleteUserModal';
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const { data: users = [], isLoading, error } = useQuery<User[]>({
     queryKey: ['users'],
@@ -36,6 +38,14 @@ export default function Users() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
+  };
+
+  const handleOpenDeleteModal = (user: User) => {
+    setUserToDelete(user);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setUserToDelete(null);
   };
 
   if (isPending) {
@@ -104,7 +114,7 @@ export default function Users() {
           <Card className="border-border-color bg-bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-4"><CardTitle className="text-lg font-semibold text-text-primary">User Directory</CardTitle></CardHeader>
             <CardContent>
-              <UserTable users={users} isLoading={isLoading} onEdit={handleOpenEditModal} />
+              <UserTable users={users} isLoading={isLoading} onEdit={handleOpenEditModal} onDelete={handleOpenDeleteModal} />
             </CardContent>
           </Card>
         </div>
@@ -115,6 +125,13 @@ export default function Users() {
           user={editingUser || undefined} 
           onClose={handleCloseModal} 
           title={editingUser ? 'Edit User' : 'Create User'} 
+        />
+      )}
+
+      {userToDelete && (
+        <DeleteUserModal 
+          user={userToDelete} 
+          onClose={handleCloseDeleteModal} 
         />
       )}
     </div>

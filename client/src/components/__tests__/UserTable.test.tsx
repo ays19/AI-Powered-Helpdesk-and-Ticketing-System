@@ -1,60 +1,129 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { renderWithQuery } from '@/test-utils';
+import { screen, fireEvent } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import UserTable from '../UserTable';
-import { User } from '@/types';
+import { User, UserRole } from '../../types';
 
 const mockUsers: User[] = [
   {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'admin',
-    createdAt: '2026-01-01T00:00:00Z',
+    id: 'admin-1',
+    name: 'Admin User',
+    email: 'admin@example.com',
+    role: UserRole.ADMIN,
+    createdAt: new Date().toISOString(),
   },
   {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'agent',
-    createdAt: '2026-01-02T00:00:00Z',
+    id: 'agent-1',
+    name: 'Agent User',
+    email: 'agent@example.com',
+    role: UserRole.AGENT,
+    createdAt: new Date().toISOString(),
   },
 ];
 
-describe('UserTable Component', () => {
-  it('should render a list of users', () => {
-    render(<UserTable users={mockUsers} isLoading={false} onEdit={vi.fn()} />);
+describe('UserTable', () => {
+  const onEdit = vi.fn();
+  const onDelete = vi.fn();
 
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-    expect(screen.getByText('john@example.com')).toBeInTheDocument();
-    expect(screen.getByText('jane@example.com')).toBeInTheDocument();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('should render loading skeletons when isLoading is true', () => {
-    render(<UserTable users={[]} isLoading={true} onEdit={vi.fn()} />);
+  it('renders users list correctly', () => {
+    renderWithQuery(
+      <UserTable 
+        users={mockUsers} 
+        isLoading={false} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
+
+    expect(screen.getByText('Admin User')).toBeInTheDocument();
+    expect(screen.getByText('Agent User')).toBeInTheDocument();
+    expect(screen.getByText(UserRole.ADMIN)).toBeInTheDocument();
+    expect(screen.getByText(UserRole.AGENT)).toBeInTheDocument();
+  });
+
+  it('shows loading skeletons when isLoading is true', () => {
+    renderWithQuery(
+      <UserTable 
+        users={[]} 
+        isLoading={true} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
+
+    expect(screen.queryByText('Admin User')).not.toBeInTheDocument();
+    expect(screen.queryByText('Agent User')).not.toBeInTheDocument();
     
-    // Check for presence of skeleton-like elements or just that users are not rendered
-    expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
-    // Skeletons don't have text, so we check for the presence of several rows of skeletons
-    // based on the implementation which renders 5 rows
+    // Verify that we have rows in the table
+    const rows = document.querySelectorAll('tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
   });
 
-  it('should show "No users found" when users list is empty', () => {
-    render(<UserTable users={[]} isLoading={false} onEdit={vi.fn()} />);
+  it('shows empty state message when no users are provided', () => {
+    renderWithQuery(
+      <UserTable 
+        users={[]} 
+        isLoading={false} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
+
     expect(screen.getByText(/No users found/i)).toBeInTheDocument();
   });
 
-  it('should call onEdit when the edit button is clicked', () => {
-    const onEditMock = vi.fn();
-    render(<UserTable users={mockUsers} isLoading={false} onEdit={onEditMock} />);
+  it('calls onDelete when delete button is clicked for agent users', () => {
+    renderWithQuery(
+      <UserTable 
+        users={mockUsers} 
+        isLoading={false} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
 
-    const editButtons = screen.getAllByRole('button', { name: /edit/i });
-    expect(editButtons).toHaveLength(mockUsers.length);
+    // Find the delete button for Agent User
+    // We use aria-label as defined in the component
+    const deleteAgentBtn = screen.getByRole('button', { name: /Delete Agent User/i });
+    fireEvent.click(deleteAgentBtn);
 
-    fireEvent.click(editButtons[0]);
-    expect(onEditMock).toHaveBeenCalledWith(mockUsers[0]);
+    expect(onDelete).toHaveBeenCalledWith(mockUsers[1]);
+  });
 
-    fireEvent.click(editButtons[1]);
-    expect(onEditMock).toHaveBeenCalledWith(mockUsers[1]);
+  it('disables delete button for admin users', () => {
+    renderWithQuery(
+      <UserTable 
+        users={mockUsers} 
+        isLoading={false} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
+
+    const deleteAdminBtn = screen.getByRole('button', { name: /Delete Admin User/i });
+    expect(deleteAdminBtn).toBeDisabled();
+    
+    fireEvent.click(deleteAdminBtn);
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('calls onEdit when edit button is clicked', () => {
+    renderWithQuery(
+      <UserTable 
+        users={mockUsers} 
+        isLoading={false} 
+        onEdit={onEdit} 
+        onDelete={onDelete} 
+      />
+    );
+
+    const editBtn = screen.getByRole('button', { name: /Edit Admin User/i });
+    fireEvent.click(editBtn);
+
+    expect(onEdit).toHaveBeenCalledWith(mockUsers[0]);
   });
 });
