@@ -27,9 +27,12 @@ export default defineConfig({
     trace: 'on-first-retry',
 
     /* Increase expect timeout to help with occasional network/animation delays */
-    expect: { timeout: 15000 },
     actionTimeout: 0,
     navigationTimeout: 30000,
+  },
+
+  expect: { 
+    timeout: 15000 
   },
 
   /* Configure projects for major browsers (exclude webkit per request to ignore Safari failures) */

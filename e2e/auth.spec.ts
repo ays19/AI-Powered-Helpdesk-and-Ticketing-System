@@ -1,80 +1,88 @@
 import { test, expect } from '@playwright/test';
 
-/**
- * Authentication E2E Tests
- * 
- * Coverage:
- * 1. Successful login with valid credentials.
- * 2. Failed login with incorrect password.
- * 3. Failed login with non-existent email.
- * 4. Validation errors for empty/invalid fields.
- * 5. Unauthorized access redirect (checking if / from /login works).
- */
-
 const AUTH_USER = {
   email: 'test-admin@example.com',
   password: 'testpassword123',
+  name: 'Test Admin'
 };
 
 test.describe('Authentication System', () => {
+
+  // Guarantee that the test user exists in the backend before running the suite
+  test.beforeAll(async ({ playwright }) => {
+    const apiContext = await playwright.request.newContext({
+      baseURL: 'http://localhost:4100' // Target the backend server url directly
+    });
+
+    try {
+      // Create the user programmatically via Better Auth registration endpoint
+      await apiContext.post('/api/auth/sign-up', {
+        data: {
+          email: AUTH_USER.email,
+          password: AUTH_USER.password,
+          name: AUTH_USER.name,
+        }
+      });
+    } catch (e) {
+      console.log('User might already exist, proceeding to tests...', e);
+    } finally {
+      await apiContext.dispose();
+    }
+  });
   
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
   });
 
   test('should login successfully with valid credentials', async ({ page }) => {
-    await page.fill('#login-email', AUTH_USER.email);
-    await page.fill('#login-password', AUTH_USER.password);
-    await page.click('button[type="submit"]');
+    // Better Practice: Using user-facing accessible locators matching your DOM tree snapshot
+    await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(AUTH_USER.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
-    // Should redirect to home page
+    // Verify successful redirection
     await expect(page).toHaveURL('/');
-    await expect(page.locator('body')).not.toContainText('Welcome back');
+    await expect(page.getByText('Welcome back')).not.toBeVisible();
   });
 
   test('should show error with incorrect password', async ({ page }) => {
-    await page.fill('#login-email', AUTH_USER.email);
-    await page.fill('#login-password', 'wrongpassword');
-    await page.click('button[type="submit"]');
+    await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill('wrongpassword');
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
-    const alert = page.locator('div[role="alert"]');
+    // Catching the explicit validation banner from your alert role snapshot
+    const alert = page.getByRole('alert');
     await expect(alert).toBeVisible();
-    // Better-auth often returns "Invalid email or password"
-    await expect(alert).not.toBeEmpty();
+    await expect(alert).toHaveText('Invalid email or password');
   });
 
   test('should show error with non-existent email', async ({ page }) => {
-    await page.fill('#login-email', 'nonexistent@example.com');
-    await page.fill('#login-password', 'password123');
-    await page.click('button[type="submit"]');
+    await page.getByRole('textbox', { name: 'Email' }).fill('nonexistent@example.com');
+    await page.getByRole('textbox', { name: 'Password' }).fill('password123');
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
-    const alert = page.locator('div[role="alert"]');
+    const alert = page.getByRole('alert');
     await expect(alert).toBeVisible();
-    await expect(alert).not.toBeEmpty();
+    await expect(alert).toHaveText('Invalid email or password');
   });
 
   test('should show validation errors for empty fields', async ({ page }) => {
-    // Submit empty form
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
-    // Check for zod validation messages
+    // Zod client side validation catch
     await expect(page.locator('text=Please enter a valid email address')).toBeVisible();
     await expect(page.locator('text=Password is required')).toBeVisible();
   });
 
   test('should show validation error for invalid email format', async ({ page }) => {
-    await page.fill('#login-email', 'not-an-email');
-    await page.click('button[type="submit"]');
+    await page.getByRole('textbox', { name: 'Email' }).fill('not-an-email');
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
     await expect(page.locator('text=Please enter a valid email address')).toBeVisible();
   });
 
   test('should redirect unauthenticated users from home to login', async ({ page }) => {
-    // Clear cookies/session if necessary (Playwright contexts are isolated, 
-    // so this should be clean by default)
     await page.goto('/');
-    
-    // The App.tsx or session check should redirect to /login
     await expect(page).toHaveURL(/\/login/);
   });
 });
