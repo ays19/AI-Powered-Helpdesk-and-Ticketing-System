@@ -7,13 +7,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  admin
+  agent
+}
+
 model User {
   id            String    @id
   name          String
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  role          String    @default("agent")
+  role          UserRole  @default(agent)
   banned        Boolean   @default(false)
   banReason     String?
   banExpires    DateTime?
@@ -22,6 +27,7 @@ model User {
   deletedAt     DateTime?
   accounts      Account[]
   sessions      Session[]
+  tickets       Ticket[]
 
   @@map("user")
 }
@@ -30,8 +36,8 @@ model Session {
   id        String   @id
   expiresAt DateTime
   token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime
+  updatedAt DateTime
   ipAddress String?
   userAgent String?
   userId    String
@@ -42,20 +48,18 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id
+  accountId    String
+  providerId   String
+  userId       String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  scope        String?
+  password     String?
+  createdAt    DateTime
+  updatedAt    DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
@@ -65,22 +69,38 @@ model Verification {
   id         String   @id
   identifier String
   value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime
+  updatedAt  DateTime
 
   @@index([identifier])
   @@map("verification")
 }
 
+enum TicketStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+enum TicketPriority {
+  low
+  medium
+  high
+  critical
+}
+
 model Ticket {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  status      String   @default("open")
-  priority    String   @default("medium")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  status        TicketStatus   @default(open)
+  priority      TicketPriority @default(medium)
+  customerEmail String?
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@map("ticket")
 }

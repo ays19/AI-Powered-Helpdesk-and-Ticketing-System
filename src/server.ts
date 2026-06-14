@@ -6,6 +6,7 @@ import { auth } from "./auth";
 import { db } from "./db";
 import { ticketRouter } from './routes/tickets';
 import { userRouter } from './routes/users';
+import { webhookRouter } from './routes/webhooks';
 import { authMiddleware } from './middleware/auth';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
@@ -41,6 +42,7 @@ app.all("/api/auth/*", toNodeHandler(auth));
 app.use(express.json());
 
 // --------------- API Routes ---------------
+app.use('/api/webhooks', generalLimit, webhookRouter);
 app.use('/api/tickets', generalLimit, authMiddleware, ticketRouter);
 app.use('/api/users', generalLimit, authMiddleware, userRouter);
 
@@ -59,6 +61,15 @@ app.get('*', (_req, res) => {
 // --------------- Error Handler ---------------
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
+
+  // Handle Zod validation errors
+  if (err.name === 'ZodError') {
+    res.status(400).json({
+      error: 'Validation failed',
+      details: err.errors,
+    });
+    return;
+  }
 
   // Handle Prisma unique constraint violations (P2002)
   if (err.code === 'P2002') {

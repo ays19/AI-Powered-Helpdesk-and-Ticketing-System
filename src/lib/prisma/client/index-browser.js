@@ -154,8 +154,6 @@ exports.Prisma.AccountScalarFieldEnum = {
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
   idToken: 'idToken',
-  accessTokenExpiresAt: 'accessTokenExpiresAt',
-  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
   scope: 'scope',
   password: 'password',
   createdAt: 'createdAt',
@@ -166,7 +164,6 @@ exports.Prisma.VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
   value: 'value',
-  expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -177,6 +174,8 @@ exports.Prisma.TicketScalarFieldEnum = {
   description: 'description',
   status: 'status',
   priority: 'priority',
+  customerEmail: 'customerEmail',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -195,7 +194,24 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.UserRole = exports.$Enums.UserRole = {
+  admin: 'admin',
+  agent: 'agent'
+};
 
+exports.TicketStatus = exports.$Enums.TicketStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
+  closed: 'closed'
+};
+
+exports.TicketPriority = exports.$Enums.TicketPriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',

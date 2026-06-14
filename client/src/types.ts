@@ -20,6 +20,8 @@ export interface Ticket {
   description: string;
   status: TicketStatus;
   priority: TicketPriority;
+  customerEmail?: string;
+  userId?: string;
   createdAt: string;
   updatedAt: string;
 }

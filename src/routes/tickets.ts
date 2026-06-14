@@ -5,6 +5,7 @@ import type { CreateTicketBody } from '../types';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/async-handler';
 import { z } from 'zod';
+import { TicketStatus, TicketPriority } from '../lib/prisma/client';
 
 const CreateTicketSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
@@ -49,7 +50,7 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
     data: {
       ...validatedData,
       description: validatedData.description || '',
-      status: 'open',
+      status: TicketStatus.open,
     },
   });
   res.status(201).json(ticket);
