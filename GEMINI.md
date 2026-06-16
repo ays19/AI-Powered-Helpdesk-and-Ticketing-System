@@ -96,6 +96,18 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
   - Use the `useQuery` hook for retrieving data and `useMutation` hooks for state modification requests (POST, PATCH, DELETE, etc.).
   - Ensure to call `queryClient.invalidateQueries({ queryKey: [...] })` inside mutation success callbacks to trigger automatic cache invalidation and UI updates.
 
+### Ticket Categories
+- **Enum**: `TicketCategory` with three values: `general_question`, `technical_question`, `refund_request`.
+- **Prisma Schema**: Defined as a native PostgreSQL enum in [schema.prisma](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/prisma/schema.prisma). The `Ticket` model has a `category` field defaulting to `general_question`.
+- **Shared Validation**: The `TICKET_CATEGORIES` const and the `category` field on both `createTicketSchema` and `updateTicketSchema` are defined in [core/src/schemas/ticket.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/core/src/schemas/ticket.ts). Both the server routes ([src/routes/tickets.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/src/routes/tickets.ts)) and client form ([CreateTicketModal.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/components/CreateTicketModal.tsx)) import these shared schemas — **do not duplicate them locally**.
+- **TypeScript Types**: `TicketCategory` type alias is defined in both [src/types/index.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/src/types/index.ts) (server) and [client/src/types.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/types.ts) (client).
+- **Frontend Display**: [TicketCard.tsx](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/components/TicketCard.tsx) renders a color-coded badge per category using `CATEGORY_LABELS` and `CATEGORY_BADGE_CLASSES` maps. Human-readable labels:
+  | Enum Value | Display Label |
+  |---|---|
+  | `general_question` | General Question |
+  | `technical_question` | Technical Question |
+  | `refund_request` | Refund Request |
+
 ## Lessons Learned & Gotchas
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: CORS configuration in `src/server.ts` and `trustedOrigins` in `src/auth.ts` must align with the frontend origin (`CLIENT_URL` or `TRUSTED_ORIGINS` in `.env`).

@@ -4,23 +4,8 @@ import { db as prisma } from '../db';
 import type { CreateTicketBody } from '../types';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/async-handler';
-import { z } from 'zod';
-import { TicketStatus, TicketPriority, TicketCategory } from '../lib/prisma/client';
-
-const CreateTicketSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255),
-  description: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
-  category: z.nativeEnum(TicketCategory).optional(),
-});
-
-const UpdateTicketSchema = z.object({
-  title: z.string().min(1).max(255).optional(),
-  description: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
-  status: z.enum(['open', 'in-progress', 'resolved', 'closed']).optional(),
-  category: z.nativeEnum(TicketCategory).optional(),
-});
+import { createTicketSchema, updateTicketSchema } from 'core';
+import { TicketStatus } from '../lib/prisma/client';
 
 function mapTicket(ticket: any) {
   if (!ticket) return ticket;
@@ -54,7 +39,7 @@ ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Res
 
 // POST /api/tickets
 ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, CreateTicketBody>, res: Response) => {
-  const validatedData = CreateTicketSchema.parse(req.body);
+  const validatedData = createTicketSchema.parse(req.body);
   
   const ticket = await prisma.ticket.create({
     data: {
@@ -68,7 +53,7 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 
 // PATCH /api/tickets/:id
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const validatedData = UpdateTicketSchema.parse(req.body);
+  const validatedData = updateTicketSchema.parse(req.body);
   
   const updateData: any = { ...validatedData };
   if (updateData.status === 'in-progress') {

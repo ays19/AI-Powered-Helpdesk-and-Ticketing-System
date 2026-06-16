@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { createTicketSchema, type CreateTicketFormValues } from 'core';
 import type { CreateTicketBody } from '../types';
 
 interface Props {
@@ -8,27 +8,18 @@ interface Props {
   onCreate: (body: CreateTicketBody) => void;
 }
 
-const ticketSchema = z.object({
-  title: z.string().min(1, { error: 'Title is required' }).max(100, { error: 'Title is too long' }),
-  description: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'critical'] as const),
-  category: z.enum(['general_question', 'technical_question', 'refund_request'] as const),
-});
-
-type TicketFormValues = z.infer<typeof ticketSchema>;
-
 export default function CreateTicketModal({ onClose, onCreate }: Props) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<TicketFormValues>({
-    resolver: zodResolver(ticketSchema),
+  } = useForm<CreateTicketFormValues>({
+    resolver: zodResolver(createTicketSchema),
     defaultValues: { title: '', description: '', priority: 'medium', category: 'general_question' },
     mode: 'onChange',
   });
 
-  const onSubmit = (data: TicketFormValues) => {
+  const onSubmit = (data: CreateTicketFormValues) => {
     onCreate({
       title: data.title.trim(),
       description: data.description?.trim(),
