@@ -11,13 +11,17 @@ const mockTicket: Ticket = {
   status: 'open',
   priority: 'high',
   category: 'refund_request',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: '2025-03-15T10:00:00.000Z',
+  updatedAt: '2025-03-15T10:00:00.000Z',
 };
 
 describe('TicketCard', () => {
   const onStatusChange = vi.fn();
   const onDelete = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('renders the ticket details and the category badge correctly', () => {
     renderWithQuery(
@@ -67,5 +71,53 @@ describe('TicketCard', () => {
     fireEvent.click(deleteBtn);
 
     expect(onDelete).toHaveBeenCalledWith('ticket-1');
+  });
+
+  it('shows the creation date formatted to locale string', () => {
+    renderWithQuery(
+      <TicketCard ticket={mockTicket} onStatusChange={onStatusChange} onDelete={onDelete} />
+    );
+    const expectedDate = new Date(mockTicket.createdAt).toLocaleDateString();
+    expect(screen.getByText(expectedDate)).toBeInTheDocument();
+  });
+
+  it('shows the status select with the ticket status as the selected value', () => {
+    const ticket = { ...mockTicket, status: 'in-progress' as const };
+    renderWithQuery(
+      <TicketCard ticket={ticket} onStatusChange={onStatusChange} onDelete={onDelete} />
+    );
+    expect(screen.getByRole('combobox')).toHaveValue('in-progress');
+  });
+
+  it.each([
+    ['low', '🟢 low'],
+    ['medium', '🟡 medium'],
+    ['high', '🟠 high'],
+    ['critical', '🔴 critical'],
+  ] as const)(
+    'displays the correct priority emoji and label for %s priority',
+    (priority, expectedText) => {
+      const ticket = { ...mockTicket, priority };
+      renderWithQuery(
+        <TicketCard ticket={ticket} onStatusChange={vi.fn()} onDelete={vi.fn()} />
+      );
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+    },
+  );
+
+  it('displays the "General Question" label for general_question category', () => {
+    const ticket = { ...mockTicket, category: 'general_question' as const };
+    renderWithQuery(
+      <TicketCard ticket={ticket} onStatusChange={onStatusChange} onDelete={onDelete} />
+    );
+    expect(screen.getByText('General Question')).toBeInTheDocument();
+  });
+
+  it('displays the "Technical Question" label for technical_question category', () => {
+    const ticket = { ...mockTicket, category: 'technical_question' as const };
+    renderWithQuery(
+      <TicketCard ticket={ticket} onStatusChange={onStatusChange} onDelete={onDelete} />
+    );
+    expect(screen.getByText('Technical Question')).toBeInTheDocument();
   });
 });

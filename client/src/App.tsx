@@ -16,7 +16,7 @@ axios.defaults.withCredentials = true;
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
-function Home() {
+export function Home() {
   const { data: session, isPending } = authClient.useSession();
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all');
