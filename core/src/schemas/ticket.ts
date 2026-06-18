@@ -20,6 +20,7 @@ export const TICKET_STATUSES = ['open', 'in-progress', 'resolved', 'closed'] as 
 export const createTicketSchema = z.object({
   title: z
     .string()
+    .trim()
     .min(1, 'Title is required')
     .max(255, 'Title is too long'),
   description: z.string().optional(),
@@ -34,7 +35,7 @@ export type CreateTicketFormValues = z.infer<typeof createTicketSchema>;
 // ---------------------------------------------------------------------------
 
 export const updateTicketSchema = z.object({
-  title: z.string().min(1).max(255).optional(),
+  title: z.string().trim().min(1).max(255).optional(),
   description: z.string().optional(),
   priority: z.enum(TICKET_PRIORITIES).optional(),
   status: z.enum(TICKET_STATUSES).optional(),
