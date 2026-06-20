@@ -20,6 +20,9 @@ When you need to look up documentation for the libraries used in this project (R
 *Do not use Context7 for refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.*
 
 ### Writing Component Tests
+> [!IMPORTANT]
+> **Primary Testing Strategy**: Rely mostly on component tests for verifying client-side behavior, page rendering, user interaction, API calls (using mocks), and routing logic. Avoid writing E2E tests for features that can be tested at the component level.
+
 Component tests live in the `client/` directory and use **Vitest** as the test runner and **React Testing Library** for rendering and querying the DOM.
 
 #### Setup & Configuration
@@ -48,6 +51,9 @@ Component tests live in the `client/` directory and use **Vitest** as the test r
 | `bun run test:watch` | `vitest` | **Writing tests** — reruns on every file save |
 
 ### Writing E2E Tests with e2e-test-writer
+> [!IMPORTANT]
+> **Secondary Testing Strategy**: Use E2E tests only when absolutely necessary (e.g., complex multi-step user workflows spanning backend and frontend that cannot be reliably covered by component tests and mocks, or critical authentication state flows).
+
 When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ticketing System, use the **e2e-test-writer** skill:
 1. Read the instructions in the [e2e-test-writer SKILL.md](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/.agents/skills/e2e-test-writer/SKILL.md) to understand test structure, database reset/setup workflows, page URLs, credentials, and Playwright locators/matchers.
 2. Put E2E spec files in the `/e2e` directory with the naming format `*.spec.ts`.
