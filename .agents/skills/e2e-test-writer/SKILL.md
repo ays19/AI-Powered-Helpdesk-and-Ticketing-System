@@ -66,6 +66,7 @@ test('admin can log in successfully', async ({ page }) => {
   await expect(page.getByText('Welcome, Admin')).toBeVisible();
 });
 ```
+> Verify the actual placeholder text against `Login.tsx` before relying on this locator — it hasn't been confirmed against the real component.
 
 ### 3. Creating and Managing Tickets
 Interact with modal forms, select inputs, and list elements:
@@ -80,7 +81,12 @@ test('should create a new ticket', async ({ page }) => {
   // Fill out the ticket details
   await page.getByLabel('Title').fill('E2E Test Ticket');
   await page.getByLabel('Description').fill('Detailed description of E2E test ticket');
-  await page.getByLabel('Priority').selectOption('high');
+
+  // Priority and Category are shadcn/ui Select components (Radix-based),
+  // NOT native <select> elements — selectOption() will NOT work on them.
+  // Open the trigger, then click the option from the portal-rendered listbox.
+  await page.getByLabel('Priority').click();
+  await page.getByRole('option', { name: 'High' }).click();
 
   // Submit
   await page.getByRole('button', { name: 'Create Ticket' }).click();
@@ -88,6 +94,19 @@ test('should create a new ticket', async ({ page }) => {
   // Verify ticket card is created
   await expect(page.getByText('E2E Test Ticket')).toBeVisible();
 });
+```
+
+### 4. Interacting with shadcn/ui Select Dropdowns
+This project's dropdowns (Priority, Category, etc.) use shadcn/ui's `Select`, which renders as a trigger button plus a portal-rendered listbox — not a native HTML `<select>`. Never use `.selectOption()` on these.
+
+```typescript
+// 1. Click the trigger to open the listbox
+await page.getByLabel('Category').click();
+// or, if it isn't associated with a <label for>:
+// await page.getByRole('combobox', { name: 'Category' }).click();
+
+// 2. Click the desired option by its visible text
+await page.getByRole('option', { name: 'Technical Question' }).click();
 ```
 
 ---
@@ -113,3 +132,4 @@ Use the following npm/bun scripts configured in the project root:
 4. **Environment Cleanliness**: Use the database setup script to keep test runs predictable.
 5. **No Hardcoded Secrets**: Keep the test database credentials aligned with `.env.test`.
 6. **Prisma Migrations on Test DB**: Using `prisma db push` does not generate the metadata table `_prisma_migrations`. To ensure it is tracked properly, use `prisma migrate reset --force` instead when configuring or setting up the test database.
+7. **shadcn/ui Select Components**: Never use `.selectOption()` on Priority, Category, or any other shadcn `Select` field — it's not a native `<select>`. Click the trigger, then click the `role="option"` element (see section 4 above).
