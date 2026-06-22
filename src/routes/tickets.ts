@@ -18,9 +18,14 @@ function mapTicket(ticket: any) {
 export const ticketRouter = Router();
 
 // GET /api/tickets
-ticketRouter.get('/', asyncHandler(async (_req: AuthenticatedRequest, res: Response) => {
+ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { sortBy, sortOrder } = req.query;
+  const validSortFields = ['id', 'title', 'status', 'priority', 'category', 'createdAt', 'updatedAt'];
+  const field = validSortFields.includes(sortBy as string) ? (sortBy as string) : 'createdAt';
+  const order = sortOrder === 'asc' ? 'asc' : 'desc';
+
   const tickets = await prisma.ticket.findMany({
-    orderBy: { createdAt: 'desc' }
+    orderBy: { [field]: order }
   });
   res.json(tickets.map(mapTicket));
 }));

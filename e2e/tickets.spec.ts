@@ -60,6 +60,18 @@ async function createTicket(
   await expect(page.getByRole('heading', { name: opts.title, level: 3 })).toBeVisible();
 }
 
+/**
+ * Returns the specific ticket row by its title.
+ * Navigates up 2 levels from the h3: h3 → title cell div → row div.
+ * This avoids the strict mode violation caused by broad div + hasText locators
+ * that match outer wrappers containing multiple comboboxes / delete buttons.
+ */
+function getTicketRow(page: Page, title: string) {
+  return page
+    .getByRole('heading', { name: title, level: 3 })
+    .locator('xpath=../..'); // h3 → title cell div → row div
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -96,7 +108,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
     await createTicket(page, { title, priority: 'critical' });
 
-    const card = page.locator('div').filter({ hasText: title }).first();
+    const card = getTicketRow(page, title);
     await expect(card).toContainText('🔴');
     await expect(card).toContainText('critical');
   });
@@ -108,7 +120,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
     await createTicket(page, { title, category: 'refund_request' });
 
-    const card = page.locator('div').filter({ hasText: title }).first();
+    const card = getTicketRow(page, title);
     await expect(card).toContainText('Refund Request');
   });
 
@@ -121,7 +133,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
     await createTicket(page, { title, priority: 'low' });
 
-    const card = page.locator('div').filter({ hasText: title }).first();
+    const card = getTicketRow(page, title);
     const statusSelect = card.getByRole('combobox');
     await statusSelect.selectOption('resolved');
 
@@ -131,7 +143,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
     // Reload to confirm DB persistence
     await page.reload();
 
-    const reloadedCard = page.locator('div').filter({ hasText: title }).first();
+    const reloadedCard = getTicketRow(page, title);
     await expect(reloadedCard.getByRole('combobox')).toHaveValue('resolved');
   });
 
@@ -142,7 +154,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
     await createTicket(page, { title });
 
-    const card = page.locator('div').filter({ hasText: title }).first();
+    const card = getTicketRow(page, title);
     await card.getByRole('button', { name: /delete/i }).click();
 
     // Card must disappear immediately
@@ -163,7 +175,7 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
     await createTicket(page, { title: resolvedTitle });
 
     // Change the second ticket to resolved
-    const resolvedCard = page.locator('div').filter({ hasText: resolvedTitle }).first();
+    const resolvedCard = getTicketRow(page, resolvedTitle);
     await resolvedCard.getByRole('combobox').selectOption('resolved');
     await expect(resolvedCard.locator('span', { hasText: /resolved/i })).toBeVisible();
 
@@ -256,9 +268,12 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
   // ── 11. Unauthenticated redirect ──────────────────────────────────────────
 
-  test('should redirect unauthenticated users who visit / to /login', async ({ page }) => {
-    // Navigate without logging in — rely on a fresh page with no session cookie
-    await page.goto('/');
-    await expect(page).toHaveURL(/\/login/);
+  test('should redirect unauthenticated users who visit / to /login', async ({ browser }) => {
+    // Use a fresh context with no session cookie — beforeEach does not apply here
+    const ctx = await browser.newContext();
+    const freshPage = await ctx.newPage();
+    await freshPage.goto('/');
+    await expect(freshPage).toHaveURL(/\/login/);
+    await ctx.close();
   });
 });

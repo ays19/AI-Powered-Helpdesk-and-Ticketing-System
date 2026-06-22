@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Ticket, CreateTicketBody, TicketStatus, TicketPriority } from './types';
+import { SortingState } from '@tanstack/react-table';
+import type { Ticket, CreateTicketBody, TicketStatus } from './types';
 import { UserRole } from './types';
-import TicketCard from './components/TicketCard';
-import TicketSkeleton from './components/TicketSkeleton';
+import TicketTable from './components/TicketTable';
 import CreateTicketModal from './components/CreateTicketModal';
 import { authClient } from './lib/auth-client';
 import Login from '@/pages/Login';
@@ -20,11 +20,18 @@ export function Home() {
   const { data: session, isPending } = authClient.useSession();
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all');
+  const [sorting, setSorting] = useState<SortingState>([]);
   const queryClient = useQueryClient();
+
+  const sortBy = sorting[0]?.id;
+  const sortOrder = sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : undefined;
+
   const { data: tickets = [], isLoading: loading } = useQuery<Ticket[]>({
-    queryKey: ['tickets'],
+    queryKey: ['tickets', sortBy, sortOrder],
     queryFn: async () => {
-      const res = await axios.get<Ticket[]>('/api/tickets');
+      const res = await axios.get<Ticket[]>('/api/tickets', {
+        params: { sortBy, sortOrder },
+      });
       return res.data;
     },
     enabled: !!session,
@@ -104,7 +111,7 @@ export function Home() {
   };
 
   return (
-    <div>
+    <>
       <header className="bg-gradient-to-br from-bg-secondary to-bg-card border-b border-border-color backdrop-blur-[20px] sticky top-0 z-[100]">
         <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -158,29 +165,14 @@ export function Home() {
           ))}
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <TicketSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredTickets.length === 0 ? (
-          <div className="text-center py-20 text-text-muted">
-            <span className="text-[3rem] block mb-3">📭</span>
-            <p>No tickets found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
-            {filteredTickets.map((ticket) => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        )}
+        <TicketTable
+          tickets={filteredTickets}
+          isLoading={loading}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+        />
       </main>
 
       {showModal && (
@@ -189,7 +181,7 @@ export function Home() {
           onCreate={handleCreate}
         />
       )}
-    </div>
+    </>
   );
 }
 
