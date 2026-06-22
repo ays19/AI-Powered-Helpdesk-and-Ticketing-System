@@ -149,42 +149,6 @@ export const UserController = {
       }),
     ]);
 
-    // 4. Also try to disable/delete the account in the auth provider if API is available.
-    // This is best-effort and will not fail the request if the auth API doesn't expose these methods.
-    try {
-      const anyApi: any = (auth as any).api;
-      if (anyApi) {
-        if (typeof anyApi.disableUser === 'function') {
-          // Some SDKs expose a disableUser-like method
-          await anyApi.disableUser({ userId: id });
-        } else if (typeof anyApi.deleteUser === 'function') {
-          // Fallback to deleteUser if available
-          await anyApi.deleteUser({ userId: id });
-        }
-
-        // Also attempt to reset the user's password in the auth provider so old credentials stop working.
-        if (typeof anyApi.setUserPassword === 'function') {
-          const randomPwd = Math.random().toString(36).slice(2, 14);
-          try {
-            await anyApi.setUserPassword({
-              body: {
-                userId: id,
-                newPassword: randomPwd,
-              },
-            });
-          } catch (pwErr) {
-            // Ignore password reset failure — not critical
-            // eslint-disable-next-line no-console
-            console.warn('Failed to reset password for deleted user (ignored):', pwErr);
-          }
-        }
-      }
-    } catch (err) {
-      // Log but don't fail — deletion already soft-deletes in our DB
-      // eslint-disable-next-line no-console
-      console.warn('Auth provider disable/delete user call failed (ignored):', err);
-    }
-
     res.json({ message: 'User successfully deleted' });
   },
 };

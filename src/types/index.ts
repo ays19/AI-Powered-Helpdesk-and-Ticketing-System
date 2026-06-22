@@ -1,7 +1,6 @@
-export enum UserRole {
-    ADMIN = "admin",
-    AGENT = "agent",
-}
+// UserRole is defined in core/ — single source of truth shared with the client.
+export { UserRole } from 'core';
+
 
 export type TicketStatus = 'open' | 'in-progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';

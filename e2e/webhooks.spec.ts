@@ -37,7 +37,10 @@ test.describe('Email-to-Ticket Webhook', () => {
     };
 
     // Use built-in Playwright request fixture instead of Axios
-    const response = await request.post(SERVER_URL, { data: payload });
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+    });
     expect(response.status()).toBe(201);
     
     const data = await response.json();
@@ -62,7 +65,10 @@ test.describe('Email-to-Ticket Webhook', () => {
       body: 'This ticket should not be linked to any user.',
     };
 
-    const response = await request.post(SERVER_URL, { data: payload });
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+    });
     expect(response.status()).toBe(201);
     
     const data = await response.json();
@@ -86,7 +92,10 @@ test.describe('Email-to-Ticket Webhook', () => {
       subject: 'Invalid Ticket',
     };
 
-    const response = await request.post(SERVER_URL, { data: payload });
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+    });
     expect(response.status()).toBe(400);
     
     const data = await response.json();

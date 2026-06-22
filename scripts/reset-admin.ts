@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "../src/db";
 
 async function resetAdmin() {
     const email = "admin@example.com";

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { auth } from '../auth';
-import { UserRole } from '../lib/prisma/client';
+import { UserRole } from '../types';
+
 
 export interface AuthenticatedRequest<
   Params = any,
@@ -31,7 +32,7 @@ export const authMiddleware = async (req: AuthenticatedRequest, res: Response, n
       id: session.user.id,
       email: session.user.email,
       name: session.user.name,
-      role: (session.user.role as UserRole) ?? UserRole.agent,
+      role: (session.user.role as UserRole) ?? UserRole.AGENT,
     };
     next();
   } catch (error) {

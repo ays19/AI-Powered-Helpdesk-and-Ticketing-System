@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Loader2, LogIn, Mail, Lock, AlertCircle, Ticket } from 'lucide-react';
+import { loginSchema, type LoginFormValues } from 'core';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,12 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const loginSchema = z.object({
-  email: z.email({ error: 'Please enter a valid email address' }),
-  password: z.string().min(1, { error: 'Password is required' }),
-});
 
-type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [error, setError] = useState('');

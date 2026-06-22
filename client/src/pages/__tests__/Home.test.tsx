@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithQuery } from '@/test-utils';
-import { Home } from '@/App';
+import Home from '@/pages/Home';
 import { authClient } from '@/lib/auth-client';
 import axios from 'axios';
 import { UserRole } from '@/types';

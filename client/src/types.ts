@@ -1,7 +1,7 @@
-export enum UserRole {
-  ADMIN = 'admin',
-  AGENT = 'agent',
-}
+// UserRole is defined in core/ — single source of truth shared with the server.
+export { UserRole } from 'core';
+
+
 
 export interface User {
   id: string;

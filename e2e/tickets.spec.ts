@@ -1,3 +1,18 @@
+/**
+ * e2e/tickets.spec.ts
+ *
+ * Only tests that require the real DB + browser survive here.
+ * Removed tests and where they now live:
+ *
+ *   ✦ Priority emoji badge        → TicketCard.test.tsx (it.each priorities)
+ *   ✦ Category badge              → TicketCard.test.tsx (category tests)
+ *   ✦ Status filter bar           → TicketDashboard.test.tsx
+ *   ✦ Empty state                 → TicketDashboard.test.tsx
+ *   ✦ Modal cancel / backdrop     → CreateTicketModal.test.tsx
+ *   ✦ Client-side validation      → CreateTicketModal.test.tsx
+ *   ✦ Unauthenticated redirect    → auth.spec.ts
+ */
+
 import { test, expect, type Page } from '@playwright/test';
 
 // ---------------------------------------------------------------------------
@@ -53,30 +68,25 @@ async function createTicket(
 
   await page.getByRole('button', { name: /create ticket/i }).click();
 
-  // Modal must close after successful submission
   await expect(page.getByRole('heading', { name: /create new ticket/i })).not.toBeVisible();
-
-  // The new ticket card must appear in the list
   await expect(page.getByRole('heading', { name: opts.title, level: 3 })).toBeVisible();
 }
 
 /**
  * Returns the specific ticket row by its title.
  * Navigates up 2 levels from the h3: h3 → title cell div → row div.
- * This avoids the strict mode violation caused by broad div + hasText locators
- * that match outer wrappers containing multiple comboboxes / delete buttons.
  */
 function getTicketRow(page: Page, title: string) {
-  return page
-    .getByRole('heading', { name: title, level: 3 })
-    .locator('xpath=../..'); // h3 → title cell div → row div
+  return page.locator('div.bg-bg-card').filter({
+    has: page.getByRole('heading', { name: title, level: 3 }),
+  });
 }
 
 // ---------------------------------------------------------------------------
-// Tests
+// Tests — DB-dependent only
 // ---------------------------------------------------------------------------
 
-test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
+test.describe('Ticket Dashboard – DB-Dependent Flows', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
@@ -93,38 +103,12 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
       category: 'technical_question',
     });
 
-    // Hard-reload: unit tests cannot verify real DB persistence
     await page.reload();
 
     await expect(page.getByRole('heading', { name: title, level: 3 })).toBeVisible();
   });
 
-  // ── 2. Priority emoji badge ───────────────────────────────────────────────
-
-  test('should show the correct priority emoji in the ticket card after creation', async ({
-    page,
-  }) => {
-    const title = `Priority Badge Test ${Date.now()}`;
-
-    await createTicket(page, { title, priority: 'critical' });
-
-    const card = getTicketRow(page, title);
-    await expect(card).toContainText('🔴');
-    await expect(card).toContainText('critical');
-  });
-
-  // ── 3. Category badge ─────────────────────────────────────────────────────
-
-  test('should display the correct category badge after creation', async ({ page }) => {
-    const title = `Category Badge Test ${Date.now()}`;
-
-    await createTicket(page, { title, category: 'refund_request' });
-
-    const card = getTicketRow(page, title);
-    await expect(card).toContainText('Refund Request');
-  });
-
-  // ── 4. Inline status change → DB persistence ──────────────────────────────
+  // ── 2. Status update + DB persistence ─────────────────────────────────────
 
   test('should update ticket status via the dropdown and persist it after reload', async ({
     page,
@@ -134,20 +118,16 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
     await createTicket(page, { title, priority: 'low' });
 
     const card = getTicketRow(page, title);
-    const statusSelect = card.getByRole('combobox');
-    await statusSelect.selectOption('resolved');
+    await card.getByRole('combobox').selectOption('resolved');
 
-    // Badge should update immediately
     await expect(card.locator('span', { hasText: /resolved/i })).toBeVisible();
 
-    // Reload to confirm DB persistence
     await page.reload();
 
-    const reloadedCard = getTicketRow(page, title);
-    await expect(reloadedCard.getByRole('combobox')).toHaveValue('resolved');
+    await expect(getTicketRow(page, title).getByRole('combobox')).toHaveValue('resolved');
   });
 
-  // ── 5. Delete → permanent removal ────────────────────────────────────────
+  // ── 3. Delete + DB persistence ────────────────────────────────────────────
 
   test('should delete a ticket and remove it from the list permanently', async ({ page }) => {
     const title = `Delete Persist Test ${Date.now()}`;
@@ -157,45 +137,13 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
     const card = getTicketRow(page, title);
     await card.getByRole('button', { name: /delete/i }).click();
 
-    // Card must disappear immediately
     await expect(page.getByRole('heading', { name: title, level: 3 })).not.toBeVisible();
 
-    // Reload to confirm DB deletion
     await page.reload();
     await expect(page.getByRole('heading', { name: title, level: 3 })).not.toBeVisible();
   });
 
-  // ── 6. Status filter bar ──────────────────────────────────────────────────
-
-  test('should filter tickets by status using the filter bar', async ({ page }) => {
-    const openTitle = `Filter Open ${Date.now()}`;
-    const resolvedTitle = `Filter Resolved ${Date.now() + 1}`;
-
-    await createTicket(page, { title: openTitle });
-    await createTicket(page, { title: resolvedTitle });
-
-    // Change the second ticket to resolved
-    const resolvedCard = getTicketRow(page, resolvedTitle);
-    await resolvedCard.getByRole('combobox').selectOption('resolved');
-    await expect(resolvedCard.locator('span', { hasText: /resolved/i })).toBeVisible();
-
-    // ── "resolved" filter
-    await page.getByRole('button', { name: /^resolved/i }).click();
-    await expect(page.getByRole('heading', { name: resolvedTitle, level: 3 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: openTitle, level: 3 })).not.toBeVisible();
-
-    // ── "open" filter
-    await page.getByRole('button', { name: /^open/i }).click();
-    await expect(page.getByRole('heading', { name: openTitle, level: 3 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: resolvedTitle, level: 3 })).not.toBeVisible();
-
-    // ── Back to "all"
-    await page.getByRole('button', { name: /^all/i }).click();
-    await expect(page.getByRole('heading', { name: openTitle, level: 3 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: resolvedTitle, level: 3 })).toBeVisible();
-  });
-
-  // ── 7. Newest-first ordering ──────────────────────────────────────────────
+  // ── 4. Newest-first ordering (API-level sort) ─────────────────────────────
 
   test('should list tickets in newest-first order after creation', async ({ page }) => {
     const olderTitle = `Older Ticket ${Date.now()}`;
@@ -210,70 +158,6 @@ test.describe('Ticket Dashboard – Full CRUD & Status Flows', () => {
 
     expect(newerIdx).toBeGreaterThan(-1);
     expect(olderIdx).toBeGreaterThan(-1);
-    // Newest must appear before (lower index) older one
     expect(newerIdx).toBeLessThan(olderIdx);
-  });
-
-  // ── 8. Empty state ────────────────────────────────────────────────────────
-
-  test('should show "No tickets found" empty state when active filter has no matches', async ({
-    page,
-  }) => {
-    // Ensure at least one open ticket exists
-    await createTicket(page, { title: `Empty State Ticket ${Date.now()}` });
-
-    // Filter by "closed" — no closed tickets after a fresh DB seed
-    await page.getByRole('button', { name: /^closed/i }).click();
-
-    await expect(page.getByText(/no tickets found/i)).toBeVisible();
-  });
-
-  // ── 9. Modal close behaviours ─────────────────────────────────────────────
-
-  test('should close the create-ticket modal when the Cancel button is clicked', async ({
-    page,
-  }) => {
-    await openCreateModal(page);
-
-    await page.getByRole('button', { name: /cancel/i }).click();
-
-    await expect(page.getByRole('heading', { name: /create new ticket/i })).not.toBeVisible();
-  });
-
-  test('should close the create-ticket modal when clicking the backdrop overlay', async ({
-    page,
-  }) => {
-    await openCreateModal(page);
-
-    // Click far top-left corner — guaranteed to hit the backdrop, not the modal card
-    await page.mouse.click(10, 10);
-
-    await expect(page.getByRole('heading', { name: /create new ticket/i })).not.toBeVisible();
-  });
-
-  // ── 10. Client-side validation ────────────────────────────────────────────
-
-  test('should show a validation error when submitting with an empty title', async ({ page }) => {
-    await openCreateModal(page);
-
-    // Submit without entering a title
-    await page.getByRole('button', { name: /create ticket/i }).click();
-
-    // react-hook-form + Zod renders inline error
-    await expect(page.getByText(/title is required/i)).toBeVisible();
-
-    // Modal must remain open
-    await expect(page.getByRole('heading', { name: /create new ticket/i })).toBeVisible();
-  });
-
-  // ── 11. Unauthenticated redirect ──────────────────────────────────────────
-
-  test('should redirect unauthenticated users who visit / to /login', async ({ browser }) => {
-    // Use a fresh context with no session cookie — beforeEach does not apply here
-    const ctx = await browser.newContext();
-    const freshPage = await ctx.newPage();
-    await freshPage.goto('/');
-    await expect(freshPage).toHaveURL(/\/login/);
-    await ctx.close();
   });
 });

@@ -2,9 +2,11 @@ node_modules/
 dist/
 .env
 *.log
-bun.lock
 e2e/test-results/
 playwright-report/
 test-results/
 
 /src/generated/prisma
+
+# Antigravity CLI tooling metadata
+skills-lock.json

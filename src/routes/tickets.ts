@@ -6,14 +6,7 @@ import type { AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/async-handler';
 import { createTicketSchema, updateTicketSchema } from 'core';
 import { TicketStatus } from '../lib/prisma/client';
-
-function mapTicket(ticket: any) {
-  if (!ticket) return ticket;
-  return {
-    ...ticket,
-    status: ticket.status === 'in_progress' ? 'in-progress' : ticket.status,
-  };
-}
+import { mapTicket, toDbStatus } from '../lib/ticket-mapper';
 
 export const ticketRouter = Router();
 
@@ -60,10 +53,10 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const validatedData = updateTicketSchema.parse(req.body);
   
-  const updateData: any = { ...validatedData };
-  if (updateData.status === 'in-progress') {
-    updateData.status = 'in_progress';
-  }
+  const updateData: any = {
+    ...validatedData,
+    ...(validatedData.status && { status: toDbStatus(validatedData.status) }),
+  };
 
   const ticket = await prisma.ticket.update({
     where: { id: req.params.id },
