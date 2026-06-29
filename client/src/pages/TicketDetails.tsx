@@ -2,66 +2,40 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import ReplyForm from '@/components/ReplyForm';
+import TicketDetail from '@/components/TicketDetail';
+import UpdateTicket from '@/components/UpdateTicket';
 import { 
   ArrowLeft, 
-  Trash2, 
-  Calendar, 
-  Mail, 
-  User as UserIcon, 
-  Tag, 
-  Clock,
-  Shield,
-  CheckCircle2,
-  Copy,
-  Check,
   AlertCircle
 } from 'lucide-react';
 import type { Ticket, TicketStatus, TicketPriority, TicketCategory } from '@/types';
 import { UserRole } from '@/types';
 import { authClient } from '@/lib/auth-client';
+import { getTicketSender } from '@/lib/utils';
 
-const PRIORITY_DOT_CLASSES: Record<TicketPriority, string> = {
-  low: 'bg-priority-low',
-  medium: 'bg-priority-medium',
-  high: 'bg-priority-high',
-  critical: 'bg-priority-critical',
-};
-
-const PRIORITY_TEXT_CLASSES: Record<TicketPriority, string> = {
-  low: 'text-priority-low',
-  medium: 'text-priority-medium',
-  high: 'text-priority-high',
-  critical: 'text-priority-critical',
-};
-
-const STATUS_BADGE_CLASSES: Record<TicketStatus, string> = {
-  open: 'bg-[rgba(78,205,196,0.15)] text-status-open border border-[rgba(78,205,196,0.3)]',
-  'in-progress': 'bg-[rgba(249,168,38,0.15)] text-status-in-progress border border-[rgba(249,168,38,0.3)]',
-  resolved: 'bg-[rgba(108,99,255,0.15)] text-status-resolved border border-[rgba(108,99,255,0.3)]',
-  closed: 'bg-[rgba(107,107,138,0.15)] text-status-closed border border-[rgba(107,107,138,0.3)]',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  general_question: 'General Question',
-  technical_question: 'Technical Question',
-  refund_request: 'Refund Request',
-  none: 'None',
-};
-
-const CATEGORY_BADGE_CLASSES: Record<string, string> = {
-  general_question: 'bg-[rgba(107,107,138,0.15)] text-text-secondary border border-[rgba(107,107,138,0.3)]',
-  technical_question: 'bg-[rgba(108,99,255,0.15)] text-accent border border-[rgba(108,99,255,0.3)]',
-  refund_request: 'bg-[rgba(255,77,106,0.15)] text-danger border border-[rgba(255,77,106,0.3)]',
-  none: 'bg-bg-secondary text-text-muted border border-border-color',
-};
+// Details components styling and constants are located inside client/src/components/TicketDetail.tsx
 
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
-  const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const replyMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const res = await axios.post(`/api/tickets/${id}/replies`, { content });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      showToast('Reply submitted successfully', 'success');
+    },
+    onError: () => {
+      showToast('Failed to submit reply', 'error');
+    }
+  });
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -147,42 +121,15 @@ export default function TicketDetails() {
     navigate('/login');
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  const handleAssignChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    const assignedToId = val === 'unassigned' ? null : val;
-    assignMutation.mutate(assignedToId);
-  };
+
+
 
   if (!session) {
     return null;
   }
 
-  // Sender details formatting helper (similar to dashboard)
-  let senderName = 'System';
-  let senderEmail = 'system@helpdesk.com';
-  if (ticket) {
-    if (ticket.customerEmail) {
-      senderEmail = ticket.customerEmail;
-      if (ticket.user && ticket.user.email === ticket.customerEmail) {
-        senderName = ticket.user.name;
-      } else {
-        const prefix = ticket.customerEmail.split('@')[0] || '';
-        senderName = prefix
-          .split('.')
-          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' ');
-      }
-    } else if (ticket.user) {
-      senderName = ticket.user.name;
-      senderEmail = ticket.user.email;
-    }
-  }
+
 
   return (
     <>
@@ -255,170 +202,107 @@ export default function TicketDetails() {
             {/* Left Content Area: Ticket Details */}
             <div className="md:col-span-2 space-y-6">
               
-              {/* Ticket Card Main */}
-              <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md relative overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className="text-[0.72rem] font-mono font-bold text-text-muted bg-bg-secondary px-2.5 py-1 rounded border border-border-color flex items-center gap-1.5">
-                    ID: {ticket.id}
-                    <button 
-                      onClick={() => copyToClipboard(ticket.id)} 
-                      className="text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-                      title="Copy Ticket ID"
-                    >
-                      {copied ? <Check className="w-3.5 h-3.5 text-status-open" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                  </span>
-                  
-                  <span className={`inline-block px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[ticket.status]}`}>
-                    {ticket.status}
-                  </span>
+              {/* Ticket Basic Details */}
+              <TicketDetail ticket={ticket} />
 
-                  <span className={`px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] ${CATEGORY_BADGE_CLASSES[ticket.category] || CATEGORY_BADGE_CLASSES.general_question}`}>
-                    <Tag className="w-3 h-3 inline mr-1 -mt-0.5" />
-                    {CATEGORY_LABELS[ticket.category] || ticket.category}
-                  </span>
-
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] bg-bg-secondary border border-border-color ${PRIORITY_TEXT_CLASSES[ticket.priority]}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT_CLASSES[ticket.priority]}`} />
-                    {ticket.priority} Priority
-                  </span>
-                </div>
-
-                <h1 className="text-xl md:text-2xl font-bold text-text-primary mb-4 leading-snug">
-                  {ticket.title.replace(/\s*\(Ticket #\d+\)/, '')}
-                </h1>
-
-                <div className="flex flex-wrap gap-y-2 gap-x-6 text-xs text-text-secondary border-t border-border-color/60 pt-4 mt-2">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-text-muted" />
-                    Created: {new Date(ticket.createdAt).toLocaleString()}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-text-muted" />
-                    Last Updated: {new Date(ticket.updatedAt).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Sender Info Card */}
-              <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted mb-4">Requester Details</h3>
+              {/* Replies Thread */}
+              <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md space-y-6">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted">Reply Thread</h3>
                 
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent text-lg font-bold">
-                    {senderName.charAt(0)}
+                {ticket.replies && ticket.replies.length > 0 ? (
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {ticket.replies.map((reply) => {
+                      let replySenderName = 'Unknown User';
+                      let isReplyAuthorAgent = false;
+                      let isReplyAuthorAdmin = false;
+                      const isCustomer = reply.senderType === 'customer';
+
+                      if (isCustomer) {
+                        const customerSender = getTicketSender({
+                          customerEmail: reply.customerEmail,
+                          user: null,
+                        });
+                        replySenderName = reply.customerName || customerSender.name || 'Customer';
+                      } else {
+                        replySenderName = reply.user?.name || 'Unknown User';
+                        isReplyAuthorAgent = reply.user?.role === 'agent';
+                        isReplyAuthorAdmin = reply.user?.role === 'admin';
+                      }
+
+                      let avatarBgClass = 'bg-accent/15 border border-accent/30 text-accent';
+                      if (isCustomer) {
+                        avatarBgClass = 'bg-[rgba(78,205,196,0.15)] border border-[rgba(78,205,196,0.3)] text-status-open';
+                      }
+
+                      return (
+                        <div key={reply.id} className="bg-bg-secondary/40 border border-border-color/60 rounded-xl p-4 flex gap-4 transition-all hover:bg-bg-secondary/60 animate-fadeIn">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shrink-0 ${avatarBgClass}`}>
+                            {replySenderName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-text-primary truncate">
+                                  {replySenderName}
+                                </span>
+                                {isReplyAuthorAdmin && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-danger/10 text-danger border border-danger/20">
+                                    Admin
+                                  </span>
+                                )}
+                                {isReplyAuthorAgent && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20">
+                                    Agent
+                                  </span>
+                                )}
+                                {isCustomer && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-[rgba(78,205,196,0.15)] text-status-open border border-[rgba(78,205,196,0.25)]">
+                                    Customer
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-text-muted">
+                                {new Date(reply.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed break-words">
+                              {reply.content}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <h4 className="text-base font-semibold text-text-primary flex items-center gap-2">
-                      {senderName}
-                      {ticket.user && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-accent/20 text-accent border border-accent/30">
-                          <Shield className="w-2.5 h-2.5" /> Registered
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-sm text-text-secondary flex items-center gap-1.5 mt-0.5">
-                      <Mail className="w-4 h-4 text-text-muted" />
-                      <a href={`mailto:${senderEmail}`} className="hover:underline hover:text-accent">
-                        {senderEmail}
-                      </a>
-                    </p>
+                ) : (
+                  <div className="text-center py-6 text-text-muted text-sm italic bg-bg-secondary/20 rounded-lg border border-dashed border-border-color">
+                    No replies yet. Use the form below to start the conversation.
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Description Card */}
-              <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted mb-4">Description</h3>
-                <div className="bg-bg-secondary/40 border border-border-color/60 rounded-lg p-5 text-sm text-text-primary leading-relaxed whitespace-pre-wrap min-h-[120px]">
-                  {ticket.description || <span className="text-text-muted italic">No description provided.</span>}
-                </div>
-              </div>
+              {/* Submit Reply Form */}
+              <ReplyForm 
+                onSubmit={(content) => replyMutation.mutateAsync(content)} 
+                isPending={replyMutation.isPending} 
+              />
 
             </div>
 
             {/* Right Sidebar: Control Panel */}
             <div className="space-y-6">
-              
-              <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md space-y-6">
-                
-                {/* Status Update Control */}
-                <div>
-                  <label htmlFor="details-status" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
-                    Ticket Status
-                  </label>
-                  <select
-                    id="details-status"
-                    className="w-full py-2.5 px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-sm cursor-pointer transition-all hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
-                    value={ticket.status}
-                    onChange={(e) => statusMutation.mutate(e.target.value as TicketStatus)}
-                    disabled={statusMutation.isPending}
-                  >
-                    <option value="open">Open</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-
-                {/* Category Update Control */}
-                <div className="border-t border-border-color/60 pt-4">
-                  <label htmlFor="details-category" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
-                    Ticket Category
-                  </label>
-                  <select
-                    id="details-category"
-                    className="w-full py-2.5 px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-sm cursor-pointer transition-all hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
-                    value={ticket.category}
-                    onChange={(e) => categoryMutation.mutate(e.target.value as TicketCategory)}
-                    disabled={categoryMutation.isPending}
-                  >
-                    <option value="none">None</option>
-                    <option value="general_question">General Question</option>
-                    <option value="technical_question">Technical Question</option>
-                    <option value="refund_request">Refund Request</option>
-                  </select>
-                </div>
-
-                {/* Assigned To Section */}
-                <div className="border-t border-border-color/60 pt-4">
-                  <label htmlFor="details-assign" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
-                    Assigned To
-                  </label>
-                  <select
-                    id="details-assign"
-                    className="w-full py-2.5 px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-sm cursor-pointer transition-all hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
-                    value={ticket.assignedToId || 'unassigned'}
-                    onChange={handleAssignChange}
-                    disabled={assignMutation.isPending || isLoadingAgents}
-                  >
-                    <option value="unassigned" className="text-text-muted">Unassigned</option>
-                    {agents.map((agent) => (
-                      <option key={agent.id} value={agent.id}>
-                        {agent.name} {agent.role ? `(${agent.role})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Actions: Delete */}
-                <div className="border-t border-border-color/60 pt-6">
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
-                        deleteMutation.mutate();
-                      }
-                    }}
-                    disabled={deleteMutation.isPending}
-                    className="w-full bg-danger/10 text-danger border border-danger/30 hover:bg-danger hover:text-white transition-all flex items-center justify-center gap-2 py-2.5 rounded-md font-sans text-sm font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete Ticket
-                  </button>
-                </div>
-
-              </div>
-
+              <UpdateTicket 
+                ticket={ticket}
+                agents={agents || []}
+                isLoadingAgents={isLoadingAgents}
+                onStatusChange={(status) => statusMutation.mutate(status)}
+                onCategoryChange={(category) => categoryMutation.mutate(category)}
+                onAssignChange={(assignedToId) => assignMutation.mutate(assignedToId)}
+                onDelete={() => deleteMutation.mutate()}
+                isUpdatingStatus={statusMutation.isPending}
+                isUpdatingCategory={categoryMutation.isPending}
+                isUpdatingAssignment={assignMutation.isPending}
+                isDeleting={deleteMutation.isPending}
+              />
             </div>
 
           </div>

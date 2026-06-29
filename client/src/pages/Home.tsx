@@ -8,6 +8,7 @@ import { UserRole } from '@/types';
 import TicketTable from '@/components/TicketTable';
 import CreateTicketModal from '@/components/CreateTicketModal';
 import { authClient } from '@/lib/auth-client';
+import { getTicketSender } from '@/lib/utils';
 
 const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
 
@@ -110,23 +111,7 @@ export default function Home() {
       const query = searchQuery.toLowerCase().trim();
       const subject = t.title.toLowerCase();
       
-      let senderName = 'System';
-      let senderEmail = 'system@helpdesk.com';
-      if (t.customerEmail) {
-        senderEmail = t.customerEmail;
-        if (t.user && t.user.email === t.customerEmail) {
-          senderName = t.user.name;
-        } else {
-          const prefix = t.customerEmail.split('@')[0] || '';
-          senderName = prefix
-            .split('.')
-            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(' ');
-        }
-      } else if (t.user) {
-        senderName = t.user.name;
-        senderEmail = t.user.email;
-      }
+      const { name: senderName, email: senderEmail } = getTicketSender(t);
       
       const nameMatch = senderName.toLowerCase().includes(query);
       const emailMatch = senderEmail.toLowerCase().includes(query);
@@ -174,23 +159,7 @@ export default function Home() {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         const subject = t.title.toLowerCase();
-        let senderName = 'System';
-        let senderEmail = 'system@helpdesk.com';
-        if (t.customerEmail) {
-          senderEmail = t.customerEmail;
-          if (t.user && t.user.email === t.customerEmail) {
-            senderName = t.user.name;
-          } else {
-            const prefix = t.customerEmail.split('@')[0] || '';
-            senderName = prefix
-              .split('.')
-              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-              .join(' ');
-          }
-        } else if (t.user) {
-          senderName = t.user.name;
-          senderEmail = t.user.email;
-        }
+        const { name: senderName, email: senderEmail } = getTicketSender(t);
         
         const nameMatch = senderName.toLowerCase().includes(query);
         const emailMatch = senderEmail.toLowerCase().includes(query);

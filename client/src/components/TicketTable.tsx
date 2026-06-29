@@ -11,6 +11,7 @@ import {
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Ticket, TicketStatus } from '../types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getTicketSender } from '@/lib/utils';
 
 interface TicketTableProps {
   tickets: Ticket[];
@@ -123,24 +124,7 @@ export default function TicketTable({
         header: 'Sender',
         cell: (info) => {
           const ticket = info.row.original;
-          let senderName = 'System';
-          let senderEmail: string | null = null;
-
-          if (ticket.customerEmail) {
-            senderEmail = ticket.customerEmail;
-            if (ticket.user && ticket.user.email === ticket.customerEmail) {
-              senderName = ticket.user.name;
-            } else {
-              const prefix = ticket.customerEmail.split('@')[0] || '';
-              senderName = prefix
-                .split('.')
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(' ');
-            }
-          } else if (ticket.user) {
-            senderName = ticket.user.name;
-            senderEmail = ticket.user.email;
-          }
+          const { name: senderName, email: senderEmail } = getTicketSender(ticket);
 
           return (
             <div className="flex flex-col gap-0.5">

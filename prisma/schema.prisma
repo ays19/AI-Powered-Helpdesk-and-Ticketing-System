@@ -29,6 +29,7 @@ model User {
   sessions      Session[]
   tickets       Ticket[]
   assignedTickets Ticket[]  @relation("AssignedTickets")
+  ticketReplies TicketReply[]
 
   @@map("user")
 }
@@ -112,6 +113,28 @@ model Ticket {
   assignedTo    User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  replies       TicketReply[]
 
   @@map("ticket")
+}
+
+enum ReplySenderType {
+  agent
+  customer
+}
+
+model TicketReply {
+  id            String          @id @default(uuid())
+  content       String
+  senderType    ReplySenderType @default(agent)
+  ticketId      String
+  ticket        Ticket          @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?           @relation(fields: [userId], references: [id])
+  customerEmail String?
+  customerName  String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("ticket_reply")
 }

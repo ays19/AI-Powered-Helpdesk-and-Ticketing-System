@@ -139,6 +139,13 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
 - **Failure handling**: <!-- TODO: does ticket creation still succeed if the Gemini call fails/times out? Does category fall back to `general_question`? Document the real behavior here. -->
 - **Note**: Don't confuse this with the Gemini CLI / Antigravity agent's own memory files — this section documents the app's runtime AI feature, not agent tooling.
 
+### Ticket Replies
+- **DB Schema**: The `TicketReply` model maps to the `ticket_reply` table in PostgreSQL.
+- **Sender Type Enum**: `ReplySenderType` (`agent` and `customer`).
+- **Creator Fields**: A reply can have an optional registered `userId` pointing to a `User` record (for agent replies) or optional `customerEmail` and `customerName` fields (for customer replies).
+- **Shared Validation**: The `createReplySchema` (restricting content length to 1-5000 characters) is defined in [reply.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/core/src/schemas/reply.ts) and shared via the `core` package.
+- **Sender Formatting Utility**: The `getTicketSender` utility in [utils.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/client/src/lib/utils.ts) parses and normalizes the name/email display of any ticket or customer reply sender, centralizing logic that was previously duplicated on the dashboard, tables, details cards, and reply threads.
+
 ## Lessons Learned & Gotchas
 - **Ref Forwarding**: Custom UI wrappers (like `Input` inside `client/src/components/ui/input.tsx`) must be wrapped in `React.forwardRef` to allow `react-hook-form` to properly bind their DOM nodes and register input values.
 - **CORS & Trusted Origins**: `trustedOrigins` in `src/auth.ts` must be set to `CLIENT_URL` (`http://localhost:5173` in dev), **not** `BETTER_AUTH_URL` (`http://localhost:4000`) — pointing it at the server's own URL causes Better Auth to reject requests with a CSRF error.
@@ -146,3 +153,4 @@ When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ti
 - **jest-dom TypeScript types**: For `toBeInTheDocument()` and other jest-dom matchers to be recognised by `tsc`, both `"vitest/globals"` and `"@testing-library/jest-dom"` must be present in the `types` array in `client/tsconfig.json`. Missing either will cause TS2339 errors during `bun run build`.
 - **Role Enum Usage**: Avoid using hardcoded magic strings like `'admin'` or `'agent'` for roles. Always import and use the `UserRole` enum (defined in `client/src/types.ts` for the client and `src/types/index.ts` for the server) to ensure strict type safety across components, page checks, and testing mocks.
 - **Prisma 7 Config Location**: As of Prisma 7, the database connection string lives in `prisma.config.ts`, not in the `datasource` block of `schema.prisma`. If migrations or `prisma generate` fail with a missing-connection-string error, check `prisma.config.ts` first.
+- **Testing Elements with Identical Text**: If a test involves text that could appear in multiple elements (e.g., matching the word `'Customer'` which shows up both as a ticket requester section heading and a reply role badge), use `getAllByText` or specific CSS selectors rather than a single `getByText` call to avoid Testing Library throwing a duplicate match error.

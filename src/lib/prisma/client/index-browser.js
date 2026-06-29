@@ -182,6 +182,18 @@ exports.Prisma.TicketScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.TicketReplyScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  senderType: 'senderType',
+  ticketId: 'ticketId',
+  userId: 'userId',
+  customerEmail: 'customerEmail',
+  customerName: 'customerName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -222,12 +234,18 @@ exports.TicketCategory = exports.$Enums.TicketCategory = {
   none: 'none'
 };
 
+exports.ReplySenderType = exports.$Enums.ReplySenderType = {
+  agent: 'agent',
+  customer: 'customer'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Ticket: 'Ticket'
+  Ticket: 'Ticket',
+  TicketReply: 'TicketReply'
 };
 
 /**

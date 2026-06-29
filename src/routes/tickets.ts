@@ -4,8 +4,8 @@ import { db as prisma } from '../db';
 import type { CreateTicketBody } from '../types';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/async-handler';
-import { createTicketSchema, updateTicketSchema } from 'core';
-import { TicketStatus } from '../lib/prisma/client';
+import { createTicketSchema, updateTicketSchema, createReplySchema } from 'core';
+import { TicketStatus, ReplySenderType } from '../lib/prisma/client';
 import { mapTicket, toDbStatus } from '../lib/ticket-mapper';
 
 export const ticketRouter = Router();
@@ -28,7 +28,14 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const ticket = await prisma.ticket.findUnique({
     where: { id: req.params.id },
-    include: { user: true, assignedTo: true }
+    include: { 
+      user: true, 
+      assignedTo: true,
+      replies: {
+        include: { user: true },
+        orderBy: { createdAt: 'asc' }
+      }
+    }
   });
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
@@ -104,4 +111,36 @@ ticketRouter.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: 
     include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(deleted));
+}));
+
+// POST /api/tickets/:id/replies
+ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const validatedData = createReplySchema.parse(req.body);
+  const ticketId = req.params.id;
+
+  const ticketExists = await prisma.ticket.findUnique({
+    where: { id: ticketId }
+  });
+  if (!ticketExists) {
+    res.status(404).json({ error: 'Ticket not found' });
+    return;
+  }
+
+  const reply = await prisma.ticketReply.create({
+    data: {
+      content: validatedData.content,
+      ticketId,
+      userId: req.user.id,
+      senderType: ReplySenderType.agent,
+    },
+    include: {
+      user: true
+    }
+  });
+
+  res.status(201).json(reply);
 }));

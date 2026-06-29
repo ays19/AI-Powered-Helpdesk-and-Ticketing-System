@@ -254,4 +254,129 @@ describe('TicketDetails Page', () => {
 
     await screen.findByText('Home Dashboard');
   });
+
+  it('renders "No replies yet" message when there are no replies', async () => {
+    const ticketWithoutReplies = {
+      ...MOCK_TICKET,
+      replies: [],
+    };
+
+    (axios.get as any).mockImplementation((url: string) => {
+      if (url.includes('/api/agents')) {
+        return Promise.resolve({ data: MOCK_AGENTS });
+      }
+      return Promise.resolve({ data: ticketWithoutReplies });
+    });
+
+    renderWithQuery(
+      <Routes>
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+      </Routes>,
+      { route: '/tickets/ticket-123' }
+    );
+
+    await screen.findByRole('heading', { name: 'Database connection fails' });
+    expect(screen.getByText(/No replies yet/i)).toBeInTheDocument();
+  });
+
+  it('renders existing replies in the thread', async () => {
+    const ticketWithReplies = {
+      ...MOCK_TICKET,
+      replies: [
+        {
+          id: 'reply-1',
+          content: 'This is the first reply from agent',
+          senderType: 'agent',
+          ticketId: 'ticket-123',
+          userId: 'agent-alice',
+          user: {
+            id: 'agent-alice',
+            name: 'Agent Alice',
+            email: 'alice@example.com',
+            role: UserRole.AGENT,
+          },
+          createdAt: '2026-06-28T13:00:00.000Z',
+          updatedAt: '2026-06-28T13:00:00.000Z',
+        },
+        {
+          id: 'reply-2',
+          content: 'This is the second reply from admin',
+          senderType: 'agent',
+          ticketId: 'ticket-123',
+          userId: 'admin-bob',
+          user: {
+            id: 'admin-bob',
+            name: 'Admin Bob',
+            email: 'bob@example.com',
+            role: UserRole.ADMIN,
+          },
+          createdAt: '2026-06-28T13:05:00.000Z',
+          updatedAt: '2026-06-28T13:05:00.000Z',
+        },
+        {
+          id: 'reply-3',
+          content: 'This is a customer reply content',
+          senderType: 'customer',
+          ticketId: 'ticket-123',
+          customerEmail: 'customer-jack@example.com',
+          customerName: 'Customer Jack',
+          createdAt: '2026-06-28T13:10:00.000Z',
+          updatedAt: '2026-06-28T13:10:00.000Z',
+        },
+      ],
+    };
+
+    (axios.get as any).mockImplementation((url: string) => {
+      if (url.includes('/api/agents')) {
+        return Promise.resolve({ data: MOCK_AGENTS });
+      }
+      return Promise.resolve({ data: ticketWithReplies });
+    });
+
+    renderWithQuery(
+      <Routes>
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+      </Routes>,
+      { route: '/tickets/ticket-123' }
+    );
+
+    await screen.findByRole('heading', { name: 'Database connection fails' });
+    
+    expect(screen.getByText('This is the first reply from agent')).toBeInTheDocument();
+    expect(screen.getByText('Agent Alice')).toBeInTheDocument();
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+
+    expect(screen.getByText('This is the second reply from admin')).toBeInTheDocument();
+    expect(screen.getByText('Admin Bob')).toBeInTheDocument();
+    expect(screen.getByText('Admin')).toBeInTheDocument();
+
+    expect(screen.getByText('This is a customer reply content')).toBeInTheDocument();
+    expect(screen.getByText('Customer Jack')).toBeInTheDocument();
+    expect(screen.getAllByText('Customer').length).toBeGreaterThan(0);
+  });
+
+  it('allows submitting a new reply and sends request to server', async () => {
+    (axios.post as any).mockResolvedValue({ data: {} });
+
+    renderWithQuery(
+      <Routes>
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+      </Routes>,
+      { route: '/tickets/ticket-123' }
+    );
+
+    await screen.findByRole('heading', { name: 'Database connection fails' });
+
+    const textarea = screen.getByPlaceholderText('Type your message here...');
+    fireEvent.change(textarea, { target: { value: 'I am working on a fix now.' } });
+
+    const submitBtn = screen.getByRole('button', { name: /Submit Reply/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith('/api/tickets/ticket-123/replies', {
+        content: 'I am working on a fix now.',
+      });
+    });
+  });
 });
