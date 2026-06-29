@@ -24,6 +24,10 @@ export interface Ticket {
   category: TicketCategory;
   customerEmail?: string;
   userId?: string;
+  user?: {
+    name: string;
+    email: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

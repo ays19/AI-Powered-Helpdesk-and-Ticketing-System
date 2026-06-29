@@ -18,7 +18,8 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
   const order = sortOrder === 'asc' ? 'asc' : 'desc';
 
   const tickets = await prisma.ticket.findMany({
-    orderBy: { [field]: order }
+    orderBy: { [field]: order },
+    include: { user: true }
   });
   res.json(tickets.map(mapTicket));
 }));
@@ -27,6 +28,7 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const ticket = await prisma.ticket.findUnique({
     where: { id: req.params.id },
+    include: { user: true }
   });
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
@@ -44,7 +46,9 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
       ...validatedData,
       description: validatedData.description || '',
       status: TicketStatus.open,
+      userId: req.user?.id,
     },
+    include: { user: true }
   });
   res.status(201).json(mapTicket(ticket));
 }));

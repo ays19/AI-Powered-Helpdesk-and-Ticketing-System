@@ -5,6 +5,7 @@ dist/
 e2e/test-results/
 playwright-report/
 test-results/
+e2e_report.txt
 
 /src/generated/prisma
 
