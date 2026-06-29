@@ -121,7 +121,7 @@ describe('TicketDetails Page', () => {
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
     expect(screen.getByText(/ID: ticket-123/i)).toBeInTheDocument();
-    expect(screen.getByText('Technical Question')).toBeInTheDocument();
+    expect(screen.getAllByText('Technical Question')[0]).toBeInTheDocument();
     expect(screen.getByText(/high Priority/i)).toBeInTheDocument();
     expect(screen.getByText(/customer@example.com/i)).toBeInTheDocument();
     expect(screen.getByText(/Getting 500 error/i)).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('TicketDetails Page', () => {
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
-    const select = screen.getByLabelText(/Update Status/i);
+    const select = screen.getByLabelText('Ticket Status');
     fireEvent.change(select, { target: { value: 'in-progress' } });
 
     await waitFor(() => {
@@ -184,7 +184,7 @@ describe('TicketDetails Page', () => {
     // Displays Unassigned initially
     expect(screen.getAllByText('Unassigned')[0]).toBeInTheDocument();
 
-    const select = screen.getByLabelText(/Update Assignment/i);
+    const select = screen.getByLabelText('Assigned To');
     fireEvent.change(select, { target: { value: 'agent-alice' } });
 
     await waitFor(() => {
@@ -220,11 +220,10 @@ describe('TicketDetails Page', () => {
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
-    // Displays Agent Alice name
-    expect(screen.getByText('Agent Alice')).toBeInTheDocument();
-    expect(screen.getByText('(agent)')).toBeInTheDocument();
+    // Displays Agent Alice selection
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
+    expect(select.value).toBe('agent-alice');
 
-    const select = screen.getByLabelText(/Update Assignment/i);
     fireEvent.change(select, { target: { value: 'unassigned' } });
 
     await waitFor(() => {

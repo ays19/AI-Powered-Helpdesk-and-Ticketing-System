@@ -218,7 +218,8 @@ exports.TicketPriority = exports.$Enums.TicketPriority = {
 exports.TicketCategory = exports.$Enums.TicketCategory = {
   general_question: 'general_question',
   technical_question: 'technical_question',
-  refund_request: 'refund_request'
+  refund_request: 'refund_request',
+  none: 'none'
 };
 
 exports.Prisma.ModelName = {

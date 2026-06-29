@@ -11,7 +11,7 @@ export interface User {
 
 export type TicketStatus = 'open' | 'in-progress' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
-export type TicketCategory = 'general_question' | 'technical_question' | 'refund_request';
+export type TicketCategory = 'general_question' | 'technical_question' | 'refund_request' | 'none';
 
 export interface Ticket {
   id: string;

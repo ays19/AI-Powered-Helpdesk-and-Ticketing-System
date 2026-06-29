@@ -25,12 +25,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   general_question: 'General Question',
   technical_question: 'Technical Question',
   refund_request: 'Refund Request',
+  none: 'None',
 };
 
 const CATEGORY_BADGE_CLASSES: Record<string, string> = {
   general_question: 'bg-[rgba(107,107,138,0.15)] text-text-secondary border border-[rgba(107,107,138,0.3)]',
   technical_question: 'bg-[rgba(108,99,255,0.15)] text-accent border border-[rgba(108,99,255,0.3)]',
   refund_request: 'bg-[rgba(255,77,106,0.15)] text-danger border border-[rgba(255,77,106,0.3)]',
+  none: 'bg-bg-secondary text-text-muted border border-border-color',
 };
 
 const PRIORITY_BEFORE_CLASSES: Record<string, string> = {

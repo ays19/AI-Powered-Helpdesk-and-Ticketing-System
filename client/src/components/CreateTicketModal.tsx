@@ -113,10 +113,11 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
                   : 'border-border-color focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]'
               }`}
             >
-              <option value="general_question">General Question</option>
-              <option value="technical_question">Technical Question</option>
-              <option value="refund_request">Refund Request</option>
-            </select>
+                    <option value="none">None</option>
+                    <option value="general_question">General Question</option>
+                    <option value="technical_question">Technical Question</option>
+                    <option value="refund_request">Refund Request</option>
+                  </select>
             {errors.category && <span className="text-danger text-[0.75rem] mt-1 block">{errors.category.message}</span>}
           </div>
 

@@ -16,7 +16,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import type { Ticket, TicketStatus, TicketPriority } from '@/types';
+import type { Ticket, TicketStatus, TicketPriority, TicketCategory } from '@/types';
 import { UserRole } from '@/types';
 import { authClient } from '@/lib/auth-client';
 
@@ -45,12 +45,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   general_question: 'General Question',
   technical_question: 'Technical Question',
   refund_request: 'Refund Request',
+  none: 'None',
 };
 
 const CATEGORY_BADGE_CLASSES: Record<string, string> = {
   general_question: 'bg-[rgba(107,107,138,0.15)] text-text-secondary border border-[rgba(107,107,138,0.3)]',
   technical_question: 'bg-[rgba(108,99,255,0.15)] text-accent border border-[rgba(108,99,255,0.3)]',
   refund_request: 'bg-[rgba(255,77,106,0.15)] text-danger border border-[rgba(255,77,106,0.3)]',
+  none: 'bg-bg-secondary text-text-muted border border-border-color',
 };
 
 export default function TicketDetails() {
@@ -96,6 +98,21 @@ export default function TicketDetails() {
     },
     onError: () => {
       showToast('Failed to update status', 'error');
+    }
+  });
+
+  const categoryMutation = useMutation({
+    mutationFn: async (category: TicketCategory) => {
+      const res = await axios.patch(`/api/tickets/${id}`, { category });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      showToast('Category updated successfully', 'success');
+    },
+    onError: () => {
+      showToast('Failed to update category', 'error');
     }
   });
 
@@ -252,6 +269,10 @@ export default function TicketDetails() {
                     </button>
                   </span>
                   
+                  <span className={`inline-block px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[ticket.status]}`}>
+                    {ticket.status}
+                  </span>
+
                   <span className={`px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-[0.05em] ${CATEGORY_BADGE_CLASSES[ticket.category] || CATEGORY_BADGE_CLASSES.general_question}`}>
                     <Tag className="w-3 h-3 inline mr-1 -mt-0.5" />
                     {CATEGORY_LABELS[ticket.category] || ticket.category}
@@ -321,23 +342,10 @@ export default function TicketDetails() {
               
               <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md space-y-6">
                 
-                {/* Current Status Display */}
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2.5">Ticket Status</h3>
-                  <div className="flex items-center justify-between">
-                    <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[ticket.status]}`}>
-                      {ticket.status}
-                    </span>
-                    {ticket.status === 'resolved' && (
-                      <CheckCircle2 className="w-5 h-5 text-status-resolved" />
-                    )}
-                  </div>
-                </div>
-
                 {/* Status Update Control */}
-                <div className="border-t border-border-color/60 pt-4">
+                <div>
                   <label htmlFor="details-status" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
-                    Update Status
+                    Ticket Status
                   </label>
                   <select
                     id="details-status"
@@ -353,21 +361,29 @@ export default function TicketDetails() {
                   </select>
                 </div>
 
+                {/* Category Update Control */}
+                <div className="border-t border-border-color/60 pt-4">
+                  <label htmlFor="details-category" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
+                    Ticket Category
+                  </label>
+                  <select
+                    id="details-category"
+                    className="w-full py-2.5 px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-sm cursor-pointer transition-all hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
+                    value={ticket.category}
+                    onChange={(e) => categoryMutation.mutate(e.target.value as TicketCategory)}
+                    disabled={categoryMutation.isPending}
+                  >
+                    <option value="none">None</option>
+                    <option value="general_question">General Question</option>
+                    <option value="technical_question">Technical Question</option>
+                    <option value="refund_request">Refund Request</option>
+                  </select>
+                </div>
+
                 {/* Assigned To Section */}
                 <div className="border-t border-border-color/60 pt-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2.5">Assigned To</h3>
-                  <div className="mb-3">
-                    {ticket.assigned_to ? (
-                      <span className="text-sm font-semibold text-text-primary">
-                        {ticket.assigned_to.name} <span className="text-xs font-normal text-text-muted capitalize">({ticket.assigned_to.role})</span>
-                      </span>
-                    ) : (
-                      <span className="text-sm font-semibold text-text-muted italic">Unassigned</span>
-                    )}
-                  </div>
-                  
                   <label htmlFor="details-assign" className="block text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
-                    Update Assignment
+                    Assigned To
                   </label>
                   <select
                     id="details-assign"

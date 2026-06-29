@@ -8,6 +8,7 @@ export const TICKET_CATEGORIES = [
   'general_question',
   'technical_question',
   'refund_request',
+  'none',
 ] as const;
 
 export const TICKET_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;

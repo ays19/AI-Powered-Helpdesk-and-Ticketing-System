@@ -95,6 +95,7 @@ enum TicketCategory {
   general_question
   technical_question
   refund_request
+  none
 }
 
 model Ticket {

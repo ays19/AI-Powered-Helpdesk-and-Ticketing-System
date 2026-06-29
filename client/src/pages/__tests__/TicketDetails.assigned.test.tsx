@@ -89,11 +89,12 @@ describe('TicketDetails - Assigned To Feature', () => {
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
-    // The "ASSIGNED TO" section label should be visible
-    expect(screen.getByRole('heading', { name: /assigned to/i })).toBeInTheDocument();
+    // The "Assigned To" section label should be visible
+    expect(screen.getByText('Assigned To')).toBeInTheDocument();
     
-    // The sidebar should display "Unassigned"
-    expect(screen.getAllByText('Unassigned')[0]).toBeInTheDocument();
+    // The sidebar dropdown should display "Unassigned"
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
+    expect(select.value).toBe('unassigned');
   });
 
   it('renders assigned agent name when ticket has an assignment', async () => {
@@ -119,9 +120,9 @@ describe('TicketDetails - Assigned To Feature', () => {
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
-    // Agent's name should be displayed in the sidebar
-    expect(screen.getByText('Agent Alice')).toBeInTheDocument();
-    expect(screen.getByText('(agent)')).toBeInTheDocument();
+    // Displays Agent Alice selection
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
+    expect(select.value).toBe('agent-alice');
   });
 
   it('loads and renders agent options in the dropdown', async () => {
@@ -138,7 +139,7 @@ describe('TicketDetails - Assigned To Feature', () => {
     expect(axios.get).toHaveBeenCalledWith('/api/agents');
 
     // All agent options appear in the dropdown (Agent Alice, Admin Bob)
-    const select = screen.getByLabelText(/Update Assignment/i) as HTMLSelectElement;
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
     expect(select).toBeInTheDocument();
 
     const options = Array.from(select.options);
@@ -170,7 +171,7 @@ describe('TicketDetails - Assigned To Feature', () => {
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
     // Simulate selecting a different agent from the dropdown
-    const select = screen.getByLabelText(/Update Assignment/i);
+    const select = screen.getByLabelText('Assigned To');
     fireEvent.change(select, { target: { value: 'agent-alice' } });
 
     // Assert axios.patch is called with the correct endpoint and payload
@@ -193,7 +194,7 @@ describe('TicketDetails - Assigned To Feature', () => {
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
 
-    const select = screen.getByLabelText(/Update Assignment/i);
+    const select = screen.getByLabelText('Assigned To');
     fireEvent.change(select, { target: { value: 'agent-alice' } });
 
     // Assert success toast appears after selection
