@@ -40,6 +40,7 @@ export const updateTicketSchema = z.object({
   priority: z.enum(TICKET_PRIORITIES).optional(),
   status: z.enum(TICKET_STATUSES).optional(),
   category: z.enum(TICKET_CATEGORIES).optional(),
+  assigned_to: z.string().nullable().optional(),
 });
 
 export type UpdateTicketFormValues = z.infer<typeof updateTicketSchema>;

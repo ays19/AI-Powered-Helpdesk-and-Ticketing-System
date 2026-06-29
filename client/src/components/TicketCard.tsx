@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Ticket, TicketStatus } from '../types';
 
 interface Props {
@@ -52,7 +53,11 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
         </div>
       </div>
 
-      <h3 className="text-[1rem] font-semibold mb-2 leading-[1.4]">{ticket.title}</h3>
+      <h3 className="text-[1rem] font-semibold mb-2 leading-[1.4]">
+        <Link to={`/tickets/${ticket.id}`} className="hover:text-accent transition-colors cursor-pointer">
+          {ticket.title}
+        </Link>
+      </h3>
       <p className="text-[0.85rem] text-text-secondary mb-4 line-clamp-2">{ticket.description}</p>
 
       <div className="flex items-center justify-between mb-4 text-[0.8rem]">

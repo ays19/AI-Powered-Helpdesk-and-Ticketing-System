@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   createColumnHelper,
   flexRender,
@@ -100,7 +101,12 @@ export default function TicketTable({
           return (
             <div className="flex flex-col gap-0.5">
               <h3 className="text-[0.9rem] font-semibold text-text-primary leading-[1.4] line-clamp-1">
-                {subjectTitle}
+                <Link
+                  to={`/tickets/${ticket.id}`}
+                  className="hover:text-accent transition-colors cursor-pointer"
+                >
+                  {subjectTitle}
+                </Link>
               </h3>
               <span className="text-xs text-text-muted font-normal leading-none">
                 Ticket {ticketNum}
@@ -122,7 +128,7 @@ export default function TicketTable({
             if (ticket.user && ticket.user.email === ticket.customerEmail) {
               senderName = ticket.user.name;
             } else {
-              const prefix = ticket.customerEmail.split('@')[0];
+              const prefix = ticket.customerEmail.split('@')[0] || '';
               senderName = prefix
                 .split('.')
                 .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

@@ -16,6 +16,7 @@ export function mapTicket(ticket: any): any {
   return {
     ...ticket,
     status: ticket.status === 'in_progress' ? 'in-progress' : ticket.status,
+    assigned_to: ticket.assignedTo || null,
   };
 }
 

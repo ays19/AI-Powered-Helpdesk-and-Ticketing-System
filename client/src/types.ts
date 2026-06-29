@@ -1,7 +1,5 @@
-// UserRole is defined in core/ — single source of truth shared with the server.
-export { UserRole } from 'core';
-
-
+import { UserRole } from 'core';
+export { UserRole };
 
 export interface User {
   id: string;
@@ -28,6 +26,8 @@ export interface Ticket {
     name: string;
     email: string;
   } | null;
+  assignedToId?: string | null;
+  assigned_to?: User | null;
   createdAt: string;
   updatedAt: string;
 }

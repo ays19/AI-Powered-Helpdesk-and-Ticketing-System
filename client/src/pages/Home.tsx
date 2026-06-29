@@ -117,7 +117,7 @@ export default function Home() {
         if (t.user && t.user.email === t.customerEmail) {
           senderName = t.user.name;
         } else {
-          const prefix = t.customerEmail.split('@')[0];
+          const prefix = t.customerEmail.split('@')[0] || '';
           senderName = prefix
             .split('.')
             .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -181,7 +181,7 @@ export default function Home() {
           if (t.user && t.user.email === t.customerEmail) {
             senderName = t.user.name;
           } else {
-            const prefix = t.customerEmail.split('@')[0];
+            const prefix = t.customerEmail.split('@')[0] || '';
             senderName = prefix
               .split('.')
               .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

@@ -19,7 +19,7 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
   const tickets = await prisma.ticket.findMany({
     orderBy: { [field]: order },
-    include: { user: true }
+    include: { user: true, assignedTo: true }
   });
   res.json(tickets.map(mapTicket));
 }));
@@ -28,7 +28,7 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const ticket = await prisma.ticket.findUnique({
     where: { id: req.params.id },
-    include: { user: true }
+    include: { user: true, assignedTo: true }
   });
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
@@ -48,7 +48,7 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
       status: TicketStatus.open,
       userId: req.user?.id,
     },
-    include: { user: true }
+    include: { user: true, assignedTo: true }
   });
   res.status(201).json(mapTicket(ticket));
 }));
@@ -62,9 +62,15 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
     ...(validatedData.status && { status: toDbStatus(validatedData.status) }),
   };
 
+  if ('assigned_to' in validatedData) {
+    updateData.assignedToId = validatedData.assigned_to;
+    delete updateData.assigned_to;
+  }
+
   const ticket = await prisma.ticket.update({
     where: { id: req.params.id },
     data: updateData,
+    include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(ticket));
 }));
@@ -73,6 +79,7 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
 ticketRouter.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const deleted = await prisma.ticket.delete({
     where: { id: req.params.id },
+    include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(deleted));
 }));

@@ -28,6 +28,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   tickets       Ticket[]
+  assignedTickets Ticket[]  @relation("AssignedTickets")
 
   @@map("user")
 }
@@ -106,6 +107,8 @@ model Ticket {
   customerEmail String?
   userId        String?
   user          User?          @relation(fields: [userId], references: [id])
+  assignedToId  String?
+  assignedTo    User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

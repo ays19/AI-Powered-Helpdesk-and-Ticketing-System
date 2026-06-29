@@ -46,6 +46,24 @@ app.use('/api/webhooks', generalLimit, webhookRouter);
 app.use('/api/tickets', generalLimit, authMiddleware, ticketRouter);
 app.use('/api/users', generalLimit, authMiddleware, userRouter);
 
+app.get('/api/agents', generalLimit, authMiddleware, async (req, res, next) => {
+  try {
+    const agents = await db.user.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+    res.json(agents);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
 });
