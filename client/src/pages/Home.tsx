@@ -16,6 +16,11 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all');
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const queryClient = useQueryClient();
 
   const sortBy = sorting[0]?.id;
@@ -92,17 +97,147 @@ export default function Home() {
     await authClient.signOut();
   };
 
-  const filteredTickets =
-    filterStatus === 'all'
-      ? tickets
-      : tickets.filter((t) => t.status === filterStatus);
+  const filteredTickets = tickets.filter((t) => {
+    // 1. Status Filter
+    if (filterStatus !== 'all' && t.status !== filterStatus) {
+      return false;
+    }
+
+    // 2. Search Query (searches across subject, sender name, and sender email)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const subject = t.title.toLowerCase();
+      
+      let senderName = 'System';
+      let senderEmail = 'system@helpdesk.com';
+      if (t.customerEmail) {
+        senderEmail = t.customerEmail;
+        if (t.user && t.user.email === t.customerEmail) {
+          senderName = t.user.name;
+        } else {
+          const prefix = t.customerEmail.split('@')[0];
+          senderName = prefix
+            .split('.')
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ');
+        }
+      } else if (t.user) {
+        senderName = t.user.name;
+        senderEmail = t.user.email;
+      }
+      
+      const nameMatch = senderName.toLowerCase().includes(query);
+      const emailMatch = senderEmail.toLowerCase().includes(query);
+      const subjectMatch = subject.includes(query);
+
+      if (!nameMatch && !emailMatch && !subjectMatch) {
+        return false;
+      }
+    }
+
+    // 3. Category Filter
+    if (categoryFilter !== 'all' && t.category !== categoryFilter) {
+      return false;
+    }
+
+    // 4. Priority Filter
+    if (priorityFilter !== 'all' && t.priority !== priorityFilter) {
+      return false;
+    }
+
+    // 5. Date Range Filter
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      if (new Date(t.createdAt) < fromDate) {
+        return false;
+      }
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      if (new Date(t.createdAt) > toDate) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const getFilteredTicketsForCounts = (status: TicketStatus | 'all') => {
+    return tickets.filter((t) => {
+      if (status !== 'all' && t.status !== status) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const subject = t.title.toLowerCase();
+        let senderName = 'System';
+        let senderEmail = 'system@helpdesk.com';
+        if (t.customerEmail) {
+          senderEmail = t.customerEmail;
+          if (t.user && t.user.email === t.customerEmail) {
+            senderName = t.user.name;
+          } else {
+            const prefix = t.customerEmail.split('@')[0];
+            senderName = prefix
+              .split('.')
+              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+              .join(' ');
+          }
+        } else if (t.user) {
+          senderName = t.user.name;
+          senderEmail = t.user.email;
+        }
+        
+        const nameMatch = senderName.toLowerCase().includes(query);
+        const emailMatch = senderEmail.toLowerCase().includes(query);
+        const subjectMatch = subject.includes(query);
+        if (!nameMatch && !emailMatch && !subjectMatch) {
+          return false;
+        }
+      }
+      if (categoryFilter !== 'all' && t.category !== categoryFilter) {
+        return false;
+      }
+      if (priorityFilter !== 'all' && t.priority !== priorityFilter) {
+        return false;
+      }
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        if (new Date(t.createdAt) < fromDate) return false;
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        if (new Date(t.createdAt) > toDate) return false;
+      }
+      return true;
+    });
+  };
 
   const counts = {
-    all: tickets.length,
-    open: tickets.filter((t) => t.status === 'open').length,
-    'in-progress': tickets.filter((t) => t.status === 'in-progress').length,
-    resolved: tickets.filter((t) => t.status === 'resolved').length,
-    closed: tickets.filter((t) => t.status === 'closed').length,
+    all: getFilteredTicketsForCounts('all').length,
+    open: getFilteredTicketsForCounts('open').length,
+    'in-progress': getFilteredTicketsForCounts('in-progress').length,
+    resolved: getFilteredTicketsForCounts('resolved').length,
+    closed: getFilteredTicketsForCounts('closed').length,
+  };
+
+  const hasActiveFilters = 
+    searchQuery !== '' || 
+    categoryFilter !== 'all' || 
+    priorityFilter !== 'all' || 
+    dateFrom !== '' || 
+    dateTo !== '';
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('all');
+    setPriorityFilter('all');
+    setDateFrom('');
+    setDateTo('');
   };
 
   return (
@@ -144,20 +279,114 @@ export default function Home() {
       <main className="max-w-[1200px] mx-auto py-8 px-6">
         {/* Stats Bar */}
         <div className="flex gap-[10px] flex-wrap mb-8">
-          {(['all', ...STATUS_OPTIONS] as const).map((s) => (
-            <button
-              key={s}
-              className={`flex items-center gap-2 py-2 px-4 border rounded-xl font-sans text-[0.8rem] font-medium cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] capitalize ${
-                filterStatus === s 
-                  ? 'bg-accent border-accent text-white shadow-glow' 
-                  : 'bg-bg-secondary border-border-color text-text-secondary hover:bg-bg-hover hover:border-accent hover:text-text-primary'
-              }`}
-              onClick={() => setFilterStatus(s)}
+          {(['all', ...STATUS_OPTIONS] as const).map((s) => {
+            const isActive = filterStatus === s;
+            return (
+              <button
+                key={s}
+                className={`flex items-center gap-2 py-2 px-4 border rounded-xl font-sans text-[0.8rem] font-medium cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] capitalize ${
+                  isActive 
+                    ? 'bg-accent border-accent text-[#0f0f1a] font-bold shadow-glow' 
+                    : 'bg-bg-secondary border-border-color text-text-secondary hover:bg-bg-hover hover:border-accent hover:text-text-primary'
+                }`}
+                onClick={() => setFilterStatus(s)}
+              >
+                <span>{s}</span>
+                <span className={`py-[2px] px-2 rounded-full text-[0.75rem] font-bold ${
+                  isActive 
+                    ? 'bg-[#0f0f1a] text-white' 
+                    : 'bg-[rgba(255,255,255,0.15)] text-text-primary'
+                }`}>{counts[s]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-bg-card border border-border-color rounded-xl p-4 mb-6 flex flex-wrap items-center gap-4 text-text-primary">
+          {/* Search Input */}
+          <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
+            <label htmlFor="search" className="text-xs font-semibold text-text-secondary">Search</label>
+            <input
+              id="search"
+              type="text"
+              placeholder="Search tickets..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent placeholder:text-text-muted"
+            />
+          </div>
+
+          {/* Category Dropdown */}
+          <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
+            <label htmlFor="category" className="text-xs font-semibold text-text-secondary">Category</label>
+            <select
+              id="category"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
             >
-              <span>{s}</span>
-              <span className="bg-[rgba(255,255,255,0.15)] py-[2px] px-2 rounded-full text-[0.75rem] font-bold">{counts[s]}</span>
-            </button>
-          ))}
+              <option value="all">All Categories</option>
+              <option value="general_question">General Question</option>
+              <option value="technical_question">Technical Question</option>
+              <option value="refund_request">Refund Request</option>
+            </select>
+          </div>
+
+          {/* Priority Dropdown */}
+          <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
+            <label htmlFor="priority" className="text-xs font-semibold text-text-secondary">Priority</label>
+            <select
+              id="priority"
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
+            >
+              <option value="all">All Priorities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+
+          {/* Date From */}
+          <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
+            <label htmlFor="dateFrom" className="text-xs font-semibold text-text-secondary">From Date</label>
+            <input
+              id="dateFrom"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
+              style={{ colorScheme: 'dark' }}
+            />
+          </div>
+
+          {/* Date To */}
+          <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
+            <label htmlFor="dateTo" className="text-xs font-semibold text-text-secondary">To Date</label>
+            <input
+              id="dateTo"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
+              style={{ colorScheme: 'dark' }}
+            />
+          </div>
+
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <div className="w-full sm:w-auto self-end flex flex-col">
+              <button
+                onClick={handleClearFilters}
+                className="h-9 py-[6px] px-4 rounded-md font-sans text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-danger border border-danger/40 hover:bg-danger/10"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
 
         <TicketTable

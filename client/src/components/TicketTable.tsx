@@ -207,6 +207,7 @@ export default function TicketTable({
           return (
             <div className="flex gap-[10px] items-center justify-end">
               <select
+                aria-label="Change status"
                 className="min-w-[110px] py-[6px] px-3 border border-border-color rounded-sm bg-bg-secondary text-text-primary font-sans text-[0.8rem] cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
                 value={ticket.status}
                 onChange={(e) =>

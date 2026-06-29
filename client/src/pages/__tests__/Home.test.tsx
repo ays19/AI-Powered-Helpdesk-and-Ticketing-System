@@ -173,7 +173,7 @@ describe('Home (Ticket Dashboard)', () => {
 
     renderWithQuery(<Home />);
 
-    const select = await screen.findByRole('combobox');
+    const select = await screen.findByRole('combobox', { name: 'Change status' });
     fireEvent.change(select, { target: { value: 'resolved' } });
 
     await waitFor(() =>
@@ -181,7 +181,7 @@ describe('Home (Ticket Dashboard)', () => {
     );
 
     // After query cache is invalidated and re-fetched, the select reflects the new status.
-    await waitFor(() => expect(screen.getByRole('combobox')).toHaveValue('resolved'));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Change status' })).toHaveValue('resolved'));
   });
 
   // ── Delete ticket ─────────────────────────────────────────────────────────
