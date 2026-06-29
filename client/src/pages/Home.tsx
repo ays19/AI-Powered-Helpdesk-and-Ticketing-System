@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,8 @@ export default function Home() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const queryClient = useQueryClient();
 
   const sortBy = sorting[0]?.id;
@@ -238,7 +240,19 @@ export default function Home() {
     setPriorityFilter('all');
     setDateFrom('');
     setDateTo('');
+    setCurrentPage(1);
   };
+
+  const totalItems = filteredTickets.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchQuery, categoryFilter, priorityFilter, dateFrom, dateTo, pageSize]);
+
+  const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
 
   return (
     <>
@@ -390,13 +404,78 @@ export default function Home() {
         </div>
 
         <TicketTable
-          tickets={filteredTickets}
+          tickets={paginatedTickets}
           isLoading={loading}
           sorting={sorting}
           onSortingChange={setSorting}
           onStatusChange={handleStatusChange}
           onDelete={handleDelete}
         />
+
+        {/* Pagination */}
+        {totalItems > 0 && (
+          <div className="mt-4 bg-bg-card border border-border-color rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-text-secondary text-sm">
+            {/* Page Size & Info */}
+            <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
+              <div className="flex items-center gap-2">
+                <span>Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 py-1 px-2 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer focus:outline-none focus:border-accent"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>entries</span>
+              </div>
+              <span className="text-text-muted text-xs">
+                Showing {totalItems === 0 ? 0 : startIndex + 1} to {endIndex} of {totalItems} entries
+              </span>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                title="First Page"
+              >
+                &laquo;
+              </button>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                title="Previous Page"
+              >
+                Previous
+              </button>
+              <span className="text-xs text-text-muted px-2 select-none">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                title="Next Page"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                title="Last Page"
+              >
+                &raquo;
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {showModal && (
