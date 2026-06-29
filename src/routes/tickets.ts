@@ -40,11 +40,23 @@ ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Res
 // POST /api/tickets
 ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, CreateTicketBody>, res: Response) => {
   const validatedData = createTicketSchema.parse(req.body);
+  const { assigned_to, ...rest } = validatedData;
+
+  if (assigned_to) {
+    const userExists = await prisma.user.findUnique({
+      where: { id: assigned_to, deletedAt: null }
+    });
+    if (!userExists) {
+      res.status(400).json({ error: 'Assigned user does not exist' });
+      return;
+    }
+  }
   
   const ticket = await prisma.ticket.create({
     data: {
-      ...validatedData,
-      description: validatedData.description || '',
+      ...rest,
+      assignedToId: assigned_to || null,
+      description: rest.description || '',
       status: TicketStatus.open,
       userId: req.user?.id,
     },
@@ -56,6 +68,16 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 // PATCH /api/tickets/:id
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const validatedData = updateTicketSchema.parse(req.body);
+
+  if (validatedData.assigned_to) {
+    const userExists = await prisma.user.findUnique({
+      where: { id: validatedData.assigned_to, deletedAt: null }
+    });
+    if (!userExists) {
+      res.status(400).json({ error: 'Assigned user does not exist' });
+      return;
+    }
+  }
   
   const updateData: any = {
     ...validatedData,

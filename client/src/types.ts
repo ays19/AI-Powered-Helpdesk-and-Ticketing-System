@@ -37,4 +37,5 @@ export interface CreateTicketBody {
   description?: string;
   priority?: TicketPriority;
   category?: TicketCategory;
+  assigned_to?: string | null;
 }

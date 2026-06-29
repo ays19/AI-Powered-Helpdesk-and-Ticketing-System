@@ -2,6 +2,24 @@ import { renderWithQuery } from '@/test-utils';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import CreateTicketModal from '../CreateTicketModal';
+import axios from 'axios';
+
+// ---------------------------------------------------------------------------
+// Module mocks
+// ---------------------------------------------------------------------------
+
+vi.mock('axios', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    defaults: { withCredentials: false },
+  },
+}));
+
+const MOCK_AGENTS = [
+  { id: 'agent-alice', name: 'Agent Alice', role: 'agent' },
+  { id: 'admin-bob', name: 'Admin Bob', role: 'admin' },
+];
 
 describe('CreateTicketModal', () => {
   const onClose = vi.fn();
@@ -9,21 +27,28 @@ describe('CreateTicketModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (axios.get as any).mockResolvedValue({ data: MOCK_AGENTS });
   });
 
   // ── Rendering ─────────────────────────────────────────────────────────────
 
-  it('renders all fields and defaults category to "general_question"', () => {
+  it('renders all fields and defaults category to "general_question"', async () => {
     renderWithQuery(<CreateTicketModal onClose={onClose} onCreate={onCreate} />);
 
     expect(screen.getByRole('heading', { name: /create new ticket/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/title \*/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/priority/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/assign to/i)).toBeInTheDocument();
 
     const categorySelect = screen.getByLabelText(/category/i) as HTMLSelectElement;
     expect(categorySelect).toBeInTheDocument();
     expect(categorySelect.value).toBe('general_question');
+
+    // Wait for agents list to populate options
+    await waitFor(() => {
+      expect(screen.getByText('Agent Alice (agent)')).toBeInTheDocument();
+    });
   });
 
   it('defaults the priority select to "medium"', () => {
@@ -35,13 +60,17 @@ describe('CreateTicketModal', () => {
 
   // ── Successful submission ──────────────────────────────────────────────────
 
-  it('submits form with user-entered values including custom category', async () => {
+  it('submits form with user-entered values including custom category and assignment', async () => {
     renderWithQuery(<CreateTicketModal onClose={onClose} onCreate={onCreate} />);
 
     fireEvent.change(screen.getByLabelText(/title \*/i), { target: { value: 'API Issue' } });
     fireEvent.change(screen.getByLabelText(/description/i), { target: { value: 'Endpoint is returning 500 error.' } });
     fireEvent.change(screen.getByLabelText(/priority/i), { target: { value: 'critical' } });
     fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'technical_question' } });
+
+    // Wait for and select agent-alice
+    await screen.findByText('Agent Alice (agent)');
+    fireEvent.change(screen.getByLabelText(/assign to/i), { target: { value: 'agent-alice' } });
 
     fireEvent.click(screen.getByRole('button', { name: /create ticket/i }));
 
@@ -51,6 +80,7 @@ describe('CreateTicketModal', () => {
         description: 'Endpoint is returning 500 error.',
         priority: 'critical',
         category: 'technical_question',
+        assigned_to: 'agent-alice',
       });
     });
   });
@@ -63,7 +93,7 @@ describe('CreateTicketModal', () => {
 
     await waitFor(() => {
       expect(onCreate).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Trimmed Title' }),
+        expect.objectContaining({ title: 'Trimmed Title', assigned_to: null }),
       );
     });
   });

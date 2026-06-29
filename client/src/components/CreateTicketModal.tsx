@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { createTicketSchema, type CreateTicketFormValues } from 'core';
 import type { CreateTicketBody } from '../types';
 
@@ -9,13 +11,21 @@ interface Props {
 }
 
 export default function CreateTicketModal({ onClose, onCreate }: Props) {
+  const { data: agents = [] } = useQuery<any[]>({
+    queryKey: ['agents'],
+    queryFn: async () => {
+      const res = await axios.get<any[]>('/api/agents');
+      return res.data;
+    },
+  });
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CreateTicketFormValues>({
     resolver: zodResolver(createTicketSchema),
-    defaultValues: { title: '', description: '', priority: 'medium', category: 'general_question' },
+    defaultValues: { title: '', description: '', priority: 'medium', category: 'general_question', assigned_to: 'unassigned' },
     mode: 'onChange',
   });
 
@@ -25,6 +35,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
       description: data.description?.trim(),
       priority: data.priority,
       category: data.category,
+      assigned_to: data.assigned_to === 'unassigned' ? null : data.assigned_to,
     });
   };
 
@@ -107,6 +118,27 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               <option value="refund_request">Refund Request</option>
             </select>
             {errors.category && <span className="text-danger text-[0.75rem] mt-1 block">{errors.category.message}</span>}
+          </div>
+
+          <div className="mb-5">
+            <label htmlFor="assigned_to" className="block text-[0.85rem] font-semibold text-text-secondary mb-[6px]">Assign To</label>
+            <select
+              id="assigned_to"
+              {...register('assigned_to')}
+              className={`w-full py-[10px] px-[14px] border rounded-md bg-bg-secondary text-text-primary font-sans text-[0.9rem] transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none placeholder:text-text-muted ${
+                errors.assigned_to 
+                  ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.25)]' 
+                  : 'border-border-color focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]'
+              }`}
+            >
+              <option value="unassigned">Unassigned</option>
+              {agents.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name} {agent.role ? `(${agent.role})` : ''}
+                </option>
+              ))}
+            </select>
+            {errors.assigned_to && <span className="text-danger text-[0.75rem] mt-1 block">{errors.assigned_to.message}</span>}
           </div>
 
           <div className="flex justify-end gap-[10px] pt-2">

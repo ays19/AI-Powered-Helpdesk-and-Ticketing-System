@@ -60,13 +60,22 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
       </h3>
       <p className="text-[0.85rem] text-text-secondary mb-4 line-clamp-2">{ticket.description}</p>
 
-      <div className="flex items-center justify-between mb-4 text-[0.8rem]">
+      <div className="flex items-center justify-between mb-2 text-[0.8rem]">
         <span className="capitalize font-medium">
           {PRIORITY_EMOJI[ticket.priority]} {ticket.priority}
         </span>
         <span className="text-text-muted">
           {new Date(ticket.createdAt).toLocaleDateString()}
         </span>
+      </div>
+
+      <div className="mb-4 text-[0.8rem] flex items-center gap-1">
+        <span className="text-text-muted">Assigned to:</span>
+        {ticket.assigned_to ? (
+          <span className="font-semibold text-text-primary">{ticket.assigned_to.name}</span>
+        ) : (
+          <span className="italic text-text-muted">Unassigned</span>
+        )}
       </div>
 
       <div className="flex gap-[10px] items-center pt-4 border-t border-border-color">

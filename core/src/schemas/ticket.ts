@@ -26,6 +26,7 @@ export const createTicketSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(TICKET_PRIORITIES).optional(),
   category: z.enum(TICKET_CATEGORIES).optional(),
+  assigned_to: z.string().nullable().optional(),
 });
 
 export type CreateTicketFormValues = z.infer<typeof createTicketSchema>;

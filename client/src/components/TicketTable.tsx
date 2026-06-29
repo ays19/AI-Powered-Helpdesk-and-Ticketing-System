@@ -185,6 +185,18 @@ export default function TicketTable({
           );
         },
       }),
+      columnHelper.accessor('assigned_to', {
+        id: 'assignee',
+        header: 'Assignee',
+        cell: (info) => {
+          const val = info.getValue();
+          return (
+            <span className={val ? 'text-text-primary text-sm font-semibold' : 'text-text-muted text-xs italic'}>
+              {val ? val.name : 'Unassigned'}
+            </span>
+          );
+        },
+      }),
       columnHelper.accessor('createdAt', {
         header: 'Created',
         cell: (info) => (
@@ -254,7 +266,7 @@ export default function TicketTable({
     <section className="overflow-x-auto w-full">
       <section className="min-w-[1000px] border border-border-color rounded-lg bg-bg-card overflow-hidden">
         {/* Table Header */}
-        <section className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_100px_110px_190px] border-b border-border-color bg-bg-secondary/40 text-text-secondary text-xs uppercase tracking-wider font-semibold px-6 py-3 items-center select-none">
+        <section className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_120px_100px_110px_190px] border-b border-border-color bg-bg-secondary/40 text-text-secondary text-xs uppercase tracking-wider font-semibold px-6 py-3 items-center select-none">
           {table.getHeaderGroups().map((headerGroup) =>
             headerGroup.headers.map((header) => {
               const canSort = header.column.getCanSort();
@@ -306,7 +318,7 @@ export default function TicketTable({
             Array.from({ length: 5 }).map((_, i) => (
               <section
                 key={i}
-                className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_100px_110px_190px] px-6 py-3 items-center"
+                className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_120px_100px_110px_190px] px-6 py-3 items-center"
               >
                 <span><Skeleton className="h-4 w-10" /></span>
                 <span>
@@ -316,6 +328,7 @@ export default function TicketTable({
                 <span><Skeleton className="h-4 w-28" /></span>
                 <span><Skeleton className="h-5 w-16 rounded-full" /></span>
                 <span><Skeleton className="h-5 w-24 rounded-full" /></span>
+                <span><Skeleton className="h-4 w-20" /></span>
                 <span><Skeleton className="h-4 w-20" /></span>
                 <span><Skeleton className="h-4 w-24" /></span>
                 <span className="flex justify-end gap-2">
@@ -335,7 +348,7 @@ export default function TicketTable({
               return (
                 <div
                   key={row.id}
-                  className={`grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_100px_110px_190px] px-6 py-3 items-center bg-bg-card hover:bg-bg-hover/30 transition-colors relative ${PRIORITY_BORDER_CLASSES[ticket.priority]}`}
+                  className={`grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_120px_100px_110px_190px] px-6 py-3 items-center bg-bg-card hover:bg-bg-hover/30 transition-colors relative ${PRIORITY_BORDER_CLASSES[ticket.priority]}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <span
