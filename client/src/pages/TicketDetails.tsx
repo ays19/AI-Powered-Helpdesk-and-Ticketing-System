@@ -219,6 +219,7 @@ export default function TicketDetails() {
 
                       if (isCustomer) {
                         const customerSender = getTicketSender({
+                          ...ticket,
                           customerEmail: reply.customerEmail,
                           user: null,
                         });
