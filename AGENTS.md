@@ -67,12 +67,13 @@ Component tests live in the `client/` directory and use **Vitest** as the test r
 
 ### Writing E2E Tests with e2e-test-writer
 > [!IMPORTANT]
-> **Secondary Testing Strategy**: Use E2E tests only when absolutely necessary (e.g., complex multi-step user workflows spanning backend and frontend that cannot be reliably covered by component tests and mocks, or critical authentication state flows).
-
-When asked to write, run, or troubleshoot end-to-end tests for the Helpdesk & Ticketing System, use the **e2e-test-writer** skill:
-1. Read the instructions in the [e2e-test-writer SKILL.md](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Helpdesk%20&%20Ticketing%20System/.agents/skills/e2e-test-writer/SKILL.md) to understand test structure, database reset/setup workflows, page URLs, credentials, and Playwright locators/matchers.
-2. Put E2E spec files in the `/e2e` directory with the naming format `*.spec.ts`.
-3. Use the integrated scripts (`test:db:setup`, `test:e2e`, etc.) to setup testing conditions and run the test suite.
+> **Secondary Testing Strategy**: Use E2E tests only when absolutely necessary (e.g., complex multi-step user workflows spanning backend and frontend that cannot be reliably covered by component tests and mocks, or critical database persistence checks).
+> 
+> **E2E Testing Rules**:
+> - **No Duplication**: Never write E2E tests for functionality covered by unit or component tests (e.g., individual field validation messages, specific component rendering options, static text, or visual styling).
+> - **Scope**: Focus E2E tests strictly on verifying end-to-end multi-page transitions, actual browser-server network integration, and database persistence (e.g. confirming that creating/updating/deleting records actually persists after a page reload).
+> - **Tests Placement**: Put E2E spec files in the `/e2e` directory with the naming format `*.spec.ts`.
+> - **Execution**: Use the integrated scripts (`test:db:setup`, `test:e2e`, etc.) to setup testing conditions and run the test suite.
 
 
 ## Project Context
