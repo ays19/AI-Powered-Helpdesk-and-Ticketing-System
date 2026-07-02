@@ -10,6 +10,7 @@ import { webhookRouter } from './routes/webhooks';
 import { authMiddleware } from './middleware/auth';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
+import { boss, registerQueueWorkers } from './lib/queue';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -105,8 +106,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
+  try {
+    await db.$executeRawUnsafe('CREATE SCHEMA IF NOT EXISTS pgboss;');
+    await boss.start();
+    console.log('💼 PgBoss queue manager started successfully');
+    await registerQueueWorkers();
+  } catch (error) {
+    console.error('❌ Failed to start PgBoss queue manager:', error);
+  }
 });
 
 export default app;
