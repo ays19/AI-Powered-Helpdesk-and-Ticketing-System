@@ -29,8 +29,13 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
 // GET /api/tickets/:id
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const ticketNumber = parseInt(req.params.id, 10);
+  if (isNaN(ticketNumber)) {
+    res.status(400).json({ error: 'Invalid ticket number' });
+    return;
+  }
   const ticket = await prisma.ticket.findUnique({
-    where: { id: req.params.id },
+    where: { ticketNumber },
     include: { 
       user: true, 
       assignedTo: true,
@@ -77,6 +82,11 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 
 // PATCH /api/tickets/:id
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const ticketNumber = parseInt(req.params.id, 10);
+  if (isNaN(ticketNumber)) {
+    res.status(400).json({ error: 'Invalid ticket number' });
+    return;
+  }
   const validatedData = updateTicketSchema.parse(req.body);
 
   if (validatedData.assigned_to) {
@@ -100,7 +110,7 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
   }
 
   const ticket = await prisma.ticket.update({
-    where: { id: req.params.id },
+    where: { ticketNumber },
     data: updateData,
     include: { user: true, assignedTo: true }
   });
@@ -109,8 +119,13 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
 
 // DELETE /api/tickets/:id
 ticketRouter.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const ticketNumber = parseInt(req.params.id, 10);
+  if (isNaN(ticketNumber)) {
+    res.status(400).json({ error: 'Invalid ticket number' });
+    return;
+  }
   const deleted = await prisma.ticket.delete({
-    where: { id: req.params.id },
+    where: { ticketNumber },
     include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(deleted));
@@ -164,13 +179,17 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
+  const ticketNumber = parseInt(req.params.id, 10);
+  if (isNaN(ticketNumber)) {
+    res.status(400).json({ error: 'Invalid ticket number' });
+    return;
+  }
   const validatedData = createReplySchema.parse(req.body);
-  const ticketId = req.params.id;
 
-  const ticketExists = await prisma.ticket.findUnique({
-    where: { id: ticketId }
+  const ticket = await prisma.ticket.findUnique({
+    where: { ticketNumber }
   });
-  if (!ticketExists) {
+  if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
     return;
   }
@@ -178,7 +197,7 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
   const reply = await prisma.ticketReply.create({
     data: {
       content: validatedData.content,
-      ticketId,
+      ticketId: ticket.id,
       userId: req.user.id,
       senderType: ReplySenderType.agent,
     },
@@ -188,4 +207,60 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
   });
 
   res.status(201).json(reply);
+}));
+
+// POST /api/tickets/:id/summarize
+ticketRouter.post('/:id/summarize', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const ticketNumber = parseInt(req.params.id, 10);
+  if (isNaN(ticketNumber)) {
+    res.status(400).json({ error: 'Invalid ticket number' });
+    return;
+  }
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { ticketNumber },
+    include: {
+      replies: {
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+  });
+
+  if (!ticket) {
+    res.status(404).json({ error: 'Ticket not found' });
+    return;
+  }
+
+  try {
+    let summaryText = '';
+
+    if (process.env.NODE_ENV === 'test') {
+      summaryText = `Summary of Ticket: ${ticket.title} - Description: ${ticket.description}. Total replies: ${ticket.replies.length}.`;
+    } else if (!process.env.GROQ_API_KEY) {
+      res.status(503).json({ error: 'GROQ_API_KEY is not configured. Add your key to .env and restart the server.' });
+      return;
+    } else {
+      // Build conversational context for the model
+      let conversationStr = `Ticket Title: ${ticket.title}\nTicket Description: ${ticket.description}\n\n`;
+      if (ticket.replies.length > 0) {
+        conversationStr += "Conversation History:\n";
+        ticket.replies.forEach((reply, idx) => {
+          conversationStr += `[Reply #${idx + 1} by ${reply.senderType}]: ${reply.content}\n`;
+        });
+      }
+
+      const { text } = await generateText({
+        model: groq('llama-3.1-8b-instant'),
+        system: 'You are a customer support assistant. Your job is to read a helpdesk ticket (including its title, description, and the replies/conversation history) and write a concise, professional summary of the ticket and the conversation. Focus on the main issue, what has been discussed/resolved, and any next steps. Do not include any meta text, intro, or explanation, just return the summary itself.',
+        prompt: conversationStr,
+      });
+
+      summaryText = text.trim();
+    }
+
+    res.json({ summary: summaryText });
+  } catch (error: any) {
+    console.error('AI ticket summarization failed:', error);
+    res.status(500).json({ error: 'Failed to summarize ticket using AI' });
+  }
 }));

@@ -47,6 +47,7 @@ const MOCK_SESSION = {
 
 const MOCK_TICKET: Ticket = {
   id: 'ticket-123',
+  ticketNumber: 123,
   title: 'Database connection fails',
   description: 'Getting 500 error when saving changes to the PostgreSQL database.',
   status: 'open',
@@ -100,7 +101,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     // Should display skeleton / loading indicators
@@ -115,7 +116,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -140,7 +141,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Ticket Not Found' });
@@ -154,7 +155,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -163,7 +164,7 @@ describe('TicketDetails Page', () => {
     fireEvent.change(select, { target: { value: 'in-progress' } });
 
     await waitFor(() => {
-      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/ticket-123', { status: 'in-progress' });
+      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/123', { status: 'in-progress' });
     });
   });
 
@@ -176,7 +177,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -188,7 +189,7 @@ describe('TicketDetails Page', () => {
     fireEvent.change(select, { target: { value: 'agent-alice' } });
 
     await waitFor(() => {
-      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/ticket-123', { assigned_to: 'agent-alice' });
+      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/123', { assigned_to: 'agent-alice' });
     });
   });
 
@@ -215,7 +216,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -227,7 +228,7 @@ describe('TicketDetails Page', () => {
     fireEvent.change(select, { target: { value: 'unassigned' } });
 
     await waitFor(() => {
-      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/ticket-123', { assigned_to: null });
+      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/123', { assigned_to: null });
     });
   });
 
@@ -239,7 +240,7 @@ describe('TicketDetails Page', () => {
         <Route path="/" element={<div>Home Dashboard</div>} />
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -249,7 +250,7 @@ describe('TicketDetails Page', () => {
 
     expect(window.confirm).toHaveBeenCalled();
     await waitFor(() => {
-      expect(axios.delete).toHaveBeenCalledWith('/api/tickets/ticket-123');
+      expect(axios.delete).toHaveBeenCalledWith('/api/tickets/123');
     });
 
     await screen.findByText('Home Dashboard');
@@ -272,7 +273,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -337,7 +338,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -362,7 +363,7 @@ describe('TicketDetails Page', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -374,7 +375,7 @@ describe('TicketDetails Page', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(axios.post).toHaveBeenCalledWith('/api/tickets/ticket-123/replies', {
+      expect(axios.post).toHaveBeenCalledWith('/api/tickets/123/replies', {
         content: 'I am working on a fix now.',
       });
     });

@@ -98,15 +98,13 @@ export default function TicketTable({
         header: 'Subject',
         cell: (info) => {
           const ticket = info.row.original;
-          // Extract ticket number from title if present (e.g. "Title (Ticket #35)")
-          const ticketNumMatch = ticket.title.match(/\(Ticket #(\d+)\)/);
-          const ticketNum = ticketNumMatch ? `#${ticketNumMatch[1]}` : `#${ticket.id.slice(0, 6)}`;
+          const ticketNum = `#${ticket.ticketNumber}`;
           const subjectTitle = ticket.title.replace(/\s*\(Ticket #\d+\)/, '');
           return (
             <div className="flex flex-col gap-0.5">
               <h3 className="text-[0.9rem] font-semibold text-text-primary leading-[1.4] line-clamp-1">
                 <Link
-                  to={`/tickets/${ticket.id}`}
+                  to={`/tickets/${ticket.ticketNumber}`}
                   className="hover:text-accent transition-colors cursor-pointer"
                 >
                   {subjectTitle}
@@ -216,7 +214,7 @@ export default function TicketTable({
                 className="min-w-[110px] py-[6px] px-3 border border-border-color rounded-sm bg-bg-secondary text-text-primary font-sans text-[0.8rem] cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
                 value={ticket.status}
                 onChange={(e) =>
-                  onStatusChange(ticket.id, e.target.value as TicketStatus)
+                  onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)
                 }
               >
                 <option value="open">Open</option>
@@ -226,7 +224,7 @@ export default function TicketTable({
               </select>
               <button
                 className="bg-danger text-white hover:bg-danger-hover inline-flex items-center gap-[6px] px-3 py-[6px] border-none rounded-md font-sans text-[0.75rem] font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap"
-                onClick={() => onDelete(ticket.id)}
+                onClick={() => onDelete(ticket.ticketNumber.toString())}
               >
                 Delete
               </button>

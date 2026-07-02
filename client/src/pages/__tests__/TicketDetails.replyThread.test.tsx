@@ -47,6 +47,7 @@ const MOCK_SESSION = {
 
 const BASE_TICKET: Ticket = {
   id: 'ticket-rt-1',
+  ticketNumber: 1,
   title: 'Reply thread test ticket',
   description: 'Testing the reply thread rendering.',
   status: 'open',
@@ -132,7 +133,7 @@ function renderPage(ticket: Ticket) {
     <Routes>
       <Route path="/tickets/:id" element={<TicketDetails />} />
     </Routes>,
-    { route: '/tickets/ticket-rt-1' }
+    { route: '/tickets/1' }
   );
 }
 
@@ -344,7 +345,7 @@ describe('TicketDetails - Reply Thread', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(axios.post).toHaveBeenCalledWith('/api/tickets/ticket-rt-1/replies', {
+      expect(axios.post).toHaveBeenCalledWith('/api/tickets/1/replies', {
         content: 'Here is my reply.',
       });
     });

@@ -3,6 +3,9 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import TicketDetail from '../TicketDetail';
 import type { Ticket } from '@/types';
+import axios from 'axios';
+
+vi.mock('axios');
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -10,6 +13,7 @@ import type { Ticket } from '@/types';
 
 const BASE_TICKET: Ticket = {
   id: 'ticket-abc-123',
+  ticketNumber: 123,
   title: 'Cannot reset my password',
   description: 'I keep clicking the reset link but nothing happens.',
   status: 'open',
@@ -234,5 +238,48 @@ describe('TicketDetail', () => {
 
     const emailLink = screen.getByRole('link', { name: 'jane.doe@example.com' });
     expect(emailLink).toHaveAttribute('href', 'mailto:jane.doe@example.com');
+  });
+
+  // -----------------------------------------------------------------------
+  // Ticket Summarization
+  // -----------------------------------------------------------------------
+
+  it('renders the Summarize Ticket button', () => {
+    renderWithQuery(<TicketDetail ticket={BASE_TICKET} />);
+    expect(screen.getByRole('button', { name: /Summarize Ticket/i })).toBeInTheDocument();
+  });
+
+  it('calls the summarize API and displays the summary on success', async () => {
+    (axios.post as any).mockResolvedValueOnce({ data: { summary: 'This is an AI summary of the ticket.' } });
+
+    renderWithQuery(<TicketDetail ticket={BASE_TICKET} />);
+
+    const summarizeBtn = screen.getByRole('button', { name: /Summarize Ticket/i });
+    fireEvent.click(summarizeBtn);
+
+    expect(screen.getByRole('button', { name: /Summarizing.../i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith('/api/tickets/123/summarize');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('This is an AI summary of the ticket.')).toBeInTheDocument();
+    });
+  });
+
+  it('shows an error message if the summarize API fails', async () => {
+    (axios.post as any).mockRejectedValueOnce({
+      response: { data: { error: 'Failed to generate ticket summary.' } }
+    });
+
+    renderWithQuery(<TicketDetail ticket={BASE_TICKET} />);
+
+    const summarizeBtn = screen.getByRole('button', { name: /Summarize Ticket/i });
+    fireEvent.click(summarizeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to generate ticket summary.')).toBeInTheDocument();
+    });
   });
 });

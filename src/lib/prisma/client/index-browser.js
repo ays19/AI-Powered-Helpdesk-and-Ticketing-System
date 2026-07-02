@@ -170,6 +170,7 @@ exports.Prisma.VerificationScalarFieldEnum = {
 
 exports.Prisma.TicketScalarFieldEnum = {
   id: 'id',
+  ticketNumber: 'ticketNumber',
   title: 'title',
   description: 'description',
   status: 'status',
@@ -185,6 +186,7 @@ exports.Prisma.TicketScalarFieldEnum = {
 exports.Prisma.TicketReplyScalarFieldEnum = {
   id: 'id',
   content: 'content',
+  bodyHtml: 'bodyHtml',
   senderType: 'senderType',
   ticketId: 'ticketId',
   userId: 'userId',

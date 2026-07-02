@@ -101,6 +101,7 @@ enum TicketCategory {
 
 model Ticket {
   id            String         @id @default(uuid())
+  ticketNumber  Int            @unique @default(autoincrement())
   title         String
   description   String
   status        TicketStatus   @default(open)
@@ -126,6 +127,7 @@ enum ReplySenderType {
 model TicketReply {
   id            String          @id @default(uuid())
   content       String
+  bodyHtml      String?
   senderType    ReplySenderType @default(agent)
   ticketId      String
   ticket        Ticket          @relation(fields: [ticketId], references: [id], onDelete: Cascade)

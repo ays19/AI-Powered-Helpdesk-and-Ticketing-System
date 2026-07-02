@@ -16,9 +16,9 @@ import { authClient } from '@/lib/auth-client';
 import { getTicketSender } from '@/lib/utils';
 
 // Details components styling and constants are located inside client/src/components/TicketDetail.tsx
-
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
+  const ticketNumber = parseInt(id || '', 10);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
@@ -26,11 +26,11 @@ export default function TicketDetails() {
 
   const replyMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await axios.post(`/api/tickets/${id}/replies`, { content });
+      const res = await axios.post(`/api/tickets/${ticketNumber}/replies`, { content });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       showToast('Reply submitted successfully', 'success');
     },
     onError: () => {
@@ -44,12 +44,12 @@ export default function TicketDetails() {
   };
 
   const { data: ticket, isLoading, error } = useQuery<Ticket>({
-    queryKey: ['ticket', id],
+    queryKey: ['ticket', ticketNumber],
     queryFn: async () => {
-      const res = await axios.get<Ticket>(`/api/tickets/${id}`);
+      const res = await axios.get<Ticket>(`/api/tickets/${ticketNumber}`);
       return res.data;
     },
-    enabled: !!id,
+    enabled: !isNaN(ticketNumber),
   });
 
   const { data: agents = [], isLoading: isLoadingAgents } = useQuery<any[]>({
@@ -63,11 +63,11 @@ export default function TicketDetails() {
 
   const statusMutation = useMutation({
     mutationFn: async (status: TicketStatus) => {
-      const res = await axios.patch(`/api/tickets/${id}`, { status });
+      const res = await axios.patch(`/api/tickets/${ticketNumber}`, { status });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       showToast('Status updated successfully', 'success');
     },
@@ -78,11 +78,11 @@ export default function TicketDetails() {
 
   const categoryMutation = useMutation({
     mutationFn: async (category: TicketCategory) => {
-      const res = await axios.patch(`/api/tickets/${id}`, { category });
+      const res = await axios.patch(`/api/tickets/${ticketNumber}`, { category });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       showToast('Category updated successfully', 'success');
     },
@@ -93,11 +93,11 @@ export default function TicketDetails() {
 
   const assignMutation = useMutation({
     mutationFn: async (assignedToId: string | null) => {
-      const res = await axios.patch(`/api/tickets/${id}`, { assigned_to: assignedToId });
+      const res = await axios.patch(`/api/tickets/${ticketNumber}`, { assigned_to: assignedToId });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       showToast('Assignment updated successfully', 'success');
     },
@@ -108,7 +108,7 @@ export default function TicketDetails() {
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.delete(`/api/tickets/${id}`);
+      const res = await axios.delete(`/api/tickets/${ticketNumber}`);
       return res.data;
     },
     onSuccess: () => {

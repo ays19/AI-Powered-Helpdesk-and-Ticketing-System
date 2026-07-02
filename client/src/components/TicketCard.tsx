@@ -46,7 +46,7 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
   return (
     <div className={`bg-bg-card border border-border-color rounded-lg p-6 transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-[3px] hover:shadow-md hover:border-accent before:content-[''] before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:rounded-l-[4px] ${PRIORITY_BEFORE_CLASSES[ticket.priority]}`}>
       <div className="flex justify-between items-center mb-3">
-        <span className="text-[0.75rem] font-bold text-text-muted">#{ticket.id}</span>
+        <span className="text-[0.75rem] font-bold text-text-muted">#{ticket.ticketNumber}</span>
         <div className="flex gap-2">
           <span className={`px-[10px] py-[2px] rounded-full text-[0.65rem] font-bold uppercase tracking-[0.05em] ${CATEGORY_BADGE_CLASSES[ticket.category] || CATEGORY_BADGE_CLASSES.general_question}`}>
             {CATEGORY_LABELS[ticket.category] || ticket.category}
@@ -56,7 +56,7 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
       </div>
 
       <h3 className="text-[1rem] font-semibold mb-2 leading-[1.4]">
-        <Link to={`/tickets/${ticket.id}`} className="hover:text-accent transition-colors cursor-pointer">
+        <Link to={`/tickets/${ticket.ticketNumber}`} className="hover:text-accent transition-colors cursor-pointer">
           {ticket.title}
         </Link>
       </h3>
@@ -84,7 +84,7 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
         <select
           className="flex-1 py-[6px] px-3 border border-border-color rounded-sm bg-bg-secondary text-text-primary font-sans text-[0.8rem] cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
           value={ticket.status}
-          onChange={(e) => onStatusChange(ticket.id, e.target.value as TicketStatus)}
+          onChange={(e) => onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)}
         >
           <option value="open">Open</option>
           <option value="in-progress">In Progress</option>
@@ -93,7 +93,7 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
         </select>
         <button 
           className="bg-danger text-white hover:bg-danger-hover inline-flex items-center gap-[6px] px-3 py-[6px] border-none rounded-md font-sans text-[0.75rem] font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap" 
-          onClick={() => onDelete(ticket.id)}
+          onClick={() => onDelete(ticket.ticketNumber.toString())}
         >
           Delete
         </button>

@@ -120,6 +120,24 @@ describe('ReplyForm Component', () => {
     });
   });
 
+  it('passes customerName in the request when provided as a prop', async () => {
+    (axios.post as any).mockResolvedValue({ data: { polishedContent: 'Polished text' } });
+    render(<ReplyForm onSubmit={vi.fn()} isPending={false} customerName="John Doe" />);
+
+    const textarea = screen.getByPlaceholderText('Type your message here...');
+    fireEvent.change(textarea, { target: { value: 'Draft text' } });
+
+    const polishBtn = screen.getByRole('button', { name: /Polish Reply/i });
+    fireEvent.click(polishBtn);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith('/api/tickets/polish', { 
+        content: 'Draft text', 
+        customerName: 'John Doe' 
+      });
+    });
+  });
+
   it('shows error message if the polish API fails', async () => {
     (axios.post as any).mockRejectedValue({
       response: { data: { error: 'Groq API rate limit reached' } }

@@ -6,6 +6,7 @@ import type { Ticket } from '../../types';
 
 const mockTicket: Ticket = {
   id: 'ticket-1',
+  ticketNumber: 1,
   title: 'Payment Failed',
   description: 'My payment was deducted twice.',
   status: 'open',
@@ -55,7 +56,7 @@ describe('TicketCard', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'in-progress' } });
 
-    expect(onStatusChange).toHaveBeenCalledWith('ticket-1', 'in-progress');
+    expect(onStatusChange).toHaveBeenCalledWith('1', 'in-progress');
   });
 
   it('triggers onDelete when delete button is clicked', () => {
@@ -70,7 +71,7 @@ describe('TicketCard', () => {
     const deleteBtn = screen.getByRole('button', { name: /delete/i });
     fireEvent.click(deleteBtn);
 
-    expect(onDelete).toHaveBeenCalledWith('ticket-1');
+    expect(onDelete).toHaveBeenCalledWith('1');
   });
 
   it('shows the creation date formatted to locale string', () => {

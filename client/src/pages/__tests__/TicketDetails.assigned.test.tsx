@@ -47,6 +47,7 @@ const MOCK_SESSION = {
 
 const MOCK_TICKET: Ticket = {
   id: 'ticket-123',
+  ticketNumber: 123,
   title: 'Database connection fails',
   description: 'Getting 500 error when saving changes to the PostgreSQL database.',
   status: 'open',
@@ -84,7 +85,7 @@ describe('TicketDetails - Assigned To Feature', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -115,7 +116,7 @@ describe('TicketDetails - Assigned To Feature', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -130,7 +131,7 @@ describe('TicketDetails - Assigned To Feature', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -165,7 +166,7 @@ describe('TicketDetails - Assigned To Feature', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });
@@ -176,7 +177,7 @@ describe('TicketDetails - Assigned To Feature', () => {
 
     // Assert axios.patch is called with the correct endpoint and payload
     await waitFor(() => {
-      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/ticket-123', { assigned_to: 'agent-alice' });
+      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/123', { assigned_to: 'agent-alice' });
     });
   });
 
@@ -189,7 +190,7 @@ describe('TicketDetails - Assigned To Feature', () => {
       <Routes>
         <Route path="/tickets/:id" element={<TicketDetails />} />
       </Routes>,
-      { route: '/tickets/ticket-123' }
+      { route: '/tickets/123' }
     );
 
     await screen.findByRole('heading', { name: 'Database connection fails' });

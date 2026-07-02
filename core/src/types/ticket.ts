@@ -57,6 +57,7 @@ export interface TicketReply {
 
 export interface Ticket {
   id: string;
+  ticketNumber: number;
   title: string;
   description: string;
   status: TicketStatus;

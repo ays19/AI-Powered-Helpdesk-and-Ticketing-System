@@ -6,10 +6,13 @@ import {
   Clock,
   Shield,
   Copy,
-  Check
+  Check,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import type { Ticket, TicketStatus, TicketPriority } from '@/types';
 import { getTicketSender } from '@/lib/utils';
+import axios from 'axios';
 
 const PRIORITY_DOT_CLASSES: Record<TicketPriority, string> = {
   low: 'bg-priority-low',
@@ -52,11 +55,29 @@ interface TicketDetailProps {
 
 export default function TicketDetail({ ticket }: TicketDetailProps) {
   const [copied, setCopied] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSummarize = async () => {
+    setIsSummarizing(true);
+    setSummaryError(null);
+    try {
+      const response = await axios.post(`/api/tickets/${ticket.ticketNumber}/summarize`);
+      if (response.data?.summary) {
+        setSummary(response.data.summary);
+      }
+    } catch (err: any) {
+      setSummaryError(err.response?.data?.error || 'Failed to generate ticket summary.');
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   const { name: senderName, email: senderEmail } = getTicketSender(ticket);
@@ -66,6 +87,9 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
       {/* Ticket Card Main */}
       <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md relative overflow-hidden">
         <div className="flex flex-wrap items-center gap-3 mb-4">
+          <span className="text-[0.72rem] font-mono font-bold text-text-muted bg-bg-secondary px-2.5 py-1 rounded border border-border-color">
+            Reference: #{ticket.ticketNumber}
+          </span>
           <span className="text-[0.72rem] font-mono font-bold text-text-muted bg-bg-secondary px-2.5 py-1 rounded border border-border-color flex items-center gap-1.5">
             ID: {ticket.id}
             <button 
@@ -136,10 +160,43 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
       </div>
 
       {/* Description Card */}
-      <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted mb-4">Description</h3>
-        <div className="bg-bg-secondary/40 border border-border-color/60 rounded-lg p-5 text-sm text-text-primary leading-relaxed whitespace-pre-wrap min-h-[120px]">
-          {ticket.description || <span className="text-text-muted italic">No description provided.</span>}
+      <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md space-y-4">
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted mb-4">Description</h3>
+          <div className="bg-bg-secondary/40 border border-border-color/60 rounded-lg p-5 text-sm text-text-primary leading-relaxed whitespace-pre-wrap min-h-[120px]">
+            {ticket.description || <span className="text-text-muted italic">No description provided.</span>}
+          </div>
+        </div>
+
+        {/* Summarize button and display */}
+        <div className="pt-4 border-t border-border-color/40 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={handleSummarize}
+              disabled={isSummarizing}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border-color rounded-md bg-bg-secondary text-text-secondary font-sans text-xs font-semibold cursor-pointer transition-all hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSummarizing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              )}
+              {isSummarizing ? 'Summarizing...' : 'Summarize Ticket'}
+            </button>
+          </div>
+
+          {summary && (
+            <div className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-4 text-sm text-text-primary animate-fadeIn">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-purple-400 mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> AI Summary
+              </h4>
+              <p className="leading-relaxed whitespace-pre-wrap">{summary}</p>
+            </div>
+          )}
+          {summaryError && (
+            <span className="text-danger text-xs">{summaryError}</span>
+          )}
         </div>
       </div>
     </div>

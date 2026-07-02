@@ -51,6 +51,7 @@ const MOCK_SESSION = {
 function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
   return {
     id: 'ticket-1',
+    ticketNumber: 1,
     title: 'Default Title',
     description: 'Default description',
     status: 'open',
@@ -177,7 +178,7 @@ describe('Home (Ticket Dashboard)', () => {
     fireEvent.change(select, { target: { value: 'resolved' } });
 
     await waitFor(() =>
-      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/ticket-1', { status: 'resolved' }),
+      expect(axios.patch).toHaveBeenCalledWith('/api/tickets/1', { status: 'resolved' }),
     );
 
     // After query cache is invalidated and re-fetched, the select reflects the new status.
@@ -200,7 +201,7 @@ describe('Home (Ticket Dashboard)', () => {
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
 
     await waitFor(() =>
-      expect(axios.delete).toHaveBeenCalledWith('/api/tickets/ticket-1'),
+      expect(axios.delete).toHaveBeenCalledWith('/api/tickets/1'),
     );
 
     await waitFor(() =>
