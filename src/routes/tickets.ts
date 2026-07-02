@@ -1,5 +1,4 @@
-import { Router } from 'express';
-import type { Response } from 'express';
+import { Router, type Response } from 'express';
 import { db as prisma } from '../db';
 import type { CreateTicketBody } from '../types';
 import type { AuthenticatedRequest } from '../middleware/auth';
@@ -27,24 +26,41 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
   res.json(tickets.map(mapTicket));
 }));
 
+async function findTicketByNumberOrUuid(idParam: string, includeReplies: boolean = false) {
+  const ticketNumber = parseInt(idParam, 10);
+  const includeOption = includeReplies ? {
+    user: true,
+    assignedTo: true,
+    replies: {
+      include: { user: true },
+      orderBy: { createdAt: 'asc' as const }
+    }
+  } : {
+    user: true,
+    assignedTo: true
+  };
+
+  let ticket = null;
+  if (!isNaN(ticketNumber)) {
+    ticket = await prisma.ticket.findUnique({
+      where: { ticketNumber },
+      include: includeOption
+    });
+  }
+
+  if (!ticket) {
+    ticket = await prisma.ticket.findUnique({
+      where: { id: idParam },
+      include: includeOption
+    });
+  }
+
+  return ticket;
+}
+
 // GET /api/tickets/:id
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const ticketNumber = parseInt(req.params.id, 10);
-  if (isNaN(ticketNumber)) {
-    res.status(400).json({ error: 'Invalid ticket number' });
-    return;
-  }
-  const ticket = await prisma.ticket.findUnique({
-    where: { ticketNumber },
-    include: { 
-      user: true, 
-      assignedTo: true,
-      replies: {
-        include: { user: true },
-        orderBy: { createdAt: 'asc' }
-      }
-    }
-  });
+  const ticket = await findTicketByNumberOrUuid(req.params.id, true);
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
     return;
@@ -82,9 +98,9 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
 
 // PATCH /api/tickets/:id
 ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const ticketNumber = parseInt(req.params.id, 10);
-  if (isNaN(ticketNumber)) {
-    res.status(400).json({ error: 'Invalid ticket number' });
+  const ticket = await findTicketByNumberOrUuid(req.params.id);
+  if (!ticket) {
+    res.status(404).json({ error: 'Ticket not found' });
     return;
   }
   const validatedData = updateTicketSchema.parse(req.body);
@@ -109,23 +125,23 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
     delete updateData.assigned_to;
   }
 
-  const ticket = await prisma.ticket.update({
-    where: { ticketNumber },
+  const updatedTicket = await prisma.ticket.update({
+    where: { id: ticket.id },
     data: updateData,
     include: { user: true, assignedTo: true }
   });
-  res.json(mapTicket(ticket));
+  res.json(mapTicket(updatedTicket));
 }));
 
 // DELETE /api/tickets/:id
 ticketRouter.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const ticketNumber = parseInt(req.params.id, 10);
-  if (isNaN(ticketNumber)) {
-    res.status(400).json({ error: 'Invalid ticket number' });
+  const ticket = await findTicketByNumberOrUuid(req.params.id);
+  if (!ticket) {
+    res.status(404).json({ error: 'Ticket not found' });
     return;
   }
   const deleted = await prisma.ticket.delete({
-    where: { ticketNumber },
+    where: { id: ticket.id },
     include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(deleted));
@@ -179,20 +195,12 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
-  const ticketNumber = parseInt(req.params.id, 10);
-  if (isNaN(ticketNumber)) {
-    res.status(400).json({ error: 'Invalid ticket number' });
-    return;
-  }
-  const validatedData = createReplySchema.parse(req.body);
-
-  const ticket = await prisma.ticket.findUnique({
-    where: { ticketNumber }
-  });
+  const ticket = await findTicketByNumberOrUuid(req.params.id);
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });
     return;
   }
+  const validatedData = createReplySchema.parse(req.body);
 
   const reply = await prisma.ticketReply.create({
     data: {
@@ -212,19 +220,26 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
 // POST /api/tickets/:id/summarize
 ticketRouter.post('/:id/summarize', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const ticketNumber = parseInt(req.params.id, 10);
-  if (isNaN(ticketNumber)) {
-    res.status(400).json({ error: 'Invalid ticket number' });
-    return;
+  const includeRepliesOption = {
+    replies: {
+      orderBy: { createdAt: 'asc' as const },
+    },
+  };
+
+  let ticket = null;
+  if (!isNaN(ticketNumber)) {
+    ticket = await prisma.ticket.findUnique({
+      where: { ticketNumber },
+      include: includeRepliesOption,
+    });
   }
 
-  const ticket = await prisma.ticket.findUnique({
-    where: { ticketNumber },
-    include: {
-      replies: {
-        orderBy: { createdAt: 'asc' },
-      },
-    },
-  });
+  if (!ticket) {
+    ticket = await prisma.ticket.findUnique({
+      where: { id: req.params.id },
+      include: includeRepliesOption,
+    });
+  }
 
   if (!ticket) {
     res.status(404).json({ error: 'Ticket not found' });

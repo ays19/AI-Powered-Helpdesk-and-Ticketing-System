@@ -86,6 +86,31 @@ test.describe('Email-to-Ticket Webhook', () => {
     await expect(page.getByRole('heading', { name: 'E2E Unknown User Ticket' }).first()).toBeVisible();
   });
 
+  test('should auto-classify ticket category based on keywords in non-blocking fashion', async ({ page, request }) => {
+    const payload = {
+      from: AUTH_USER.email,
+      subject: 'Refund Request for Defective Item',
+      body: 'I am writing to demand a refund for my order.',
+    };
+
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+    });
+    expect(response.status()).toBe(201);
+    const data = await response.json();
+    expect(data.category).toBe('general_question'); // Initially returns the default general_question category
+
+    // Log in and check UI
+    await page.goto('/login');
+    await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(AUTH_USER.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
+
+    // Verify it got updated to Refund Request
+    await expect(page.locator('span', { hasText: 'Refund Request' }).first()).toBeVisible();
+  });
+
   test('should return 400 for invalid payload', async ({ request }) => {
     const payload = {
       from: 'not-an-email',

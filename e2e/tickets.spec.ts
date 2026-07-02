@@ -54,16 +54,16 @@ async function createTicket(
 ) {
   await openCreateModal(page);
 
-  await page.getByLabel('Title *').fill(opts.title);
+  await page.locator('form').getByLabel('Title *').fill(opts.title);
 
   if (opts.description) {
-    await page.getByLabel('Description').fill(opts.description);
+    await page.locator('form').getByLabel('Description').fill(opts.description);
   }
   if (opts.priority) {
-    await page.getByLabel('Priority').selectOption(opts.priority);
+    await page.locator('form select#priority').selectOption(opts.priority);
   }
   if (opts.category) {
-    await page.getByLabel('Category').selectOption(opts.category);
+    await page.locator('form select#category').selectOption(opts.category);
   }
 
   await page.getByRole('button', { name: /create ticket/i }).click();
