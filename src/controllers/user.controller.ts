@@ -4,6 +4,7 @@ import type { AuthenticatedRequest } from '../middleware/auth';
 import { UserRole } from '../types';
 import { auth } from '../auth';
 import { createUserSchema, updateUserSchema } from 'core';
+import { mapTicket } from '../lib/ticket-mapper';
 
 export const UserController = {
   async getUsers(req: AuthenticatedRequest, res: Response) {
@@ -138,8 +139,12 @@ export const UserController = {
       return;
     }
 
-    // 3. Soft delete the user and revoke sessions
+    // 3. Soft delete the user, unassign their tickets, and revoke sessions
     await prisma.$transaction([
+      prisma.ticket.updateMany({
+        where: { assignedToId: id },
+        data: { assignedToId: null },
+      }),
       prisma.user.update({
         where: { id },
         data: { deletedAt: new Date() },
@@ -150,5 +155,57 @@ export const UserController = {
     ]);
 
     res.json({ message: 'User successfully deleted' });
+  },
+
+  async restoreUser(req: AuthenticatedRequest, res: Response) {
+    const { id } = req.params;
+
+    // 1. Authorization Check: Only ADMIN can restore users
+    if (req.user?.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Forbidden: Administrator access required' });
+      return;
+    }
+
+    // 2. Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    if (req.body.deletedAt !== null) {
+      res.status(400).json({ error: 'Invalid request: deletedAt must be set to null to restore' });
+      return;
+    }
+
+    // 3. Wrap restore logic in transaction
+    const tickets = await prisma.ticket.findMany({
+      where: { assignedToId: id },
+      select: { id: true },
+    });
+    const ticketIds = tickets.map((t) => t.id);
+
+    const [_, restoredUser, updatedTickets] = await prisma.$transaction([
+      prisma.ticket.updateMany({
+        where: { assignedToId: id },
+        data: { assignedToId: null },
+      }),
+      prisma.user.update({
+        where: { id },
+        data: { deletedAt: null },
+      }),
+      prisma.ticket.findMany({
+        where: { id: { in: ticketIds } },
+        include: { user: true, assignedTo: true },
+      }),
+    ]);
+
+    res.json({
+      user: restoredUser,
+      tickets: updatedTickets.map(mapTicket),
+    });
   },
 };

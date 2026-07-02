@@ -304,4 +304,71 @@ test.describe('User Management (CRUD Happy Paths & Validation)', () => {
     await expect(page.locator('div[role="alert"]')).toBeVisible();
     await expect(page).toHaveURL('/login');
   });
+
+  // ── 7. Agent restore unassigns tickets ───────────────────────────────────
+
+  test('should restore an agent and atomically set assignedToId to null on their tickets', async ({ page }, testInfo) => {
+    const agent = uniqueUser('Restore Agent', testInfo);
+
+    // 1. Create the agent in the UI
+    await openUsersPage(page);
+    await createUser(page, agent);
+
+    const row = userRow(page, agent.name);
+    await expect(row).toBeVisible();
+
+    // Fetch the users list via API to get the user's ID
+    const usersResponse = await page.context().request.get('/api/users');
+    expect(usersResponse.ok()).toBeTruthy();
+    const users = await usersResponse.json();
+    const dbAgent = users.find((u: any) => u.email === agent.email);
+    expect(dbAgent).toBeDefined();
+    const agentId = dbAgent.id;
+
+    // 2. Create a ticket and assign it to the agent
+    const ticketTitle = `Ticket for restore test ${agent.id}`;
+    const createTicketRes = await page.context().request.post('/api/tickets', {
+      data: {
+        title: ticketTitle,
+        description: 'Test description',
+        priority: 'medium',
+        category: 'general_question',
+        assigned_to: agentId,
+      }
+    });
+    expect(createTicketRes.ok()).toBeTruthy();
+    const ticket = await createTicketRes.json();
+    expect(ticket.assignedToId).toBe(agentId);
+
+    // 3. Delete (soft-delete) the agent
+    await page.locator(`button[aria-label="Delete ${agent.name}"]`).click();
+    await page.click('button:has-text("Delete User")');
+    await expect(row).not.toBeVisible();
+
+    // Verify immediately after delete that the ticket was unassigned
+    const getTicketAfterDeleteRes = await page.context().request.get(`/api/tickets/${ticket.id}`);
+    expect(getTicketAfterDeleteRes.ok()).toBeTruthy();
+    const ticketAfterDelete = await getTicketAfterDeleteRes.json();
+    expect(ticketAfterDelete.assignedToId).toBeNull();
+    expect(ticketAfterDelete.assignedTo).toBeNull();
+
+    // 4. Restore the agent via PATCH /api/users/:id
+    const restoreRes = await page.context().request.patch(`/api/users/${agentId}`, {
+      data: {
+        deletedAt: null
+      }
+    });
+    expect(restoreRes.ok()).toBeTruthy();
+    const restoreJson = await restoreRes.json();
+    
+    // Verify the restored user is returned and deletedAt is null
+    expect(restoreJson.user.deletedAt).toBeNull();
+
+    // Verify in database / GET /api/tickets/:id that the ticket is indeed still unassigned
+    const getTicketRes = await page.context().request.get(`/api/tickets/${ticket.id}`);
+    expect(getTicketRes.ok()).toBeTruthy();
+    const fetchedTicket = await getTicketRes.json();
+    expect(fetchedTicket.assignedToId).toBeNull();
+    expect(fetchedTicket.assignedTo).toBeNull();
+  });
 });

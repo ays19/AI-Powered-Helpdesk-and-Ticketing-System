@@ -15,3 +15,7 @@ userRouter.put('/:id', asyncHandler(UserController.updateUser));
 
 // DELETE /api/users/:id
 userRouter.delete('/:id', asyncHandler(UserController.deleteUser));
+
+// PATCH /api/users/:id
+userRouter.patch('/:id', asyncHandler(UserController.restoreUser));
+
