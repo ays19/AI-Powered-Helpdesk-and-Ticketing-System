@@ -200,6 +200,30 @@ describe('TicketDetails - Reply Thread', () => {
     expect(avatarLetters.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('renders and sanitizes bodyHtml when present', async () => {
+    const replyWithHtml: TicketReply = {
+      ...AGENT_REPLY,
+      id: 'reply-html-1',
+      content: 'This is fallback plain content.',
+      bodyHtml: '<p>Hello <strong>world</strong>!<script>alert(1)</script></p>',
+    };
+    const { container } = renderPage({ ...BASE_TICKET, replies: [replyWithHtml] });
+
+    await screen.findByRole('heading', { name: 'Reply thread test ticket' });
+
+    // Find the rendered html container
+    const strongElement = container.querySelector('strong');
+    expect(strongElement).toBeInTheDocument();
+    expect(strongElement?.textContent).toBe('world');
+    
+    // Verify script tag is stripped
+    const scriptElement = container.querySelector('script');
+    expect(scriptElement).not.toBeInTheDocument();
+    
+    // Verify plain content fallback is NOT rendered when bodyHtml is present
+    expect(screen.queryByText('This is fallback plain content.')).not.toBeInTheDocument();
+  });
+
   // -----------------------------------------------------------------------
   // Admin reply rendering
   // -----------------------------------------------------------------------

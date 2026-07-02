@@ -24,7 +24,10 @@ export const createTicketSchema = z.object({
     .trim()
     .min(1, 'Title is required')
     .max(255, 'Title is too long'),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .max(3000, 'Description cannot exceed 3000 characters')
+    .optional(),
   priority: z.enum(TICKET_PRIORITIES).optional(),
   category: z.enum(TICKET_CATEGORIES).optional(),
   assigned_to: z.string().nullable().optional(),
@@ -38,7 +41,10 @@ export type CreateTicketFormValues = z.infer<typeof createTicketSchema>;
 
 export const updateTicketSchema = z.object({
   title: z.string().trim().min(1).max(255).optional(),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .max(10000, 'Description cannot exceed 10000 characters')
+    .optional(),
   priority: z.enum(TICKET_PRIORITIES).optional(),
   status: z.enum(TICKET_STATUSES).optional(),
   category: z.enum(TICKET_CATEGORIES).optional(),

@@ -40,6 +40,7 @@ export interface TicketUser {
 export interface TicketReply {
   id: string;
   content: string;
+  bodyHtml?: string | null;
   senderType: ReplySenderType;
   ticketId: string;
   userId?: string | null;

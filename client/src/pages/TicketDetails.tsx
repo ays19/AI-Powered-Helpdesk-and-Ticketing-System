@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import ReplyForm from '@/components/ReplyForm';
+import DOMPurify from 'dompurify';
 import TicketDetail from '@/components/TicketDetail';
 import UpdateTicket from '@/components/UpdateTicket';
 import { 
@@ -266,9 +267,16 @@ export default function TicketDetails() {
                                 {new Date(reply.createdAt).toLocaleString()}
                               </span>
                             </div>
-                            <div className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed break-words">
-                              {reply.content}
-                            </div>
+                            {reply.bodyHtml ? (
+                              <div
+                                className="text-sm text-text-primary leading-relaxed break-words"
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(reply.bodyHtml) }}
+                              />
+                            ) : (
+                              <div className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed break-words">
+                                {reply.content}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
