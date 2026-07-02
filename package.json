@@ -21,10 +21,12 @@
     "test:e2e:debug": "bun run test:db:setup && playwright test --debug"
   },
   "dependencies": {
+    "@ai-sdk/groq": "^4.0.3",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@prisma/client-runtime-utils": "^7.8.0",
     "@types/pg": "^8.20.0",
+    "ai": "^7.0.11",
     "better-auth": "^1.6.15",
     "core": "workspace:*",
     "cors": "^2.8.5",

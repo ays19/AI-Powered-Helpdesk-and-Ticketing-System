@@ -92,4 +92,39 @@ test.describe('Ticket Details – DB Persistence & Page Navigation', () => {
     await page.reload();
     await expect(page.getByRole('link', { name: title })).not.toBeVisible();
   });
+
+  test('should support AI polishing of reply drafts', async ({ page }) => {
+    const title = `E2E Polish Reply ${Date.now()}`;
+    await createTestTicket(page, title);
+
+    // Navigate to details page
+    await page.getByRole('link', { name: title }).click();
+    await expect(page).toHaveURL(/\/tickets\/[a-zA-Z0-9-]+/);
+
+    const textarea = page.getByPlaceholder('Type your message here...');
+    const polishBtn = page.getByRole('button', { name: /Polish Reply/i });
+
+    // Button should be disabled when empty
+    await expect(polishBtn).toBeDisabled();
+
+    // Fill textarea
+    await textarea.fill('Needs polishing');
+
+    // Button should be enabled now
+    await expect(polishBtn).toBeEnabled();
+
+    // Click Polish button
+    await polishBtn.click();
+
+    // Textarea value should be updated (in mock mode, it prepends greeting, appends " (Polished by AI)" and the signature)
+    await expect(textarea).toHaveValue('Dear Admin,\n\nNeeds polishing (Polished by AI)\n\nBest regards,\nAdmin\nhttps://www.linkedin.com/in/yasirsharar/');
+
+    // Submit the polished reply
+    await page.getByRole('button', { name: /submit reply/i }).click();
+
+    // Verify polished reply is added in the UI
+    await expect(page.getByText('Dear Admin,')).toBeVisible();
+    await expect(page.getByText('Needs polishing (Polished by AI)')).toBeVisible();
+    await expect(page.getByText('https://www.linkedin.com/in/yasirsharar/')).toBeVisible();
+  });
 });

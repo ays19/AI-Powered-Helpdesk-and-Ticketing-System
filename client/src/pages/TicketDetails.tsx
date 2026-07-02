@@ -293,6 +293,7 @@ export default function TicketDetails() {
               <ReplyForm 
                 onSubmit={(content) => replyMutation.mutateAsync(content)} 
                 isPending={replyMutation.isPending} 
+                customerName={ticket ? getTicketSender(ticket).name : undefined}
               />
 
             </div>
