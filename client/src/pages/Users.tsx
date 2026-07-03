@@ -5,7 +5,6 @@ import { ShieldAlert, Users as UsersIcon, ArrowLeft, AlertCircle } from 'lucide-
 import { useState } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import UserModal, { CreateUserButton } from '../components/UserModal';
 import UserTable from '../components/UserTable';
 import DeleteUserModal from '../components/DeleteUserModal';
@@ -93,12 +92,14 @@ export default function Users() {
             </div>
           )}
 
-          <Card className="border-border-color bg-bg-card/50 backdrop-blur-sm">
-            <CardHeader className="pb-4"><CardTitle className="text-lg font-semibold text-text-primary">User Directory</CardTitle></CardHeader>
-            <CardContent>
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border-color/40">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted">User Directory</h2>
+            </div>
+            <div className="p-0">
               <UserTable users={users} isLoading={isLoading} onEdit={handleOpenEditModal} onDelete={handleOpenDeleteModal} />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </AppLayout>
 
