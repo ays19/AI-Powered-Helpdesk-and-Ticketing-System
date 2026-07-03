@@ -8,6 +8,7 @@ import { TicketStatus, ReplySenderType } from '../lib/prisma/client';
 import { mapTicket, toDbStatus } from '../lib/ticket-mapper';
 import { groq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
+import { boss, SEND_EMAIL_QUEUE, TICKET_CLASSIFICATION_QUEUE, TICKET_AUTO_RESOLVE_QUEUE } from '../lib/queue';
 
 // ---------------------------------------------------------------------------
 // Raw query row types — shapes returned by the stored functions
@@ -133,6 +134,7 @@ ticketRouter.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res: R
 }));
 
 
+
 // GET /api/tickets/:id
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const ticket = await findTicketByNumberOrUuid(req.params.id, true);
@@ -169,6 +171,37 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
     include: { user: true, assignedTo: true }
   });
   res.status(201).json(mapTicket(ticket));
+
+  try {
+    if (ticket.user?.email) {
+      await boss.send(SEND_EMAIL_QUEUE, {
+        type: 'ticket-created',
+        to: ticket.user.email,
+        ticketNumber: ticket.ticketNumber,
+        title: ticket.title
+      });
+    }
+  } catch (err) {
+    console.error('Failed to send ticket-created email:', err);
+  }
+
+  try {
+    await boss.send(TICKET_CLASSIFICATION_QUEUE, {
+      ticketId: ticket.id,
+      title: ticket.title,
+      description: ticket.description,
+    });
+    console.log(`[Route] Enqueued classification job for ticket ${ticket.id}`);
+  } catch (err) {
+    console.error('Failed to enqueue ticket-classification job:', err);
+  }
+
+  try {
+    await boss.send(TICKET_AUTO_RESOLVE_QUEUE, { ticketId: ticket.id });
+    console.log(`[Route] Enqueued auto-resolve job for ticket ${ticket.id}`);
+  } catch (err) {
+    console.error('Failed to enqueue ticket-auto-resolve job:', err);
+  }
 }));
 
 // PATCH /api/tickets/:id
@@ -206,6 +239,19 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
     include: { user: true, assignedTo: true }
   });
   res.json(mapTicket(updatedTicket));
+
+  try {
+    if (validatedData.status && updatedTicket.user?.email) {
+      await boss.send(SEND_EMAIL_QUEUE, {
+        type: 'status-update',
+        to: updatedTicket.user.email,
+        ticketNumber: updatedTicket.ticketNumber,
+        status: validatedData.status
+      });
+    }
+  } catch (err) {
+    console.error('Failed to send ticket-status-update email:', err);
+  }
 }));
 
 // DELETE /api/tickets/:id
@@ -290,6 +336,22 @@ ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest,
   });
 
   res.status(201).json(reply);
+
+  try {
+    if (ticket.userId) {
+      const ticketUser = await prisma.user.findUnique({ where: { id: ticket.userId } });
+      if (ticketUser?.email) {
+        await boss.send(SEND_EMAIL_QUEUE, {
+          type: 'ticket-reply',
+          to: ticketUser.email,
+          ticketNumber: ticket.ticketNumber,
+          message: validatedData.content
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Failed to send ticket-reply email:', err);
+  }
 }));
 
 // POST /api/tickets/:id/summarize

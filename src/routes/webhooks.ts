@@ -5,7 +5,7 @@ import { asyncHandler } from '../middleware/async-handler';
 import { EmailWebhookSchema } from 'core';
 import { TicketStatus, TicketPriority } from '../lib/prisma/client';
 import type { Ticket } from '../lib/prisma/client';
-import { boss, TICKET_CLASSIFICATION_QUEUE } from '../lib/queue';
+import { boss, TICKET_CLASSIFICATION_QUEUE, TICKET_AUTO_RESOLVE_QUEUE } from '../lib/queue';
 
 export const webhookRouter = Router();
 
@@ -57,6 +57,14 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
 
   // Automatically classify the ticket using Groq in a non-blocking fashion
   classifyTicket(ticket);
+
+  // Enqueue the auto-resolve job in parallel
+  try {
+    await boss.send(TICKET_AUTO_RESOLVE_QUEUE, { ticketId: ticket.id });
+    console.log(`[Webhook] Enqueued auto-resolve job for ticket ${ticket.id}`);
+  } catch (error) {
+    console.error(`[Webhook] Failed to enqueue auto-resolve job for ticket ${ticket.id}:`, error);
+  }
 
   res.status(201).json(ticket);
 }));
