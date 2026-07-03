@@ -44,7 +44,7 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
       description: validatedData.body,
       customerEmail: validatedData.from,
       userId: user?.id,
-      status: TicketStatus.open,
+      status: TicketStatus.new,
       priority: TicketPriority.medium,
     },
   });

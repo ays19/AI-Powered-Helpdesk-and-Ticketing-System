@@ -10,7 +10,7 @@ import CreateTicketModal from '@/components/CreateTicketModal';
 import { authClient } from '@/lib/auth-client';
 import { getTicketSender } from '@/lib/utils';
 
-const STATUS_OPTIONS: TicketStatus[] = ['open', 'in-progress', 'resolved', 'closed'];
+const STATUS_OPTIONS: TicketStatus[] = ['new', 'open', 'in-progress', 'resolved', 'closed'];
 
 export default function Home() {
   const { data: session, isPending } = authClient.useSession();
@@ -190,6 +190,7 @@ export default function Home() {
 
   const counts = {
     all: getFilteredTicketsForCounts('all').length,
+    new: getFilteredTicketsForCounts('new').length,
     open: getFilteredTicketsForCounts('open').length,
     'in-progress': getFilteredTicketsForCounts('in-progress').length,
     resolved: getFilteredTicketsForCounts('resolved').length,

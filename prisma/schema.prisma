@@ -79,6 +79,8 @@ model Verification {
 }
 
 enum TicketStatus {
+  new
+  processing
   open
   in_progress
   resolved
@@ -104,7 +106,7 @@ model Ticket {
   ticketNumber  Int            @unique @default(autoincrement())
   title         String
   description   String
-  status        TicketStatus   @default(open)
+  status        TicketStatus   @default(new)
   priority      TicketPriority @default(medium)
   category      TicketCategory @default(general_question)
   customerEmail String?

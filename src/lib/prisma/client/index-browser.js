@@ -216,6 +216,8 @@ exports.UserRole = exports.$Enums.UserRole = {
 };
 
 exports.TicketStatus = exports.$Enums.TicketStatus = {
+  new: 'new',
+  processing: 'processing',
   open: 'open',
   in_progress: 'in_progress',
   resolved: 'resolved',

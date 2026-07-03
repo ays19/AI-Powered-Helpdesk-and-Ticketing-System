@@ -12,7 +12,7 @@ export const TICKET_CATEGORIES = [
 ] as const;
 
 export const TICKET_PRIORITIES = ['low', 'medium', 'high', 'critical'] as const;
-export const TICKET_STATUSES = ['open', 'in-progress', 'resolved', 'closed'] as const;
+export const TICKET_STATUSES = ['new', 'processing', 'open', 'in-progress', 'resolved', 'closed'] as const;
 
 // ---------------------------------------------------------------------------
 // Create

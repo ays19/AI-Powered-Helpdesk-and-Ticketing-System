@@ -15,6 +15,8 @@ const PRIORITY_EMOJI: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
+  new: 'bg-[rgba(59,130,246,0.15)] text-blue-400',
+  processing: 'bg-[rgba(168,85,247,0.15)] text-purple-400',
   open: 'bg-[rgba(78,205,196,0.15)] text-status-open',
   'in-progress': 'bg-[rgba(249,168,38,0.15)] text-status-in-progress',
   resolved: 'bg-[rgba(108,99,255,0.15)] text-status-resolved',
@@ -86,6 +88,8 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
           value={ticket.status}
           onChange={(e) => onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)}
         >
+          <option value="new">New</option>
+          <option value="processing">Processing</option>
           <option value="open">Open</option>
           <option value="in-progress">In Progress</option>
           <option value="resolved">Resolved</option>

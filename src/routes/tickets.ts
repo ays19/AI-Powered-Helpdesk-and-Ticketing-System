@@ -20,6 +20,11 @@ ticketRouter.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Respon
   const order = sortOrder === 'asc' ? 'asc' : 'desc';
 
   const tickets = await prisma.ticket.findMany({
+    where: {
+      status: {
+        not: 'processing',
+      },
+    },
     orderBy: { [field]: order },
     include: { user: true, assignedTo: true }
   });
@@ -88,7 +93,7 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
       ...rest,
       assignedToId: assigned_to || null,
       description: rest.description || '',
-      status: TicketStatus.open,
+      status: TicketStatus.new,
       userId: req.user?.id,
     },
     include: { user: true, assignedTo: true }

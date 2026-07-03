@@ -216,6 +216,7 @@ export default function TicketDetails() {
                       let replySenderName = 'Unknown User';
                       let isReplyAuthorAgent = false;
                       let isReplyAuthorAdmin = false;
+                      let isReplyAuthorAI = false;
                       const isCustomer = reply.senderType === 'customer';
 
                       if (isCustomer) {
@@ -226,14 +227,17 @@ export default function TicketDetails() {
                         });
                         replySenderName = reply.customerName || customerSender.name || 'Customer';
                       } else {
-                        replySenderName = reply.user?.name || 'Unknown User';
+                        replySenderName = reply.user?.name || (reply.userId ? 'Unknown User' : 'AI Assistant');
                         isReplyAuthorAgent = reply.user?.role === 'agent';
                         isReplyAuthorAdmin = reply.user?.role === 'admin';
+                        isReplyAuthorAI = !reply.user && !reply.userId;
                       }
 
                       let avatarBgClass = 'bg-accent/15 border border-accent/30 text-accent';
                       if (isCustomer) {
                         avatarBgClass = 'bg-[rgba(78,205,196,0.15)] border border-[rgba(78,205,196,0.3)] text-status-open';
+                      } else if (isReplyAuthorAI) {
+                        avatarBgClass = 'bg-purple-500/15 border border-purple-500/30 text-purple-400';
                       }
 
                       return (
@@ -255,6 +259,11 @@ export default function TicketDetails() {
                                 {isReplyAuthorAgent && (
                                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20">
                                     Agent
+                                  </span>
+                                )}
+                                {isReplyAuthorAI && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                    AI
                                   </span>
                                 )}
                                 {isCustomer && (

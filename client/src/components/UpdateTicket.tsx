@@ -49,6 +49,8 @@ export default function UpdateTicket({
           onChange={(e) => onStatusChange(e.target.value as TicketStatus)}
           disabled={isUpdatingStatus}
         >
+          <option value="new">New</option>
+          <option value="processing">Processing</option>
           <option value="open">Open</option>
           <option value="in-progress">In Progress</option>
           <option value="resolved">Resolved</option>
