@@ -142,41 +142,35 @@ test.describe('Email-to-Ticket Webhook', () => {
     const data = await response.json();
     expect(data.id).toBeDefined();
 
-    // Poll the ticket API until status is resolved or we hit a timeout
-    let resolved = false;
-    for (let i = 0; i < 20; i++) {
-      const res = await request.get(`${BACKEND_URL}/api/tickets/${data.id}`);
-      if (res.status() === 200) {
-        const ticketData = await res.json();
-        if (ticketData.status === 'resolved') {
-          resolved = true;
-          break;
-        }
-      }
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-    expect(resolved).toBe(true);
-
-    // Log in and check UI
+    // Log in
     await page.goto('/login');
     await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
     await page.getByRole('textbox', { name: 'Password' }).fill(AUTH_USER.password);
     await page.getByRole('button', { name: 'Sign In' }).click();
 
-    // The ticket should be on the ticket list with resolved status
+    // Go to the ticket details page directly, which automatically waits/retries
+    await page.goto(`/tickets/${data.ticketNumber}`);
+    await expect(page.getByRole('heading', { name: 'forgot my password' })).toBeVisible();
+
+    // Wait for the status badge to update to RESOLVED
+    await expect(page.locator('span', { hasText: 'RESOLVED' }).first()).toBeVisible();
+
+    // Verify AI Assistant's reply
+    await expect(page.getByText('AI Assistant').first()).toBeVisible();
+    await expect(page.getByText('Dear Admin,')).toBeVisible();
+    await expect(page.getByText('To reset your password, go to the login page, click Forgot Password, and follow the instructions.')).toBeVisible();
+    await expect(page.getByText("Best regards,\nSharar's")).toBeVisible();
+
+    // Verify it is assigned to AI agent (not unassigned)
+    await expect(page.locator('select#details-assign')).not.toHaveValue('unassigned');
+
+    // Go back to the dashboard and verify the card status select value is 'resolved'
+    await page.goto('/');
     const card = page.locator('div.bg-bg-card').filter({
       has: page.getByRole('heading', { name: 'forgot my password', level: 3 }),
     });
     await expect(card).toBeVisible();
     await expect(card.getByRole('combobox')).toHaveValue('resolved');
-
-    // If we go to the ticket URL, it should show the AI Assistant's reply
-    await page.goto(`/tickets/${data.ticketNumber}`);
-    await expect(page.getByRole('heading', { name: 'forgot my password' })).toBeVisible();
-    await expect(page.getByText('AI Assistant').first()).toBeVisible();
-    await expect(page.getByText('Dear Test Admin,')).toBeVisible();
-    await expect(page.getByText('To reset your password, go to the login page, click Forgot Password, and follow the instructions.')).toBeVisible();
-    await expect(page.getByText("Best regards,\nSharar's")).toBeVisible();
   });
 
   test('should hide tickets in processing status from the ticket list', async ({ page }) => {
@@ -205,7 +199,7 @@ test.describe('Email-to-Ticket Webhook', () => {
     await expect(page.getByRole('heading', { name: title, level: 3 })).not.toBeVisible();
   });
 
-  test('should reset status to open if processing fails/throws', async ({ request }) => {
+  test('should reset status to open if processing fails/throws', async ({ page, request }) => {
     const payload = {
       from: AUTH_USER.email,
       subject: 'simulate-error',
@@ -219,19 +213,20 @@ test.describe('Email-to-Ticket Webhook', () => {
     expect(response.status()).toBe(201);
     const data = await response.json();
 
-    // Poll the ticket API until status is open or we hit a timeout
-    let isOpen = false;
-    for (let i = 0; i < 20; i++) {
-      const res = await request.get(`${BACKEND_URL}/api/tickets/${data.id}`);
-      if (res.status() === 200) {
-        const ticketData = await res.json();
-        if (ticketData.status === 'open') {
-          isOpen = true;
-          break;
-        }
-      }
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-    expect(isOpen).toBe(true);
+    // Log in
+    await page.goto('/login');
+    await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(AUTH_USER.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
+
+    // Go to the details page directly
+    await page.goto(`/tickets/${data.ticketNumber}`);
+    await expect(page.getByRole('heading', { name: 'simulate-error' })).toBeVisible();
+
+    // Wait for status badge to show OPEN
+    await expect(page.locator('span', { hasText: 'OPEN' }).first()).toBeVisible();
+
+    // Verify it has been unassigned from the AI agent
+    await expect(page.locator('select#details-assign')).toHaveValue('unassigned');
   });
 });

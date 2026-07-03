@@ -178,18 +178,22 @@ Sharar's
           data: {
             category: category as any,
             status: 'open',
+            assignedToId: null,
           }
         });
-        console.log(`[Queue] Ticket ${ticketId} auto-classified as ${category} and transitioned to open status`);
+        console.log(`[Queue] Ticket ${ticketId} auto-classified as ${category} and transitioned to open status (unassigned)`);
       }
     } catch (error) {
       console.error(`[Queue] Failed to process ticket classification / resolution job for ticket ${ticketId}:`, error);
       try {
         await prisma.ticket.update({
           where: { id: ticketId },
-          data: { status: 'open' }
+          data: {
+            status: 'open',
+            assignedToId: null,
+          }
         });
-        console.log(`[Queue] Ticket ${ticketId} status reset to open due to processing failure`);
+        console.log(`[Queue] Ticket ${ticketId} status reset to open and unassigned due to processing failure`);
       } catch (dbError) {
         console.error(`[Queue] Failed to reset ticket ${ticketId} status to open:`, dbError);
       }

@@ -1,87 +1,42 @@
-import { useState, useEffect } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { SortingState } from '@tanstack/react-table';
-import type { Ticket, CreateTicketBody, TicketStatus } from '@/types';
-import { UserRole } from '@/types';
-import TicketTable from '@/components/TicketTable';
-import CreateTicketModal from '@/components/CreateTicketModal';
 import { authClient } from '@/lib/auth-client';
-import { getTicketSender } from '@/lib/utils';
+import AppLayout from '@/components/AppLayout';
 
-const STATUS_OPTIONS: TicketStatus[] = ['new', 'open', 'in-progress', 'resolved', 'closed'];
+const formatResolutionTime = (ms: number) => {
+  if (!ms || ms <= 0) return 'N/A';
+  const totalMinutes = Math.round(ms / 60000);
+  if (totalMinutes < 60) {
+    return `${totalMinutes}m`;
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+};
 
 export default function Home() {
   const { data: session, isPending } = authClient.useSession();
-  const [showModal, setShowModal] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<TicketStatus | 'all'>('all');
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const queryClient = useQueryClient();
 
-  const sortBy = sorting[0]?.id;
-  const sortOrder = sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : undefined;
-
-  const { data: tickets = [], isLoading: loading } = useQuery<Ticket[]>({
-    queryKey: ['tickets', sortBy, sortOrder],
+  const { data: stats } = useQuery({
+    queryKey: ['ticketStats'],
     queryFn: async () => {
-      const res = await axios.get<Ticket[]>('/api/tickets', {
-        params: { sortBy, sortOrder },
-      });
-      return res.data;
+      const res = await axios.get('/api/tickets/stats');
+      return res.data as {
+        totalTickets: number;
+        openTickets: number;
+        resolvedByAI: number;
+        percentResolvedByAI: number;
+        averageResolutionTimeMs: number;
+        ticketsPerDay: {
+          date: string;
+          label: string;
+          count: number;
+        }[];
+      };
     },
     enabled: !!session,
   });
-
-  const createMutation = useMutation({
-    mutationFn: async (body: CreateTicketBody) => {
-      const res = await axios.post('/api/tickets', body);
-      return res.data;
-    },
-    onSuccess: () => {
-      setShowModal(false);
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-    },
-  });
-
-  const statusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: TicketStatus }) => {
-      const res = await axios.patch(`/api/tickets/${id}`, { status });
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await axios.delete(`/api/tickets/${id}`);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-    },
-  });
-
-  const handleCreate = async (body: CreateTicketBody) => {
-    createMutation.mutate(body);
-  };
-
-  const handleStatusChange = async (id: string, status: TicketStatus) => {
-    statusMutation.mutate({ id, status });
-  };
-
-  const handleDelete = async (id: string) => {
-    deleteMutation.mutate(id);
-  };
 
   if (isPending) {
     return (
@@ -96,364 +51,122 @@ export default function Home() {
     return <Navigate to="/login" replace />;
   }
 
-  const handleSignOut = async () => {
-    await authClient.signOut();
-  };
-
-  const filteredTickets = tickets.filter((t) => {
-    // 1. Status Filter
-    if (filterStatus !== 'all' && t.status !== filterStatus) {
-      return false;
-    }
-
-    // 2. Search Query (searches across subject, sender name, and sender email)
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      const subject = t.title.toLowerCase();
-      
-      const { name: senderName, email: senderEmail } = getTicketSender(t);
-      
-      const nameMatch = senderName.toLowerCase().includes(query);
-      const emailMatch = senderEmail.toLowerCase().includes(query);
-      const subjectMatch = subject.includes(query);
-
-      if (!nameMatch && !emailMatch && !subjectMatch) {
-        return false;
-      }
-    }
-
-    // 3. Category Filter
-    if (categoryFilter !== 'all' && t.category !== categoryFilter) {
-      return false;
-    }
-
-    // 4. Priority Filter
-    if (priorityFilter !== 'all' && t.priority !== priorityFilter) {
-      return false;
-    }
-
-    // 5. Date Range Filter
-    if (dateFrom) {
-      const fromDate = new Date(dateFrom);
-      fromDate.setHours(0, 0, 0, 0);
-      if (new Date(t.createdAt) < fromDate) {
-        return false;
-      }
-    }
-    if (dateTo) {
-      const toDate = new Date(dateTo);
-      toDate.setHours(23, 59, 59, 999);
-      if (new Date(t.createdAt) > toDate) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  const getFilteredTicketsForCounts = (status: TicketStatus | 'all') => {
-    return tickets.filter((t) => {
-      if (status !== 'all' && t.status !== status) {
-        return false;
-      }
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const subject = t.title.toLowerCase();
-        const { name: senderName, email: senderEmail } = getTicketSender(t);
-        
-        const nameMatch = senderName.toLowerCase().includes(query);
-        const emailMatch = senderEmail.toLowerCase().includes(query);
-        const subjectMatch = subject.includes(query);
-        if (!nameMatch && !emailMatch && !subjectMatch) {
-          return false;
-        }
-      }
-      if (categoryFilter !== 'all' && t.category !== categoryFilter) {
-        return false;
-      }
-      if (priorityFilter !== 'all' && t.priority !== priorityFilter) {
-        return false;
-      }
-      if (dateFrom) {
-        const fromDate = new Date(dateFrom);
-        fromDate.setHours(0, 0, 0, 0);
-        if (new Date(t.createdAt) < fromDate) return false;
-      }
-      if (dateTo) {
-        const toDate = new Date(dateTo);
-        toDate.setHours(23, 59, 59, 999);
-        if (new Date(t.createdAt) > toDate) return false;
-      }
-      return true;
-    });
-  };
-
-  const counts = {
-    all: getFilteredTicketsForCounts('all').length,
-    new: getFilteredTicketsForCounts('new').length,
-    open: getFilteredTicketsForCounts('open').length,
-    'in-progress': getFilteredTicketsForCounts('in-progress').length,
-    resolved: getFilteredTicketsForCounts('resolved').length,
-    closed: getFilteredTicketsForCounts('closed').length,
-  };
-
-  const hasActiveFilters = 
-    searchQuery !== '' || 
-    categoryFilter !== 'all' || 
-    priorityFilter !== 'all' || 
-    dateFrom !== '' || 
-    dateTo !== '';
-
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setCategoryFilter('all');
-    setPriorityFilter('all');
-    setDateFrom('');
-    setDateTo('');
-    setCurrentPage(1);
-  };
-
-  const totalItems = filteredTickets.length;
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterStatus, searchQuery, categoryFilter, priorityFilter, dateFrom, dateTo, pageSize]);
-
-  const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
-
   return (
-    <>
-      <header className="bg-gradient-to-br from-bg-secondary to-bg-card border-b border-border-color backdrop-blur-[20px] sticky top-0 z-[100]">
-        <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-[1.8rem] drop-shadow-[0_0_8px_var(--color-accent-glow)]">🎫</span>
-            <Link to="/" className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em] hover:opacity-90">
-              Helpdesk
-            </Link>
+    <AppLayout>
+      {/* Dashboard Metrics Grid */}
+      {stats && typeof stats.totalTickets === 'number' && (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-5 shadow-sm transition-all hover:border-accent/40">
+            <span className="text-[0.75rem] font-bold uppercase tracking-wider text-text-muted">Total Tickets</span>
+            <div className="text-[1.8rem] font-extrabold text-text-primary mt-1">{stats.totalTickets}</div>
+            <span className="text-[0.7rem] text-text-muted mt-2 block">All tickets in system</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-[0.9rem] font-medium text-text-secondary">Welcome, {session.user.name}</span>
-            {session.user.role === UserRole.ADMIN && (
-              <Link 
-                to="/users"
-                className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary"
-              >
-                Users
-              </Link>
-            )}
-            <button 
-              className="inline-flex items-center gap-[6px] px-5 py-[10px] border-none rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[1px] hover:shadow-[0_0_40px_var(--color-accent-glow)]" 
-              onClick={() => setShowModal(true)}
-            >
-              + New Ticket
-            </button>
-            <button 
-              className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary" 
-              onClick={handleSignOut}
-            >
-              Sign Out
-            </button>
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-5 shadow-sm transition-all hover:border-accent/40">
+            <span className="text-[0.75rem] font-bold uppercase tracking-wider text-text-muted">Open Tickets</span>
+            <div className="text-[1.8rem] font-extrabold text-[#f9a826] mt-1">{stats.openTickets}</div>
+            <span className="text-[0.7rem] text-text-muted mt-2 block">Waiting for response</span>
+          </div>
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-5 shadow-sm transition-all hover:border-accent/40">
+            <div className="flex justify-between items-start">
+              <span className="text-[0.75rem] font-bold uppercase tracking-wider text-text-muted">Resolved by AI</span>
+              <span className="bg-[rgba(139,92,246,0.15)] text-[#a78bfa] text-[0.65rem] font-bold px-1.5 py-0.5 rounded border border-[rgba(139,92,246,0.3)] text-center tracking-wider">AI</span>
+            </div>
+            <div className="text-[1.8rem] font-extrabold text-[#c084fc] mt-1">{stats.resolvedByAI}</div>
+            <span className="text-[0.7rem] text-text-muted mt-2 block">Auto-resolved tickets</span>
+          </div>
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-5 shadow-sm transition-all hover:border-accent/40">
+            <div className="flex justify-between items-start">
+              <span className="text-[0.75rem] font-bold uppercase tracking-wider text-text-muted">AI Success Rate</span>
+              <span className="bg-[rgba(139,92,246,0.15)] text-[#a78bfa] text-[0.65rem] font-bold px-1.5 py-0.5 rounded border border-[rgba(139,92,246,0.3)] text-center tracking-wider">AI</span>
+            </div>
+            <div className="text-[1.8rem] font-extrabold text-[#c084fc] mt-1">{stats.percentResolvedByAI}%</div>
+            <span className="text-[0.7rem] text-text-muted mt-2 block">Of total tickets resolved</span>
+          </div>
+          <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-5 shadow-sm transition-all hover:border-accent/40">
+            <span className="text-[0.75rem] font-bold uppercase tracking-wider text-text-muted">Avg. Resolution Time</span>
+            <div className="text-[1.8rem] font-extrabold text-[#4ecdc4] mt-1">
+              {formatResolutionTime(stats.averageResolutionTimeMs)}
+            </div>
+            <span className="text-[0.7rem] text-text-muted mt-2 block">Time to resolution</span>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-[1200px] mx-auto py-8 px-6">
-        {/* Stats Bar */}
-        <div className="flex gap-[10px] flex-wrap mb-8">
-          {(['all', ...STATUS_OPTIONS] as const).map((s) => {
-            const isActive = filterStatus === s;
-            return (
-              <button
-                key={s}
-                className={`flex items-center gap-2 py-2 px-4 border rounded-xl font-sans text-[0.8rem] font-medium cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] capitalize ${
-                  isActive 
-                    ? 'bg-accent border-accent text-[#0f0f1a] font-bold shadow-glow' 
-                    : 'bg-bg-secondary border-border-color text-text-secondary hover:bg-bg-hover hover:border-accent hover:text-text-primary'
-                }`}
-                onClick={() => setFilterStatus(s)}
-              >
-                <span>{s}</span>
-                <span className={`py-[2px] px-2 rounded-full text-[0.75rem] font-bold ${
-                  isActive 
-                    ? 'bg-[#0f0f1a] text-white' 
-                    : 'bg-[rgba(255,255,255,0.15)] text-text-primary'
-                }`}>{counts[s]}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Filter Bar */}
-        <div className="bg-bg-card border border-border-color rounded-xl p-4 mb-6 flex flex-wrap items-center gap-4 text-text-primary">
-          {/* Search Input */}
-          <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
-            <label htmlFor="search" className="text-xs font-semibold text-text-secondary">Search</label>
-            <input
-              id="search"
-              type="text"
-              placeholder="Search tickets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent placeholder:text-text-muted"
-            />
-          </div>
-
-          {/* Category Dropdown */}
-          <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
-            <label htmlFor="category" className="text-xs font-semibold text-text-secondary">Category</label>
-            <select
-              id="category"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
-            >
-              <option value="all">All Categories</option>
-              <option value="general_question">General Question</option>
-              <option value="technical_question">Technical Question</option>
-              <option value="refund_request">Refund Request</option>
-            </select>
-          </div>
-
-          {/* Priority Dropdown */}
-          <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
-            <label htmlFor="priority" className="text-xs font-semibold text-text-secondary">Priority</label>
-            <select
-              id="priority"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
-            >
-              <option value="all">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-
-          {/* Date From */}
-          <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
-            <label htmlFor="dateFrom" className="text-xs font-semibold text-text-secondary">From Date</label>
-            <input
-              id="dateFrom"
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
-              style={{ colorScheme: 'dark' }}
-            />
-          </div>
-
-          {/* Date To */}
-          <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
-            <label htmlFor="dateTo" className="text-xs font-semibold text-text-secondary">To Date</label>
-            <input
-              id="dateTo"
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
-              style={{ colorScheme: 'dark' }}
-            />
-          </div>
-
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <div className="w-full sm:w-auto self-end flex flex-col">
-              <button
-                onClick={handleClearFilters}
-                className="h-9 py-[6px] px-4 rounded-md font-sans text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-danger border border-danger/40 hover:bg-danger/10"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
-        </div>
-
-        <TicketTable
-          tickets={paginatedTickets}
-          isLoading={loading}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
-        />
-
-        {/* Pagination */}
-        {totalItems > 0 && (
-          <div className="mt-4 bg-bg-card border border-border-color rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-text-secondary text-sm">
-            {/* Page Size & Info */}
-            <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
-              <div className="flex items-center gap-2">
-                <span>Show</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="h-8 py-1 px-2 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer focus:outline-none focus:border-accent"
-                >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-                <span>entries</span>
-              </div>
-              <span className="text-text-muted text-xs">
-                Showing {totalItems === 0 ? 0 : startIndex + 1} to {endIndex} of {totalItems} entries
-              </span>
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
-                title="First Page"
-              >
-                &laquo;
-              </button>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
-                title="Previous Page"
-              >
-                Previous
-              </button>
-              <span className="text-xs text-text-muted px-2 select-none">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
-                title="Next Page"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
-                title="Last Page"
-              >
-                &raquo;
-              </button>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {showModal && (
-        <CreateTicketModal
-          onClose={() => setShowModal(false)}
-          onCreate={handleCreate}
-        />
       )}
-    </>
+
+      {/* Ticket Volume Bar Chart */}
+      {stats && Array.isArray(stats.ticketsPerDay) && (
+        <div className="bg-gradient-to-br from-bg-secondary to-bg-card border border-border-color/60 rounded-xl p-6 shadow-md mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted">Ticket Volume</h3>
+              <p className="text-xs text-text-secondary mt-1">Total tickets created per day over the past 30 days</p>
+            </div>
+            <span className="text-xs bg-accent/10 border border-accent/20 text-accent font-semibold px-2.5 py-1 rounded-full">
+              Last 30 Days
+            </span>
+          </div>
+
+          <div className="h-[200px] flex items-end gap-[6px] md:gap-[10px] w-full select-none pt-4 relative">
+            {/* Gridlines */}
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none border-b border-border-color/40 pb-6 pt-4">
+              {[0, 1, 2, 3, 4].map((i) => {
+                const maxVal = Math.max(...stats.ticketsPerDay.map((d) => d.count), 5);
+                const val = Math.round(maxVal * (1 - i / 4));
+                return (
+                  <div key={i} className="w-full flex items-center justify-between border-t border-border-color/20 h-0 relative">
+                    <span className="absolute -left-1 -translate-x-full text-[0.65rem] font-bold text-text-muted/60 bg-bg-secondary px-1">
+                      {val}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bars */}
+            <div className="flex items-end gap-1.5 md:gap-3 w-full h-[160px] z-10 px-2">
+              {stats.ticketsPerDay.map((d, index) => {
+                const maxVal = Math.max(...stats.ticketsPerDay.map((d) => d.count), 5);
+                const heightPercent = maxVal > 0 ? (d.count / maxVal) * 100 : 0;
+                return (
+                  <div
+                    key={d.date}
+                    className="flex-1 flex flex-col items-center group relative cursor-pointer"
+                    style={{ height: '100%' }}
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full mb-2 bg-[#12121e]/95 border border-border-color text-text-primary text-[0.7rem] px-2.5 py-1.5 rounded-lg shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none whitespace-nowrap z-30 flex flex-col gap-0.5 items-center">
+                      <span className="font-bold text-[0.72rem] text-accent">
+                        {d.count} {d.count === 1 ? 'ticket' : 'tickets'}
+                      </span>
+                      <span className="text-text-muted text-[0.65rem]">{d.label}</span>
+                    </div>
+
+                    {/* Bar */}
+                    <div className="w-full flex items-end justify-center h-full">
+                      <div
+                        className="w-full rounded-t-[3px] bg-accent/60 hover:bg-accent hover:shadow-[0_0_15px_var(--color-accent-glow)] transition-all duration-300"
+                        style={{
+                          height: `${Math.max(heightPercent, 2)}%`,
+                          minHeight: d.count > 0 ? '4px' : '2px',
+                          opacity: d.count > 0 ? 1 : 0.2,
+                        }}
+                      />
+                    </div>
+
+                    {/* X-axis labels */}
+                    <span className="absolute top-full mt-2 text-[0.65rem] font-bold text-text-muted group-hover:text-text-primary transition-colors hidden md:block">
+                      {index % 5 === 0 || index === stats.ticketsPerDay.length - 1 ? d.label : ''}
+                    </span>
+                    <span className="absolute top-full mt-2 text-[0.65rem] font-bold text-text-muted group-hover:text-text-primary transition-colors block md:hidden">
+                      {index % 10 === 0 || index === stats.ticketsPerDay.length - 1 ? d.label : ''}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="h-6" />
+        </div>
+      )}
+    </AppLayout>
   );
 }

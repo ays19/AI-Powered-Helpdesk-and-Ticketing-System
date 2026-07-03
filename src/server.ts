@@ -50,7 +50,10 @@ app.use('/api/users', generalLimit, authMiddleware, userRouter);
 app.get('/api/agents', generalLimit, authMiddleware, async (req, res, next) => {
   try {
     const agents = await db.user.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        email: { not: 'ai@example.com' },
+      },
       select: {
         id: true,
         name: true,

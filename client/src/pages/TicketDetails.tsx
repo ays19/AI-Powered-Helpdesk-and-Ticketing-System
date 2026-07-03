@@ -31,6 +31,7 @@ export default function TicketDetails() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
+      queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
       showToast('Reply submitted successfully', 'success');
     },
     onError: () => {
@@ -69,6 +70,7 @@ export default function TicketDetails() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
       showToast('Status updated successfully', 'success');
     },
     onError: () => {
@@ -84,6 +86,7 @@ export default function TicketDetails() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
       showToast('Category updated successfully', 'success');
     },
     onError: () => {
@@ -99,6 +102,7 @@ export default function TicketDetails() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
       showToast('Assignment updated successfully', 'success');
     },
     onError: () => {
@@ -113,6 +117,7 @@ export default function TicketDetails() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
       navigate('/');
     },
   });

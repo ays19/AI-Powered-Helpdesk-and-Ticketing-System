@@ -18,6 +18,7 @@ export const UserController = {
     const users = await prisma.user.findMany({
       where: {
         deletedAt: null,
+        email: { not: 'ai@example.com' },
       },
       select: {
         id: true,

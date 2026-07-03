@@ -9,6 +9,43 @@ import { mapTicket, toDbStatus } from '../lib/ticket-mapper';
 import { groq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 
+// ---------------------------------------------------------------------------
+// Raw query row types — shapes returned by the stored functions
+// ---------------------------------------------------------------------------
+
+/** Row returned by the `get_ticket_stats()` stored function. */
+type TicketStatsRow = {
+  total_tickets:          bigint;
+  open_tickets:           bigint;
+  resolved_by_ai:         bigint;
+  percent_resolved_by_ai: number;
+  avg_resolution_time_ms: number;
+};
+
+/** Row returned by the `get_tickets_per_day()` stored function. */
+type TicketsPerDayRow = {
+  ticket_date: Date;
+  label:       string;
+  day_count:   bigint;
+};
+
+/** Normalised daily entry sent to the client. */
+type TicketsPerDayEntry = {
+  date:  string;
+  label: string;
+  count: number;
+};
+
+/** Full stats payload sent to the client. */
+export type TicketStatsResponse = {
+  totalTickets:             number;
+  openTickets:              number;
+  resolvedByAI:             number;
+  percentResolvedByAI:      number;
+  averageResolutionTimeMs:  number;
+  ticketsPerDay:            TicketsPerDayEntry[];
+};
+
 export const ticketRouter = Router();
 
 
@@ -62,6 +99,39 @@ async function findTicketByNumberOrUuid(idParam: string, includeReplies: boolean
 
   return ticket;
 }
+
+// GET /api/tickets/stats
+ticketRouter.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const DAYS = 30;
+
+  // Single round-trip for all scalar metrics (computed in PostgreSQL)
+  const statsRows = await prisma.$queryRaw<TicketStatsRow[]>`SELECT * FROM get_ticket_stats(${DAYS})`;
+
+  const statsRow = statsRows[0];
+  if (!statsRow) {
+    res.status(500).json({ error: 'Stats function returned no data' });
+    return;
+  }
+
+  // Daily ticket volume series for the bar chart
+  const dailyRows = await prisma.$queryRaw<TicketsPerDayRow[]>`SELECT * FROM get_tickets_per_day(${DAYS})`;
+
+  const ticketsPerDay = dailyRows.map(row => ({
+    date: row.ticket_date.toISOString().split('T')[0],
+    label: row.label.trim(),
+    count: Number(row.day_count),
+  }));
+
+  res.json({
+    totalTickets:          Number(statsRow.total_tickets),
+    openTickets:           Number(statsRow.open_tickets),
+    resolvedByAI:          Number(statsRow.resolved_by_ai),
+    percentResolvedByAI:   Number(statsRow.percent_resolved_by_ai),
+    averageResolutionTimeMs: Number(statsRow.avg_resolution_time_ms),
+    ticketsPerDay,
+  });
+}));
+
 
 // GET /api/tickets/:id
 ticketRouter.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

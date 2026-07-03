@@ -2,13 +2,14 @@ import { Navigate, Link } from 'react-router-dom';
 import { authClient } from '../lib/auth-client';
 import { UserRole, type User } from '../types';
 import { ShieldAlert, Users as UsersIcon, ArrowLeft, AlertCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import UserModal, { CreateUserButton } from '../components/UserModal';
 import UserTable from '../components/UserTable';
 import DeleteUserModal from '../components/DeleteUserModal';
+import AppLayout from '../components/AppLayout';
 
 export default function Users() {
   const { data: session, isPending } = authClient.useSession();
@@ -75,33 +76,14 @@ export default function Users() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary">
-      <header className="bg-gradient-to-br from-bg-secondary to-bg-card border-b border-border-color backdrop-blur-[20px] sticky top-0 z-[100]">
-        <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-[1.8rem]">🎫</span>
-            <Link to="/" className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em] hover:opacity-90">Helpdesk</Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-[0.9rem] font-medium text-text-secondary">Welcome, {session.user.name}</span>
-            <Link to="/" className="inline-flex items-center gap-2 px-4 py-[8px] rounded-md font-sans text-xs font-semibold cursor-pointer bg-bg-secondary text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary">
-              <ArrowLeft className="size-3" /> Tickets
-            </Link>
-            <button className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary" onClick={() => authClient.signOut()}>Sign Out</button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-[1200px] mx-auto py-12 px-6 animate-[fadeIn_0.3s_ease]">
+    <>
+      <AppLayout headerAction={<CreateUserButton onClick={handleOpenCreateModal} />}>
         <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
-                <UsersIcon className="size-5" />
-              </div>
-              <h1 className="text-3xl font-extrabold bg-gradient-to-br from-text-primary to-text-secondary bg-clip-text text-transparent tracking-tight">Users</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
+              <UsersIcon className="size-5" />
             </div>
-            <CreateUserButton onClick={handleOpenCreateModal} />
+            <h1 className="text-3xl font-extrabold bg-gradient-to-br from-text-primary to-text-secondary bg-clip-text text-transparent tracking-tight">Users</h1>
           </div>
 
           {error && (
@@ -118,22 +100,22 @@ export default function Users() {
             </CardContent>
           </Card>
         </div>
-      </main>
+      </AppLayout>
 
       {isModalOpen && (
-        <UserModal 
-          user={editingUser || undefined} 
-          onClose={handleCloseModal} 
-          title={editingUser ? 'Edit User' : 'Create User'} 
+        <UserModal
+          user={editingUser || undefined}
+          onClose={handleCloseModal}
+          title={editingUser ? 'Edit User' : 'Create User'}
         />
       )}
 
       {userToDelete && (
-        <DeleteUserModal 
-          user={userToDelete} 
-          onClose={handleCloseDeleteModal} 
+        <DeleteUserModal
+          user={userToDelete}
+          onClose={handleCloseDeleteModal}
         />
       )}
-    </div>
+    </>
   );
 }

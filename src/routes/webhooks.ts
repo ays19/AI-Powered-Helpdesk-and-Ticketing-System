@@ -38,6 +38,11 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
     where: { email: validatedData.from },
   });
 
+  // Find the AI agent user
+  const aiAgent = await prisma.user.findUnique({
+    where: { email: 'ai@example.com' },
+  });
+
   const ticket = await prisma.ticket.create({
     data: {
       title: validatedData.subject,
@@ -46,6 +51,7 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
       userId: user?.id,
       status: TicketStatus.new,
       priority: TicketPriority.medium,
+      assignedToId: aiAgent?.id || null,
     },
   });
 

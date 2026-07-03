@@ -45,6 +45,34 @@ async function seed() {
         console.log(`   Role:  ${UserRole.ADMIN}\n`);
     }
 
+    // Seed the AI Agent user
+    const aiEmail = "ai@example.com";
+    const existingAi = await db.user.findUnique({
+        where: { email: aiEmail },
+    });
+
+    if (existingAi) {
+        console.log(`⚠️  AI Agent with email "${aiEmail}" already exists. Skipping.\n`);
+    } else {
+        const result = await auth.api.createUser({
+            body: {
+                email: aiEmail,
+                password: "aipassword123",
+                name: "AI",
+                role: UserRole.AGENT,
+            },
+        });
+
+        if (!result?.user) {
+            console.error("❌ Failed to create AI agent user.");
+            process.exit(1);
+        }
+
+        console.log(`✅ AI agent user created:`);
+        console.log(`   Email: ${aiEmail}`);
+        console.log(`   Role:  ${UserRole.AGENT}\n`);
+    }
+
     console.log("🌱 Seeding complete!");
     process.exit(0);
 }

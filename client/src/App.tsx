@@ -5,6 +5,7 @@ import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Users from '@/pages/Users';
 import TicketDetails from '@/pages/TicketDetails';
+import TicketsList from '@/pages/TicketsList';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 axios.defaults.withCredentials = true;
@@ -19,8 +20,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Home />} />
-            <Route path="/users" element={<Users />} />
+            <Route path="/tickets" element={<TicketsList />} />
             <Route path="/tickets/:id" element={<TicketDetails />} />
+            <Route path="/users" element={<Users />} />
           </Route>
         </Routes>
       </Router>
