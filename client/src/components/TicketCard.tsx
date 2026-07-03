@@ -75,7 +75,9 @@ export default function TicketCard({ ticket, onStatusChange, onDelete }: Props) 
 
       <div className="mb-4 text-[0.8rem] flex items-center gap-1">
         <span className="text-text-muted">Assigned to:</span>
-        {ticket.assigned_to ? (
+        {ticket.isAiResolved ? (
+          <span className="font-semibold text-text-primary">AI</span>
+        ) : ticket.assigned_to ? (
           <span className="font-semibold text-text-primary">{ticket.assigned_to.name}</span>
         ) : (
           <span className="italic text-text-muted">Unassigned</span>

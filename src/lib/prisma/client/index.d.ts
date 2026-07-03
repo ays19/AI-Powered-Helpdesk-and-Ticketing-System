@@ -6043,6 +6043,7 @@ export namespace Prisma {
     customerEmail: string | null
     userId: string | null
     assignedToId: string | null
+    isAiResolved: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6058,6 +6059,7 @@ export namespace Prisma {
     customerEmail: string | null
     userId: string | null
     assignedToId: string | null
+    isAiResolved: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6073,6 +6075,7 @@ export namespace Prisma {
     customerEmail: number
     userId: number
     assignedToId: number
+    isAiResolved: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6098,6 +6101,7 @@ export namespace Prisma {
     customerEmail?: true
     userId?: true
     assignedToId?: true
+    isAiResolved?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6113,6 +6117,7 @@ export namespace Prisma {
     customerEmail?: true
     userId?: true
     assignedToId?: true
+    isAiResolved?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6128,6 +6133,7 @@ export namespace Prisma {
     customerEmail?: true
     userId?: true
     assignedToId?: true
+    isAiResolved?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6230,6 +6236,7 @@ export namespace Prisma {
     customerEmail: string | null
     userId: string | null
     assignedToId: string | null
+    isAiResolved: boolean
     createdAt: Date
     updatedAt: Date
     _count: TicketCountAggregateOutputType | null
@@ -6264,6 +6271,7 @@ export namespace Prisma {
     customerEmail?: boolean
     userId?: boolean
     assignedToId?: boolean
+    isAiResolved?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Ticket$userArgs<ExtArgs>
@@ -6283,6 +6291,7 @@ export namespace Prisma {
     customerEmail?: boolean
     userId?: boolean
     assignedToId?: boolean
+    isAiResolved?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Ticket$userArgs<ExtArgs>
@@ -6300,6 +6309,7 @@ export namespace Prisma {
     customerEmail?: boolean
     userId?: boolean
     assignedToId?: boolean
+    isAiResolved?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | Ticket$userArgs<ExtArgs>
@@ -6317,11 +6327,12 @@ export namespace Prisma {
     customerEmail?: boolean
     userId?: boolean
     assignedToId?: boolean
+    isAiResolved?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ticketNumber" | "title" | "description" | "status" | "priority" | "category" | "customerEmail" | "userId" | "assignedToId" | "createdAt" | "updatedAt", ExtArgs["result"]["ticket"]>
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ticketNumber" | "title" | "description" | "status" | "priority" | "category" | "customerEmail" | "userId" | "assignedToId" | "isAiResolved" | "createdAt" | "updatedAt", ExtArgs["result"]["ticket"]>
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Ticket$userArgs<ExtArgs>
     assignedTo?: boolean | Ticket$assignedToArgs<ExtArgs>
@@ -6355,6 +6366,7 @@ export namespace Prisma {
       customerEmail: string | null
       userId: string | null
       assignedToId: string | null
+      isAiResolved: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["ticket"]>
@@ -6793,6 +6805,7 @@ export namespace Prisma {
     readonly customerEmail: FieldRef<"Ticket", 'String'>
     readonly userId: FieldRef<"Ticket", 'String'>
     readonly assignedToId: FieldRef<"Ticket", 'String'>
+    readonly isAiResolved: FieldRef<"Ticket", 'Boolean'>
     readonly createdAt: FieldRef<"Ticket", 'DateTime'>
     readonly updatedAt: FieldRef<"Ticket", 'DateTime'>
   }
@@ -8516,6 +8529,7 @@ export namespace Prisma {
     customerEmail: 'customerEmail',
     userId: 'userId',
     assignedToId: 'assignedToId',
+    isAiResolved: 'isAiResolved',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -9027,6 +9041,7 @@ export namespace Prisma {
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     assignedToId?: StringNullableFilter<"Ticket"> | string | null
+    isAiResolved?: BoolFilter<"Ticket"> | boolean
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -9045,6 +9060,7 @@ export namespace Prisma {
     customerEmail?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     assignedToId?: SortOrderInput | SortOrder
+    isAiResolved?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -9066,6 +9082,7 @@ export namespace Prisma {
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     assignedToId?: StringNullableFilter<"Ticket"> | string | null
+    isAiResolved?: BoolFilter<"Ticket"> | boolean
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -9084,6 +9101,7 @@ export namespace Prisma {
     customerEmail?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
     assignedToId?: SortOrderInput | SortOrder
+    isAiResolved?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TicketCountOrderByAggregateInput
@@ -9107,6 +9125,7 @@ export namespace Prisma {
     customerEmail?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
     userId?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
     assignedToId?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
+    isAiResolved?: BoolWithAggregatesFilter<"Ticket"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
   }
@@ -9557,6 +9576,7 @@ export namespace Prisma {
     priority?: $Enums.TicketPriority
     category?: $Enums.TicketCategory
     customerEmail?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutTicketsInput
@@ -9575,6 +9595,7 @@ export namespace Prisma {
     customerEmail?: string | null
     userId?: string | null
     assignedToId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     replies?: TicketReplyUncheckedCreateNestedManyWithoutTicketInput
@@ -9588,6 +9609,7 @@ export namespace Prisma {
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutTicketsNestedInput
@@ -9606,6 +9628,7 @@ export namespace Prisma {
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     replies?: TicketReplyUncheckedUpdateManyWithoutTicketNestedInput
@@ -9622,6 +9645,7 @@ export namespace Prisma {
     customerEmail?: string | null
     userId?: string | null
     assignedToId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -9634,6 +9658,7 @@ export namespace Prisma {
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -9649,6 +9674,7 @@ export namespace Prisma {
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10130,6 +10156,7 @@ export namespace Prisma {
     customerEmail?: SortOrder
     userId?: SortOrder
     assignedToId?: SortOrder
+    isAiResolved?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -10149,6 +10176,7 @@ export namespace Prisma {
     customerEmail?: SortOrder
     userId?: SortOrder
     assignedToId?: SortOrder
+    isAiResolved?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -10164,6 +10192,7 @@ export namespace Prisma {
     customerEmail?: SortOrder
     userId?: SortOrder
     assignedToId?: SortOrder
+    isAiResolved?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11003,6 +11032,7 @@ export namespace Prisma {
     priority?: $Enums.TicketPriority
     category?: $Enums.TicketCategory
     customerEmail?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     assignedTo?: UserCreateNestedOneWithoutAssignedTicketsInput
@@ -11019,6 +11049,7 @@ export namespace Prisma {
     category?: $Enums.TicketCategory
     customerEmail?: string | null
     assignedToId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     replies?: TicketReplyUncheckedCreateNestedManyWithoutTicketInput
@@ -11043,6 +11074,7 @@ export namespace Prisma {
     priority?: $Enums.TicketPriority
     category?: $Enums.TicketCategory
     customerEmail?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutTicketsInput
@@ -11059,6 +11091,7 @@ export namespace Prisma {
     category?: $Enums.TicketCategory
     customerEmail?: string | null
     userId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     replies?: TicketReplyUncheckedCreateNestedManyWithoutTicketInput
@@ -11201,6 +11234,7 @@ export namespace Prisma {
     customerEmail?: StringNullableFilter<"Ticket"> | string | null
     userId?: StringNullableFilter<"Ticket"> | string | null
     assignedToId?: StringNullableFilter<"Ticket"> | string | null
+    isAiResolved?: BoolFilter<"Ticket"> | boolean
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
   }
@@ -11680,6 +11714,7 @@ export namespace Prisma {
     priority?: $Enums.TicketPriority
     category?: $Enums.TicketCategory
     customerEmail?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     user?: UserCreateNestedOneWithoutTicketsInput
@@ -11697,6 +11732,7 @@ export namespace Prisma {
     customerEmail?: string | null
     userId?: string | null
     assignedToId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11768,6 +11804,7 @@ export namespace Prisma {
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutTicketsNestedInput
@@ -11785,6 +11822,7 @@ export namespace Prisma {
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11871,6 +11909,7 @@ export namespace Prisma {
     category?: $Enums.TicketCategory
     customerEmail?: string | null
     assignedToId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11885,6 +11924,7 @@ export namespace Prisma {
     category?: $Enums.TicketCategory
     customerEmail?: string | null
     userId?: string | null
+    isAiResolved?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11978,6 +12018,7 @@ export namespace Prisma {
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignedTo?: UserUpdateOneWithoutAssignedTicketsNestedInput
@@ -11994,6 +12035,7 @@ export namespace Prisma {
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     replies?: TicketReplyUncheckedUpdateManyWithoutTicketNestedInput
@@ -12009,6 +12051,7 @@ export namespace Prisma {
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     assignedToId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12021,6 +12064,7 @@ export namespace Prisma {
     priority?: EnumTicketPriorityFieldUpdateOperationsInput | $Enums.TicketPriority
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutTicketsNestedInput
@@ -12037,6 +12081,7 @@ export namespace Prisma {
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     replies?: TicketReplyUncheckedUpdateManyWithoutTicketNestedInput
@@ -12052,6 +12097,7 @@ export namespace Prisma {
     category?: EnumTicketCategoryFieldUpdateOperationsInput | $Enums.TicketCategory
     customerEmail?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    isAiResolved?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

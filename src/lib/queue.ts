@@ -271,13 +271,22 @@ Sharar's
       });
 
       if (!ticket) {
-        console.error(`[Queue] Ticket ${ticketId} not found — skipping auto-resolve`);
+        console.error(`[Queue] [auto-resolve] Ticket ${ticketId} not found — skipping`);
         return;
       }
 
-      // Skip if ticket is already resolved/closed (e.g. classification worker handled it)
+      // Guard 1 (early): skip immediately if already resolved/closed
       if (ticket.status === 'resolved' || ticket.status === 'closed') {
-        console.log(`[Queue] Ticket ${ticketId} already ${ticket.status} — skipping auto-resolve`);
+        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${ticket.status} — skipping (early status check)`);
+        return;
+      }
+
+      // Guard 2 (early): skip if any reply already exists.
+      // This catches the common race where the classification worker ran first
+      // and created its own AI reply — we must not write a duplicate.
+      const existingReplyCount = await prisma.ticketReply.count({ where: { ticketId } });
+      if (existingReplyCount > 0) {
+        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already has ${existingReplyCount} reply/replies — skipping to avoid duplicate`);
         return;
       }
 
@@ -356,19 +365,18 @@ Sharar's
         return;
       }
 
-      // Re-fetch ticket with reply count to guard against race with classification worker.
-      // The classification worker may have already auto-resolved the ticket and created a reply;
-      // if any reply exists we must not create a duplicate.
+      // Guard 3 (final, pre-write): re-check both status and reply count right before
+      // writing to catch any window between the early guard and now.
       const freshTicket = await prisma.ticket.findUnique({
         where: { id: ticketId },
         include: { _count: { select: { replies: true } } },
       });
       if (freshTicket?.status === 'resolved' || freshTicket?.status === 'closed') {
-        console.log(`[Queue] Ticket ${ticketId} already ${freshTicket.status} — skipping auto-resolve write`);
+        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${freshTicket.status} — skipping auto-resolve write (final guard)`);
         return;
       }
       if ((freshTicket?._count?.replies ?? 0) > 0) {
-        console.log(`[Queue] Ticket ${ticketId} already has ${freshTicket!._count.replies} reply/replies — skipping auto-resolve to avoid duplicate`);
+        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already has ${freshTicket!._count.replies} reply/replies — skipping (final guard)`);
         return;
       }
 
@@ -381,14 +389,14 @@ Sharar's
         },
       });
 
-      // Mark ticket as resolved
+      // Mark ticket as resolved and flag it as AI-resolved
       const resolvedTicket = await prisma.ticket.update({
         where: { id: ticketId },
-        data: { status: 'resolved' },
+        data: { status: 'resolved', isAiResolved: true },
         include: { user: true },
       });
 
-      console.log(`[Queue] Ticket ${ticketId} auto-resolved by dedicated auto-resolve worker`);
+      console.log(`[Queue] [auto-resolve] Ticket ${ticketId} auto-resolved and flagged as AI-resolved`);
 
       // Send resolution email to customer via Resend
       if (recipientEmail) {

@@ -58,12 +58,12 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
   // Automatically classify the ticket using Groq in a non-blocking fashion
   classifyTicket(ticket);
 
-  // Enqueue the auto-resolve job in parallel
+  // Enqueue the auto-resolve job in parallel (email creation path)
   try {
     await boss.send(TICKET_AUTO_RESOLVE_QUEUE, { ticketId: ticket.id });
-    console.log(`[Webhook] Enqueued auto-resolve job for ticket ${ticket.id}`);
+    console.log(`[Route/webhooks] Enqueued ticket-auto-resolve job for ticket ${ticket.id} (enqueue #1 — email creation path)`);
   } catch (error) {
-    console.error(`[Webhook] Failed to enqueue auto-resolve job for ticket ${ticket.id}:`, error);
+    console.error(`[Route/webhooks] Failed to enqueue auto-resolve job for ticket ${ticket.id}:`, error);
   }
 
   res.status(201).json(ticket);

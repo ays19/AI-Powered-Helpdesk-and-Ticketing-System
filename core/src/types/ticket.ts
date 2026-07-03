@@ -71,6 +71,7 @@ export interface Ticket {
   } | null;
   assignedToId?: string | null;
   assigned_to?: TicketUser | null;
+  isAiResolved?: boolean;
   replies?: TicketReply[];
   createdAt: string;
   updatedAt: string;

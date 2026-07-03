@@ -177,6 +177,14 @@ export default function TicketTable({
         header: 'Assignee',
         cell: (info) => {
           const val = info.getValue();
+          const ticket = info.row.original;
+          if (ticket.isAiResolved) {
+            return (
+              <span className="text-text-primary text-sm font-semibold">
+                AI
+              </span>
+            );
+          }
           return (
             <span className={val ? 'text-text-primary text-sm font-semibold' : 'text-text-muted text-xs italic'}>
               {val ? val.name : 'Unassigned'}
