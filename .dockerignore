@@ -1,0 +1,9 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.env
+.env.test
+.vscode
+playwright-report
+test-results

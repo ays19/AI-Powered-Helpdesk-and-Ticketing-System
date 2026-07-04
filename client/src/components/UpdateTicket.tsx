@@ -30,7 +30,7 @@ export default function UpdateTicket({
 }: UpdateTicketProps) {
   const handleAssignChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
-    const assignedToId = val === 'unassigned' ? null : val;
+    const assignedToId = val === 'unassigned' || val === 'ai-resolved' ? null : val;
     onAssignChange(assignedToId);
   };
 
