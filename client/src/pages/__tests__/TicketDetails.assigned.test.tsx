@@ -201,4 +201,66 @@ describe('TicketDetails - Assigned To Feature', () => {
     // Assert success toast appears after selection
     await screen.findByText('Assignment updated successfully');
   });
+
+  it('renders "AI" in dropdown when ticket is auto-resolved by AI with a valid assignedToId', async () => {
+    const aiResolvedTicket = {
+      ...MOCK_TICKET,
+      isAiResolved: true,
+      assignedToId: 'ai-user-id',
+      assigned_to: { id: 'ai-user-id', name: 'AI Agent', email: 'ai@example.com', role: 'agent' }
+    };
+
+    (axios.get as any).mockImplementation((url: string) => {
+      if (url.includes('/api/agents')) {
+        return Promise.resolve({ data: MOCK_AGENTS });
+      }
+      return Promise.resolve({ data: aiResolvedTicket });
+    });
+
+    renderWithQuery(
+      <Routes>
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+      </Routes>,
+      { route: '/tickets/123' }
+    );
+
+    await screen.findByRole('heading', { name: 'Database connection fails' });
+
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
+    expect(select.value).toBe('ai-user-id');
+    const option = select.querySelector('option[value="ai-user-id"]');
+    expect(option).toBeInTheDocument();
+    expect(option?.textContent).toBe('AI');
+  });
+
+  it('renders "AI" in dropdown when ticket is auto-resolved by AI but assignedToId is null', async () => {
+    const aiResolvedTicketWithNullAssignee = {
+      ...MOCK_TICKET,
+      isAiResolved: true,
+      assignedToId: null,
+      assigned_to: null
+    };
+
+    (axios.get as any).mockImplementation((url: string) => {
+      if (url.includes('/api/agents')) {
+        return Promise.resolve({ data: MOCK_AGENTS });
+      }
+      return Promise.resolve({ data: aiResolvedTicketWithNullAssignee });
+    });
+
+    renderWithQuery(
+      <Routes>
+        <Route path="/tickets/:id" element={<TicketDetails />} />
+      </Routes>,
+      { route: '/tickets/123' }
+    );
+
+    await screen.findByRole('heading', { name: 'Database connection fails' });
+
+    const select = screen.getByLabelText('Assigned To') as HTMLSelectElement;
+    expect(select.value).toBe('ai-resolved');
+    const option = select.querySelector('option[value="ai-resolved"]');
+    expect(option).toBeInTheDocument();
+    expect(option?.textContent).toBe('AI');
+  });
 });

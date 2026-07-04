@@ -85,13 +85,17 @@ export default function UpdateTicket({
         <select
           id="details-assign"
           className="w-full py-2.5 px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-sm cursor-pointer transition-all hover:border-accent focus:outline-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)]"
-          value={ticket.assignedToId || 'unassigned'}
+          value={
+            (ticket.isAiResolved || ticket.assigned_to?.email === 'ai@example.com')
+              ? (ticket.assignedToId || 'ai-resolved')
+              : (ticket.assignedToId || 'unassigned')
+          }
           onChange={handleAssignChange}
           disabled={isUpdatingAssignment || isLoadingAgents}
         >
           <option value="unassigned" className="text-text-muted">Unassigned</option>
-          {(ticket.isAiResolved || ticket.assigned_to?.email === 'ai@example.com') && ticket.assignedToId && (
-            <option value={ticket.assignedToId}>AI</option>
+          {(ticket.isAiResolved || ticket.assigned_to?.email === 'ai@example.com') && (
+            <option value={ticket.assignedToId || 'ai-resolved'}>AI</option>
           )}
           {agents.map((agent) => (
             <option key={agent.id} value={agent.id}>

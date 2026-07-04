@@ -299,13 +299,18 @@ export async function registerQueueWorkers() {
           },
         });
 
+        const aiUser = await tx.user.findUnique({ where: { email: 'ai@example.com' } });
+        if (!aiUser) {
+          console.warn(`[Queue] [auto-resolve] AI User with email 'ai@example.com' not found in database. Ticket ${ticketId} will be resolved without an assignee.`);
+        }
+
         // Mark ticket as resolved and flag it as AI-resolved
         resolvedTicket = await tx.ticket.update({
           where: { id: ticketId },
           data: {
             status: 'resolved',
             isAiResolved: true,
-            assignedToId: (await tx.user.findUnique({ where: { email: 'ai@example.com' } }))?.id ?? null,
+            assignedToId: aiUser?.id ?? null,
           },
           include: { user: true },
         });
