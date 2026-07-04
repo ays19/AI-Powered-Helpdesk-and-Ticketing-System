@@ -197,6 +197,7 @@ ticketRouter.post('/', asyncHandler(async (req: AuthenticatedRequest<{}, {}, Cre
   }
 
   try {
+    console.log(`[Queue] Enqueuing auto-resolve job for ticket ${ticket.id} at ${new Date().toISOString()}`);
     await boss.send(TICKET_AUTO_RESOLVE_QUEUE, { ticketId: ticket.id });
     console.log(`[Route/tickets] Enqueued ticket-auto-resolve job for ticket ${ticket.id} (enqueue #1 — manual creation path)`);
   } catch (err) {

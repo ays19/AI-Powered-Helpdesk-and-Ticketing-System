@@ -73,9 +73,8 @@ export async function registerQueueWorkers() {
       }
 
       let category = 'general_question';
-      let autoResolveReply: string | null = null;
 
-      // 1. Classify Category
+      // 1. Classify Category only — auto-resolution is handled by the TICKET_AUTO_RESOLVE_QUEUE worker
       if (process.env.NODE_ENV === 'test') {
         const content = (title + ' ' + description).toLowerCase();
         if (content.includes('refund')) {
@@ -99,115 +98,18 @@ export async function registerQueueWorkers() {
         }
       }
 
-      // 2. Read Knowledge Base & Run Auto-Resolution
-      let kbContent = '';
-      try {
-        const kbPath = path.join(__dirname, '../knowledge-base.md');
-        kbContent = fs.readFileSync(kbPath, 'utf8');
-      } catch (err) {
-        console.error('[Queue] Failed to read knowledge base file:', err);
-      }
-
-      if (process.env.NODE_ENV === 'test') {
-        const content = (title + ' ' + description).toLowerCase();
-        const prefix = `Dear ${customerName},\n\n`;
-        const suffix = `\n\nBest regards,\nSharar's`;
-        if (content.includes('forgot') && content.includes('password')) {
-          autoResolveReply = `${prefix}To reset your password, go to the login page, click Forgot Password, and follow the instructions.${suffix}`;
-        } else if (content.includes('reset') && content.includes('progress')) {
-          autoResolveReply = `${prefix}To reset your course progress, go to My Courses, open the course, click Course Options, and select Reset Progress.${suffix}`;
+      // 2. Persist Classification — update category and set status to open
+      await prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          category: category as any,
+          status: 'open',
+          assignedToId: null,
         }
-      } else if (process.env.GROQ_API_KEY && kbContent) {
-        const systemPrompt = `You are an AI support agent. Your job is to read a support ticket (title and description) and see if it can be resolved using the provided Support Knowledge Base.
-
-Support Knowledge Base:
-${kbContent}
-
-Instructions:
-1. If the knowledge base contains a direct, specific answer or policy that fully addresses the customer's issue, write a polite, professional, and customer-friendly reply to the customer answering their question. Ensure the response is properly formatted, clear, and has a helpful tone.
-2. You MUST address the customer by their name at the very beginning (e.g., "Dear ${customerName}," or "Hi ${customerName},"). Do not duplicate this greeting.
-3. You MUST sign the email at the very end with:
-Best regards,
-Sharar's
-4. If the user's issue is NOT addressed in the knowledge base, or requires custom/human intervention (like investigating a specific account, looking up a transaction ID, processing refunds, or if it is a general bug that requires system logs/investigation), return exactly the word "UNRESOLVED".
-5. Do NOT make up information. If the knowledge base doesn't have the answer, return "UNRESOLVED".
-6. If you can resolve the ticket, return the complete, ready-to-send support reply. Do NOT prefix the reply with anything else or add extra preamble. Just return the reply text.`;
-
-        const prompt = `Ticket Title: ${title}\nTicket Description: ${description}`;
-
-        const { text } = await generateText({
-          model: groq('llama-3.1-8b-instant'),
-          system: systemPrompt,
-          prompt,
-        });
-
-        let reply = text.trim();
-        if (reply && reply.toUpperCase() !== 'UNRESOLVED') {
-          const separators = [
-            'Response to the customer:',
-            'Response to customer:',
-            'Customer Response:',
-            'Response:',
-            'Support Reply:'
-          ];
-          for (const sep of separators) {
-            const index = reply.toLowerCase().indexOf(sep.toLowerCase());
-            if (index !== -1) {
-              reply = reply.substring(index + sep.length).trim();
-              break;
-            }
-          }
-          autoResolveReply = reply;
-        }
-      }
-
-      // 3. Persist Classification and Resolution State
-      if (autoResolveReply) {
-        await prisma.ticketReply.create({
-          data: {
-            content: autoResolveReply,
-            ticketId: ticketId,
-            senderType: 'agent',
-          }
-        });
-        await prisma.ticket.update({
-          where: { id: ticketId },
-          data: {
-            category: category as any,
-            status: 'resolved',
-          }
-        });
-        console.log(`[Queue] Ticket ${ticketId} auto-resolved by AI and marked as resolved`);
-
-        try {
-          const resolvedTicket = await prisma.ticket.findUnique({
-            where: { id: ticketId },
-            include: { user: true }
-          });
-          if (resolvedTicket?.user?.email) {
-            await boss.send(SEND_EMAIL_QUEUE, {
-              type: 'status-update',
-              to: resolvedTicket.user.email,
-              ticketNumber: resolvedTicket.ticketNumber,
-              status: 'resolved'
-            });
-          }
-        } catch (emailError) {
-          console.error(`[Queue] Failed to enqueue resolved email for ticket ${ticketId}:`, emailError);
-        }
-      } else {
-        await prisma.ticket.update({
-          where: { id: ticketId },
-          data: {
-            category: category as any,
-            status: 'open',
-            assignedToId: null,
-          }
-        });
-        console.log(`[Queue] Ticket ${ticketId} auto-classified as ${category} and transitioned to open status (unassigned)`);
-      }
+      });
+      console.log(`[Queue] Ticket ${ticketId} classified as ${category} and transitioned to open status`);
     } catch (error) {
-      console.error(`[Queue] Failed to process ticket classification / resolution job for ticket ${ticketId}:`, error);
+      console.error(`[Queue] Failed to process ticket classification job for ticket ${ticketId}:`, error);
       try {
         await prisma.ticket.update({
           where: { id: ticketId },
@@ -265,25 +167,24 @@ Sharar's
     console.log(`[Queue] Processing ticket-auto-resolve job for ticket ${ticketId}`);
 
     try {
-      const ticket = await prisma.ticket.findUnique({
+      // Determine recipient email and customer name with a lightweight prefetch
+      const ticketPrefetch = await prisma.ticket.findUnique({
         where: { id: ticketId },
         include: { user: true },
       });
 
-      if (!ticket) {
+      if (!ticketPrefetch) {
         console.error(`[Queue] [auto-resolve] Ticket ${ticketId} not found — skipping`);
         return;
       }
 
-      // Guard 1 (early): skip immediately if already resolved/closed
-      if (ticket.status === 'resolved' || ticket.status === 'closed') {
-        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${ticket.status} — skipping (early status check)`);
+      // Early exit: skip if already resolved/closed (before slow LLM call)
+      if (ticketPrefetch.status === 'resolved' || ticketPrefetch.status === 'closed') {
+        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${ticketPrefetch.status} — skipping (early status check)`);
         return;
       }
 
-      // Guard 2 (early): skip if any reply already exists.
-      // This catches the common race where the classification worker ran first
-      // and created its own AI reply — we must not write a duplicate.
+      // Early exit: skip if any reply already exists (before slow LLM call)
       const existingReplyCount = await prisma.ticketReply.count({ where: { ticketId } });
       if (existingReplyCount > 0) {
         console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already has ${existingReplyCount} reply/replies — skipping to avoid duplicate`);
@@ -291,17 +192,17 @@ Sharar's
       }
 
       // Determine recipient email
-      const recipientEmail = ticket.customerEmail ?? ticket.user?.email ?? null;
+      const recipientEmail = ticketPrefetch.customerEmail ?? ticketPrefetch.user?.email ?? null;
       if (!recipientEmail) {
         console.warn(`[Queue] Ticket ${ticketId} has no customer email — auto-resolve email will be skipped if resolved`);
       }
 
       // Build customer name for personalisation
       let customerName = 'Customer';
-      if (ticket.user) {
-        customerName = ticket.user.name;
-      } else if (ticket.customerEmail) {
-        const prefix = ticket.customerEmail.split('@')[0] || '';
+      if (ticketPrefetch.user) {
+        customerName = ticketPrefetch.user.name;
+      } else if (ticketPrefetch.customerEmail) {
+        const prefix = ticketPrefetch.customerEmail.split('@')[0] || '';
         customerName = prefix
           .split('.')
           .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
@@ -321,7 +222,7 @@ Sharar's
 
       if (process.env.NODE_ENV === 'test') {
         // Deterministic mock for automated tests
-        const content = (ticket.title + ' ' + ticket.description).toLowerCase();
+        const content = (ticketPrefetch.title + ' ' + ticketPrefetch.description).toLowerCase();
         const prefix = `Dear ${customerName},\n\n`;
         const suffix = `\n\nBest regards,\nSharar's`;
         if (content.includes('forgot') && content.includes('password')) {
@@ -335,7 +236,7 @@ Sharar's
         const { text } = await generateText({
           model: groq('llama-3.1-8b-instant'),
           system: systemPrompt,
-          prompt: `Ticket Title: ${ticket.title}\nTicket Description: ${ticket.description}`,
+          prompt: `Ticket Title: ${ticketPrefetch.title}\nTicket Description: ${ticketPrefetch.description}`,
         });
 
         const trimmed = text.trim();
@@ -365,40 +266,52 @@ Sharar's
         return;
       }
 
-      // Guard 3 (final, pre-write): re-check both status and reply count right before
-      // writing to catch any window between the early guard and now.
-      const freshTicket = await prisma.ticket.findUnique({
-        where: { id: ticketId },
-        include: { _count: { select: { replies: true } } },
-      });
-      if (freshTicket?.status === 'resolved' || freshTicket?.status === 'closed') {
-        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${freshTicket.status} — skipping auto-resolve write (final guard)`);
-        return;
-      }
-      if ((freshTicket?._count?.replies ?? 0) > 0) {
-        console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already has ${freshTicket!._count.replies} reply/replies — skipping (final guard)`);
-        return;
-      }
+      // Wrap the final idempotency check and all DB writes in a transaction with a
+      // row-level lock to prevent duplicate replies from concurrent workers.
+      let resolvedTicket: Awaited<ReturnType<typeof prisma.ticket.update>> | null = null;
 
-      // Create AI reply on the ticket
-      await prisma.ticketReply.create({
-        data: {
-          content: aiReply,
-          ticketId,
-          senderType: 'agent',
-        },
+      await prisma.$transaction(async (tx) => {
+        // Acquire an exclusive row-level lock on this ticket row for the duration
+        // of the transaction — any concurrent worker hitting the same ticketId will
+        // block here until we commit, then see our writes and bail out.
+        await tx.$executeRaw`SELECT id FROM "ticket" WHERE id = ${ticketId} FOR UPDATE`;
+
+        const existingReplies = await tx.ticketReply.count({
+          where: { ticketId }
+        });
+        if (existingReplies > 0) {
+          console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already has ${existingReplies} reply/replies — skipping (transaction guard)`);
+          return;
+        }
+
+        const freshTicket = await tx.ticket.findUnique({ where: { id: ticketId } });
+        if (!freshTicket || freshTicket.status === 'resolved' || freshTicket.status === 'closed') {
+          console.log(`[Queue] [auto-resolve] Ticket ${ticketId} already ${freshTicket?.status ?? 'missing'} — skipping auto-resolve write (transaction guard)`);
+          return;
+        }
+
+        // Create AI reply on the ticket
+        await tx.ticketReply.create({
+          data: {
+            content: aiReply!,
+            ticketId,
+            senderType: 'agent',
+          },
+        });
+
+        // Mark ticket as resolved and flag it as AI-resolved
+        resolvedTicket = await tx.ticket.update({
+          where: { id: ticketId },
+          data: { status: 'resolved', isAiResolved: true },
+          include: { user: true },
+        });
       });
 
-      // Mark ticket as resolved and flag it as AI-resolved
-      const resolvedTicket = await prisma.ticket.update({
-        where: { id: ticketId },
-        data: { status: 'resolved', isAiResolved: true },
-        include: { user: true },
-      });
+      if (!resolvedTicket) return;
 
       console.log(`[Queue] [auto-resolve] Ticket ${ticketId} auto-resolved and flagged as AI-resolved`);
 
-      // Send resolution email to customer via Resend
+      // Send resolution email to customer via Resend (outside transaction — network I/O)
       if (recipientEmail) {
         try {
           const resendClient = new Resend(process.env.RESEND_API_KEY);
@@ -411,7 +324,7 @@ Sharar's
           await resendClient.emails.send({
             from: 'onboarding@resend.dev',
             to: recipientEmail,
-            subject: `Re: ${resolvedTicket.title} [Ticket #${resolvedTicket.ticketNumber}]`,
+            subject: `Re: ${(resolvedTicket as any).title} [Ticket #${(resolvedTicket as any).ticketNumber}]`,
             text: emailBody,
             html: emailBody.replace(/\n/g, '<br>'),
           });

@@ -60,6 +60,7 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
 
   // Enqueue the auto-resolve job in parallel (email creation path)
   try {
+    console.log(`[Queue] Enqueuing auto-resolve job for ticket ${ticket.id} at ${new Date().toISOString()}`);
     await boss.send(TICKET_AUTO_RESOLVE_QUEUE, { ticketId: ticket.id });
     console.log(`[Route/webhooks] Enqueued ticket-auto-resolve job for ticket ${ticket.id} (enqueue #1 — email creation path)`);
   } catch (error) {

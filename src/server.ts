@@ -1,3 +1,7 @@
+// IMPORTANT: instrument.ts must be the very first import so Sentry can patch
+// Node.js internals before any other module loads.
+import './instrument';
+import * as Sentry from '@sentry/node';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -81,8 +85,14 @@ app.get('*', (_req, res) => {
 });
 
 // --------------- Error Handler ---------------
+// Sentry error handler must be registered BEFORE any custom error middleware.
+// It attaches a Sentry event ID to res.sentry for each captured error.
+Sentry.setupExpressErrorHandler(app);
+
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
+  // Report to Sentry (no-op when SENTRY_DSN is not set)
+  Sentry.captureException(err);
 
   // Handle Zod validation errors
   if (err.name === 'ZodError') {
