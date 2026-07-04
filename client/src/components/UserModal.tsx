@@ -100,42 +100,43 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
   };
 
   const inputClass = (hasError?: string) =>
-    `w-full px-3 py-2.5 rounded-lg text-sm bg-bg-primary text-text-primary placeholder:text-text-muted border transition-[border-color,box-shadow] duration-150 outline-none focus:ring-2 focus:ring-accent/30 ${
-      hasError ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-border-color focus:border-accent'
+    `w-full px-3 py-2.5 rounded bg-bg-secondary text-text-primary placeholder:text-text-muted border transition-all duration-150 outline-none font-mono text-xs ${
+      hasError ? 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
     }`;
 
   return (
     <>
       <div 
-        className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm" 
+        className="fixed inset-0 z-[200] bg-[#06070a]/75 backdrop-blur-sm" 
         aria-hidden="true" 
         onClick={onClose} 
         data-testid="modal-overlay"
       />
       <div role="dialog" aria-modal="true" aria-labelledby="user-modal-title" className="fixed inset-0 z-[201] flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-2xl bg-bg-card border border-border-color shadow-2xl animate-[slideUp_0.2s_cubic-bezier(0.16,1,0.3,1)]">
-          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-color">
+        <div className="w-full max-w-md rounded bg-bg-card border border-border-color/60 shadow-[0_8px_30px_rgba(0,0,0,0.5)] animate-[slideUp_0.2s_cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-[#bd00ff] opacity-65" />
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-color/60">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-accent">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-accent/15 text-accent border border-accent/20">
                 <UserIcon className="size-4" />
               </div>
-              <h2 id="user-modal-title" className="text-lg font-bold text-text-primary">
+              <h2 id="user-modal-title" className="text-sm font-bold font-heading uppercase tracking-widest text-text-primary before:content-['//_'] before:opacity-50">
                 {title || (isEditMode ? 'Edit User' : 'Create User')}
               </h2>
             </div>
-            <button type="button" onClick={onClose} aria-label="Close dialog" className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors">
+            <button type="button" onClick={onClose} aria-label="Close dialog" className="flex h-8 w-8 items-center justify-center rounded text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer">
               <X className="size-4" />
             </button>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="px-6 pt-5 pb-6 flex flex-col gap-4">
             {serverError && (
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
+              <div className="flex items-start gap-2.5 p-3 rounded bg-danger/10 border border-danger/25 text-danger font-mono text-xs">
                 <AlertCircle className="size-4 mt-0.5 shrink-0" />
                 <span>{serverError}</span>
               </div>
             )}
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="u-name" className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Name</label>
+              <label htmlFor="u-name" className="text-[0.68rem] font-mono font-bold text-text-secondary uppercase tracking-widest">Name</label>
               <input
                 id="u-name"
                 type="text"
@@ -148,10 +149,10 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
                   nameRef.current = e;
                 }}
               />
-              {errors.name && <p className="text-xs text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.name.message}</p>}
+              {errors.name && <p className="text-xs font-mono text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.name.message}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="u-email" className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Email</label>
+              <label htmlFor="u-email" className="text-[0.68rem] font-mono font-bold text-text-secondary uppercase tracking-widest">Email</label>
               <input
                 id="u-email"
                 type="email"
@@ -160,10 +161,10 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
                 className={inputClass(errors.email?.message)}
                 {...register('email')}
               />
-              {errors.email && <p className="text-xs text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.email.message}</p>}
+              {errors.email && <p className="text-xs font-mono text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.email.message}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="u-password" className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Password</label>
+              <label htmlFor="u-password" className="text-[0.68rem] font-mono font-bold text-text-secondary uppercase tracking-widest">Password</label>
               <div className="relative">
                 <input
                 id="u-password"
@@ -173,16 +174,16 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
                 className={`${inputClass(errors.password?.message)} pr-10`}
                 {...register('password')}
                 />
-                <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors">
+                <button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors cursor-pointer">
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-xs text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.password.message}</p>}
+              {errors.password && <p className="text-xs font-mono text-danger flex items-center gap-1"><AlertCircle className="size-3" /> {errors.password.message}</p>}
             </div>
             <div className="flex items-center justify-end gap-3 pt-1">
-              <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary transition-colors">Cancel</button>
-              <button type="submit" disabled={mutation.isPending} className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-colors shadow-[0_0_14px_rgba(16,185,129,0.35)] disabled:opacity-60 disabled:cursor-not-allowed">
-                {mutation.isPending ? <><Loader2 className="size-4 animate-spin" /> {isEditMode ? 'Saving...' : 'Creating...'}</> : <>{!isEditMode && <Plus className="size-4" />}{isEditMode ? 'Save Changes' : 'Create User'}</>}
+              <button type="button" onClick={onClose} className="px-4 py-2 border border-border-color/60 bg-transparent text-text-secondary font-mono text-xs uppercase tracking-wider rounded hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer">Cancel</button>
+              <button type="submit" disabled={mutation.isPending} className="inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent hover:bg-accent-hover text-bg-primary active:bg-accent-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+                {mutation.isPending ? <><Loader2 className="size-4 animate-spin-slow" /> {isEditMode ? 'Saving...' : 'Creating...'}</> : <>{!isEditMode && <Plus className="size-4" />}{isEditMode ? 'Save Changes' : 'Create User'}</>}
               </button>
             </div>
           </form>
@@ -197,7 +198,7 @@ export function CreateUserButton({ onClick }: { onClick: () => void }) {
     <button 
       type="button"
       onClick={onClick} 
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-400 active:bg-emerald-600 transition-colors shadow-[0_0_14px_rgba(16,185,129,0.35)]"
+      className="inline-flex items-center gap-2 px-4 py-[8px] rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent hover:bg-accent-hover text-bg-primary active:bg-accent-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] cursor-pointer"
     >
       <Plus className="size-4" /> Create User
     </button>

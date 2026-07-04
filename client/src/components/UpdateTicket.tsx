@@ -90,6 +90,9 @@ export default function UpdateTicket({
           disabled={isUpdatingAssignment || isLoadingAgents}
         >
           <option value="unassigned" className="text-text-muted">Unassigned</option>
+          {(ticket.isAiResolved || ticket.assigned_to?.email === 'ai@example.com') && ticket.assignedToId && (
+            <option value={ticket.assignedToId}>AI</option>
+          )}
           {agents.map((agent) => (
             <option key={agent.id} value={agent.id}>
               {agent.name} {agent.role ? `(${agent.role})` : ''}

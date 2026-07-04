@@ -10,7 +10,7 @@ import { authClient } from '@/lib/auth-client';
 import { getTicketSender } from '@/lib/utils';
 import AppLayout from '@/components/AppLayout';
 
-const STATUS_OPTIONS: TicketStatus[] = ['new', 'open', 'in-progress', 'resolved', 'closed'];
+const STATUS_OPTIONS = ['new', 'open', 'in-progress', 'resolved', 'closed'] as const;
 
 export default function TicketsList() {
   const { data: session, isPending } = authClient.useSession();
@@ -202,7 +202,7 @@ export default function TicketsList() {
 
   const newTicketButton = (
     <button
-      className="inline-flex items-center gap-[6px] px-5 py-[10px] border-none rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[1px] hover:shadow-[0_0_40px_var(--color-accent-glow)]"
+      className="inline-flex items-center gap-[6px] px-4 py-[8px] border-none rounded-lg font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-gradient-to-r from-accent to-[#06b6d4] text-white shadow-sm hover:shadow-md hover:brightness-105"
       onClick={() => setShowModal(true)}
     >
       + New Ticket
@@ -219,17 +219,17 @@ export default function TicketsList() {
             return (
               <button
                 key={s}
-                className={`flex items-center gap-2 py-2 px-4 border rounded-xl font-sans text-[0.8rem] font-medium cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] capitalize ${
+                className={`flex items-center gap-2.5 py-1.5 px-3.5 border rounded font-mono text-xs uppercase tracking-wider cursor-pointer transition-all ${
                   isActive
-                    ? 'bg-accent border-accent text-[#0f0f1a] font-bold shadow-glow'
-                    : 'bg-bg-secondary border-border-color text-text-secondary hover:bg-bg-hover hover:border-accent hover:text-text-primary'
+                    ? 'bg-[#00d4a1]/15 border-[#00d4a1]/60 text-[#00d4a1] font-bold shadow-[0_0_12px_rgba(0,212,161,0.2)]'
+                    : 'bg-bg-card border-border-color/60 text-[#c0c0d0] hover:bg-bg-hover hover:border-[#00d4a1]/40 hover:text-white'
                 }`}
                 onClick={() => setFilterStatus(s)}
               >
                 <span>{s}</span>
                 <span
-                  className={`py-[2px] px-2 rounded-full text-[0.75rem] font-bold ${
-                    isActive ? 'bg-[#0f0f1a] text-white' : 'bg-[rgba(255,255,255,0.15)] text-text-primary'
+                  className={`py-[1px] px-1.5 rounded text-[0.68rem] font-bold ${
+                    isActive ? 'bg-[#00d4a1] text-[#0a0a0f]' : 'bg-bg-hover text-[#c0c0d0] border border-border-color/60'
                   }`}
                 >
                   {counts[s]}
@@ -240,34 +240,34 @@ export default function TicketsList() {
         </div>
 
         {/* Filter Bar */}
-        <div className="bg-bg-card border border-border-color rounded-xl p-4 mb-6 flex flex-wrap items-center gap-4 text-text-primary">
+        <div className="bg-bg-card border border-border-color/60 rounded p-4 mb-6 flex flex-wrap items-center gap-4 text-text-primary">
           {/* Search Input */}
           <div className="flex-1 min-w-[200px] flex flex-col gap-1.5">
-            <label htmlFor="search" className="text-xs font-semibold text-text-secondary">
-              Search
+            <label htmlFor="search" className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary">
+              Search_Query
             </label>
             <input
               id="search"
               type="text"
-              placeholder="Search tickets..."
+              placeholder="Query parameters..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent placeholder:text-text-muted"
+              className="w-full h-9 py-[6px] px-3 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none focus:border-accent placeholder:text-text-muted"
             />
           </div>
 
           {/* Category Dropdown */}
           <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
-            <label htmlFor="category" className="text-xs font-semibold text-text-secondary">
-              Category
+            <label htmlFor="category" className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary">
+              Filter_Category
             </label>
             <select
               id="category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
+              className="w-full h-9 py-[6px] px-3 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs cursor-pointer transition-all hover:border-accent/60 focus:outline-none focus:border-accent"
             >
-              <option value="all">All Categories</option>
+              <option value="all">ALL_CATEGORIES</option>
               <option value="general_question">General Question</option>
               <option value="technical_question">Technical Question</option>
               <option value="refund_request">Refund Request</option>
@@ -276,16 +276,16 @@ export default function TicketsList() {
 
           {/* Priority Dropdown */}
           <div className="w-full sm:w-auto min-w-[150px] flex flex-col gap-1.5">
-            <label htmlFor="priority" className="text-xs font-semibold text-text-secondary">
-              Priority
+            <label htmlFor="priority" className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary">
+              Filter_Priority
             </label>
             <select
               id="priority"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
+              className="w-full h-9 py-[6px] px-3 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs cursor-pointer transition-all hover:border-accent/60 focus:outline-none focus:border-accent"
             >
-              <option value="all">All Priorities</option>
+              <option value="all">ALL_PRIORITIES</option>
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
@@ -295,30 +295,30 @@ export default function TicketsList() {
 
           {/* Date From */}
           <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
-            <label htmlFor="dateFrom" className="text-xs font-semibold text-text-secondary">
-              From Date
+            <label htmlFor="dateFrom" className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary">
+              Date_Start
             </label>
             <input
               id="dateFrom"
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
+              className="w-full h-9 py-[6px] px-3 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none focus:border-accent"
               style={{ colorScheme: 'dark' }}
             />
           </div>
 
           {/* Date To */}
           <div className="w-[calc(50%-8px)] sm:w-auto min-w-[130px] flex flex-col gap-1.5">
-            <label htmlFor="dateTo" className="text-xs font-semibold text-text-secondary">
-              To Date
+            <label htmlFor="dateTo" className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary">
+              Date_End
             </label>
             <input
               id="dateTo"
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="w-full h-9 py-[6px] px-3 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus:border-accent"
+              className="w-full h-9 py-[6px] px-3 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none focus:border-accent"
               style={{ colorScheme: 'dark' }}
             />
           </div>
@@ -328,9 +328,9 @@ export default function TicketsList() {
             <div className="w-full sm:w-auto self-end flex flex-col">
               <button
                 onClick={handleClearFilters}
-                className="h-9 py-[6px] px-4 rounded-md font-sans text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-danger border border-danger/40 hover:bg-danger/10"
+                className="h-9 py-[6px] px-4 border border-danger/30 hover:border-danger/50 rounded font-mono text-xs uppercase tracking-wider cursor-pointer transition-all whitespace-nowrap bg-transparent text-danger hover:bg-danger/10"
               >
-                Clear Filters
+                Clear_Filters
               </button>
             </div>
           )}
@@ -347,21 +347,21 @@ export default function TicketsList() {
 
         {/* Pagination */}
         {totalItems > 0 && (
-          <div className="mt-4 bg-bg-card border border-border-color rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-text-secondary text-sm">
+          <div className="mt-4 bg-bg-card border border-border-color/60 rounded p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-text-secondary font-mono text-xs">
             <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
               <div className="flex items-center gap-2">
-                <span>Show</span>
+                <span>SHOW</span>
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="h-8 py-1 px-2 border border-border-color rounded-md bg-bg-secondary text-text-primary font-sans text-xs cursor-pointer focus:outline-none focus:border-accent"
+                  className="h-8 py-1 px-2 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-xs cursor-pointer focus:outline-none focus:border-accent"
                 >
                   <option value={10}>10</option>
                   <option value={25}>25</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <span>entries</span>
+                <span>ENTRIES</span>
               </div>
               <span className="text-text-muted text-xs">
                 Showing {totalItems === 0 ? 0 : startIndex + 1} to {endIndex} of {totalItems} entries
@@ -372,7 +372,7 @@ export default function TicketsList() {
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                className="h-8 w-8 inline-flex items-center justify-center rounded border border-border-color/60 bg-bg-secondary text-text-primary text-xs font-bold cursor-pointer transition-all hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed"
                 title="First Page"
               >
                 &laquo;
@@ -380,10 +380,10 @@ export default function TicketsList() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                className="h-8 px-2.5 inline-flex items-center justify-center rounded border border-border-color/60 bg-bg-secondary text-text-primary text-xs font-bold cursor-pointer transition-all hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Previous Page"
               >
-                Previous
+                PREV
               </button>
               <span className="text-xs text-text-muted px-2 select-none">
                 Page {currentPage} of {totalPages}
@@ -391,15 +391,15 @@ export default function TicketsList() {
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="h-8 px-2.5 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                className="h-8 px-2.5 inline-flex items-center justify-center rounded border border-border-color/60 bg-bg-secondary text-text-primary text-xs font-bold cursor-pointer transition-all hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Next Page"
               >
-                Next
+                NEXT
               </button>
               <button
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
-                className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border-color bg-bg-secondary text-text-primary text-xs font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-bg-secondary disabled:hover:border-border-color"
+                className="h-8 w-8 inline-flex items-center justify-center rounded border border-border-color/60 bg-bg-secondary text-text-primary text-xs font-bold cursor-pointer transition-all hover:bg-bg-hover hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Last Page"
               >
                 &raquo;

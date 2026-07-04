@@ -15,12 +15,12 @@ const PRIORITY_EMOJI: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: 'bg-[rgba(59,130,246,0.15)] text-blue-400',
-  processing: 'bg-[rgba(168,85,247,0.15)] text-purple-400',
-  open: 'bg-[rgba(78,205,196,0.15)] text-status-open',
-  'in-progress': 'bg-[rgba(249,168,38,0.15)] text-status-in-progress',
-  resolved: 'bg-[rgba(108,99,255,0.15)] text-status-resolved',
-  closed: 'bg-[rgba(107,107,138,0.15)] text-status-closed',
+  new: 'bg-blue-50 text-blue-700 border border-blue-200',
+  processing: 'bg-purple-50 text-purple-700 border border-purple-200',
+  open: 'bg-sky-50 text-sky-700 border border-sky-200',
+  'in-progress': 'bg-amber-50 text-amber-800 border border-amber-200',
+  resolved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  closed: 'bg-slate-100 text-slate-700 border border-slate-200',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -31,9 +31,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_BADGE_CLASSES: Record<string, string> = {
-  general_question: 'bg-[rgba(107,107,138,0.15)] text-text-secondary border border-[rgba(107,107,138,0.3)]',
-  technical_question: 'bg-[rgba(108,99,255,0.15)] text-accent border border-[rgba(108,99,255,0.3)]',
-  refund_request: 'bg-[rgba(255,77,106,0.15)] text-danger border border-[rgba(255,77,106,0.3)]',
+  general_question: 'bg-slate-100 text-slate-700 border border-slate-200',
+  technical_question: 'bg-sky-50 text-sky-700 border border-sky-200',
+  refund_request: 'bg-red-50 text-red-700 border border-red-200',
   none: 'bg-bg-secondary text-text-muted border border-border-color',
 };
 

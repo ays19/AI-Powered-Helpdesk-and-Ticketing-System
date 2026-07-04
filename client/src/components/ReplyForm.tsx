@@ -62,8 +62,9 @@ export default function ReplyForm({ onSubmit, isPending, customerName }: ReplyFo
   };
 
   return (
-    <div className="bg-bg-card border border-border-color rounded-xl p-6 shadow-md">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-text-muted mb-4">New Reply</h3>
+    <div className="bg-bg-card border border-border-color/60 rounded p-6 shadow-md relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#bd00ff] to-accent opacity-65" />
+      <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-text-secondary mb-4 before:content-['//_'] before:opacity-50">New Reply</h3>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4" noValidate>
         <div>
           <label htmlFor="reply-content" className="sr-only">Reply message</label>
@@ -72,16 +73,16 @@ export default function ReplyForm({ onSubmit, isPending, customerName }: ReplyFo
             rows={4}
             {...register('content')}
             placeholder="Type your message here..."
-            className={`w-full py-3 px-4 border rounded-md bg-bg-secondary text-text-primary font-sans text-sm transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] focus:outline-none placeholder:text-text-muted resize-none focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)] ${
-              errors.content && replyContent?.trim() ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.25)]' : 'border-border-color'
+            className={`w-full py-3 px-4 border rounded bg-bg-secondary text-text-primary font-mono text-sm transition-all focus:outline-none placeholder:text-text-muted resize-none focus:border-accent/60 ${
+              errors.content && replyContent?.trim() ? 'border-red-500/80 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' : 'border-border-color/60'
             }`}
           />
           {errors.content && replyContent?.trim() && (
-            <span className="text-danger text-xs mt-1 block">{errors.content.message}</span>
+            <span className="text-danger font-mono text-xs mt-1 block">{errors.content.message}</span>
           )}
         </div>
         <div className="flex justify-between items-center mt-4">
-          <div className="text-danger text-xs">
+          <div className="text-danger font-mono text-xs">
             {polishError && <span>{polishError}</span>}
           </div>
           <div className="flex justify-end gap-3">
@@ -90,19 +91,19 @@ export default function ReplyForm({ onSubmit, isPending, customerName }: ReplyFo
               onClick={handlePolish}
               disabled={isPending || isSubmitting || isPolishing || isTooShort}
               title={isTooShort ? 'Reply too short to polish' : undefined}
-              className="inline-flex items-center gap-2 px-5 py-2.5 border border-border-color rounded-md bg-bg-secondary text-text-secondary font-sans text-sm font-semibold cursor-pointer transition-all hover:bg-bg-hover hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-accent/30 rounded bg-accent/10 text-accent font-mono text-xs uppercase tracking-wider cursor-pointer transition-all hover:bg-accent/20 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,240,255,0.05)]"
             >
               {isPolishing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin-slow text-accent" />
               ) : (
-                <Sparkles className="w-4 h-4 text-purple-400" />
+                <Sparkles className="w-4 h-4 text-accent" />
               )}
               {isPolishing ? 'Polishing...' : 'Polish Reply'}
             </button>
             <button
               type="submit"
               disabled={isPending || isSubmitting || isPolishing || !replyContent?.trim()}
-              className="bg-gradient-to-br from-accent to-[#8b5cf6] text-white shadow-glow hover:-translate-y-[0.5px] hover:shadow-[0_0_40px_var(--color-accent-glow)] inline-flex items-center gap-2 px-5 py-2.5 border-none rounded-md font-sans text-sm font-semibold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-accent hover:bg-accent-hover text-bg-primary font-mono text-xs uppercase tracking-wider font-bold inline-flex items-center gap-2 px-4 py-2 border-none rounded cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,240,255,0.2)]"
             >
               <Send className="w-4 h-4" />
               {isPending ? 'Sending...' : 'Submit Reply'}

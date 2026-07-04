@@ -17,39 +17,39 @@ export default function AppLayout({ children, headerAction }: AppLayoutProps) {
   };
 
   const navLinkClass = (path: string) =>
-    `inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap border ${
+    `inline-flex items-center gap-[6px] px-4 py-[8px] rounded-lg font-mono text-xs uppercase tracking-wider cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap border ${
       pathname === path
-        ? 'bg-accent/10 text-accent border-accent/40'
-        : 'bg-transparent text-text-secondary border-border-color hover:bg-bg-hover hover:text-text-primary'
+        ? 'bg-[#00d4a1]/15 text-[#00d4a1] border-[#00d4a1]/40 shadow-[0_0_12px_rgba(0,212,161,0.2)] font-bold'
+        : 'bg-transparent text-[#c0c0d0] border-border-color/60 hover:bg-bg-hover hover:text-white hover:border-[#00d4a1]/30'
     }`;
 
   return (
     <>
-      <header className="bg-gradient-to-br from-bg-secondary to-bg-card border-b border-border-color backdrop-blur-[20px] sticky top-0 z-[100]">
-        <div className="max-w-[1200px] mx-auto py-4 px-6 flex items-center justify-between">
+      <header className="bg-bg-secondary/80 border-b border-border-color/50 backdrop-blur-[20px] sticky top-0 z-[100] shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+        <div className="max-w-[1200px] mx-auto py-3 px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-[1.8rem] drop-shadow-[0_0_8px_var(--color-accent-glow)]">🎫</span>
+            <span className="text-[1.6rem] filter drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]">🎫</span>
             <Link
               to="/"
-              className="text-[1.5rem] font-extrabold bg-gradient-to-br from-accent to-[#a78bfa] bg-clip-text text-transparent tracking-[-0.02em] hover:opacity-90"
+              className="text-[1.3rem] font-bold font-heading bg-gradient-to-r from-[#00d4a1] to-[#6c63ff] bg-clip-text text-transparent tracking-widest hover:opacity-90 transition-opacity uppercase"
             >
               Helpdesk
             </Link>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-[0.9rem] font-medium text-text-secondary">
+            <span className="text-xs font-mono text-text-secondary pr-3 border-r border-border-color/60 tracking-wider">
               Welcome, {session?.user.name}
             </span>
 
             {/* Tickets nav link — visible to all */}
-            <Link to="/tickets" className={navLinkClass('/tickets')}>
+            <Link to="/tickets" className={`${navLinkClass('/tickets')} before:content-['//'] before:mr-1 before:opacity-50`}>
               Tickets
             </Link>
 
             {/* Users nav link — admins only */}
             {session?.user.role === UserRole.ADMIN && (
-              <Link to="/users" className={navLinkClass('/users')}>
+              <Link to="/users" className={`${navLinkClass('/users')} before:content-['//'] before:mr-1 before:opacity-50`}>
                 Users
               </Link>
             )}
@@ -58,7 +58,7 @@ export default function AppLayout({ children, headerAction }: AppLayoutProps) {
             {headerAction}
 
             <button
-              className="inline-flex items-center gap-[6px] px-5 py-[10px] rounded-md font-sans text-sm font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-text-secondary border border-border-color hover:bg-bg-hover hover:text-text-primary"
+              className="inline-flex items-center gap-[6px] px-4 py-[8px] rounded-lg font-mono text-xs uppercase tracking-wider cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap bg-transparent text-[#c0c0d0] border border-border-color/60 hover:bg-bg-hover hover:text-white hover:border-danger/40 hover:text-danger"
               onClick={handleSignOut}
             >
               Sign Out
@@ -67,7 +67,7 @@ export default function AppLayout({ children, headerAction }: AppLayoutProps) {
         </div>
       </header>
 
-      <main className="max-w-[1200px] mx-auto py-8 px-6">{children}</main>
+      <main className="max-w-[1200px] mx-auto py-8 px-6 min-h-[calc(100vh-65px)] bg-bg-primary">{children}</main>
     </>
   );
 }

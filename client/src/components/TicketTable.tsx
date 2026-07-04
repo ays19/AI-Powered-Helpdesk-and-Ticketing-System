@@ -37,12 +37,12 @@ const PRIORITY_TEXT_CLASSES: Record<string, string> = {
 };
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  new: 'bg-[rgba(59,130,246,0.15)] text-blue-400 border border-[rgba(59,130,246,0.3)]',
-  processing: 'bg-[rgba(168,85,247,0.15)] text-purple-400 border border-[rgba(168,85,247,0.3)]',
-  open: 'bg-[rgba(78,205,196,0.15)] text-status-open border border-[rgba(78,205,196,0.3)]',
-  'in-progress': 'bg-[rgba(249,168,38,0.15)] text-status-in-progress border border-[rgba(249,168,38,0.3)]',
-  resolved: 'bg-[rgba(108,99,255,0.15)] text-status-resolved border border-[rgba(108,99,255,0.3)]',
-  closed: 'bg-[rgba(107,107,138,0.15)] text-status-closed border border-[rgba(107,107,138,0.3)]',
+  new: 'bg-blue-950/40 text-blue-400 border border-blue-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
+  processing: 'bg-purple-950/40 text-purple-400 border border-purple-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
+  open: 'bg-sky-950/40 text-sky-400 border border-sky-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
+  'in-progress': 'bg-amber-950/40 text-amber-400 border border-amber-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
+  resolved: 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
+  closed: 'bg-slate-950/40 text-slate-400 border border-slate-900/60 font-mono text-[0.68rem] tracking-wider uppercase px-2 py-0.5 rounded',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -60,17 +60,17 @@ const CATEGORY_FULL_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_BADGE_CLASSES: Record<string, string> = {
-  general_question: 'bg-[rgba(107,107,138,0.15)] text-text-secondary border border-[rgba(107,107,138,0.3)]',
-  technical_question: 'bg-[rgba(108,99,255,0.15)] text-accent border border-[rgba(108,99,255,0.3)]',
-  refund_request: 'bg-[rgba(255,77,106,0.15)] text-danger border border-[rgba(255,77,106,0.3)]',
-  none: 'bg-bg-secondary text-text-muted border border-border-color',
+  general_question: 'bg-slate-900/50 text-slate-300 border border-slate-800/80 font-mono text-[0.65rem] uppercase tracking-wider px-2 py-0.5 rounded',
+  technical_question: 'bg-sky-900/40 text-sky-300 border border-sky-800/60 font-mono text-[0.65rem] uppercase tracking-wider px-2 py-0.5 rounded',
+  refund_request: 'bg-red-900/40 text-red-300 border border-red-800/60 font-mono text-[0.65rem] uppercase tracking-wider px-2 py-0.5 rounded',
+  none: 'bg-bg-secondary text-text-muted border border-border-color/60 font-mono text-[0.65rem] uppercase tracking-wider px-2 py-0.5 rounded',
 };
 
 const PRIORITY_BORDER_CLASSES: Record<string, string> = {
-  low: 'border-l-[4px] border-l-priority-low',
-  medium: 'border-l-[4px] border-l-priority-medium',
-  high: 'border-l-[4px] border-l-priority-high',
-  critical: 'border-l-[4px] border-l-priority-critical',
+  low: 'border-l-[3px] border-l-priority-low',
+  medium: 'border-l-[3px] border-l-priority-medium',
+  high: 'border-l-[3px] border-l-priority-high',
+  critical: 'border-l-[3px] border-l-priority-critical',
 };
 
 export default function TicketTable({
@@ -89,10 +89,10 @@ export default function TicketTable({
         header: 'ID',
         cell: (info) => (
           <span
-            className="text-[0.72rem] font-mono font-bold text-text-muted whitespace-nowrap block"
+            className="text-[0.7rem] font-mono font-semibold text-text-muted whitespace-nowrap block"
             title={`#${info.getValue()}`}
           >
-            #{info.getValue().slice(0, 6)}&hellip;
+            #{info.getValue().slice(0, 6)}
           </span>
         ),
       }),
@@ -104,16 +104,16 @@ export default function TicketTable({
           const subjectTitle = ticket.title.replace(/\s*\(Ticket #\d+\)/, '');
           return (
             <div className="flex flex-col gap-0.5">
-              <h3 className="text-[0.9rem] font-semibold text-text-primary leading-[1.4] line-clamp-1">
+              <h3 className="text-[0.88rem] font-bold text-text-primary leading-[1.4] line-clamp-1">
                 <Link
                   to={`/tickets/${ticket.ticketNumber}`}
-                  className="hover:text-accent transition-colors cursor-pointer"
+                  className="hover:text-[#00f0ff] hover:underline hover:decoration-[#00f0ff]/40 transition-all cursor-pointer"
                 >
                   {subjectTitle}
                 </Link>
               </h3>
-              <span className="text-xs text-text-muted font-normal leading-none">
-                Ticket {ticketNum}
+              <span className="text-[0.68rem] text-text-muted font-mono leading-none">
+                TCK_NUM: {ticketNum}
               </span>
             </div>
           );
@@ -128,12 +128,12 @@ export default function TicketTable({
 
           return (
             <div className="flex flex-col gap-0.5">
-              <span className="text-[0.85rem] font-medium text-text-primary leading-[1.3]">
+              <span className="text-[0.82rem] font-semibold text-text-primary leading-[1.3]">
                 {senderName}
               </span>
               {senderEmail && (
                 <span
-                  className="text-xs text-text-muted truncate max-w-[160px]"
+                  className="text-[0.68rem] font-mono text-text-muted truncate max-w-[160px]"
                   title={senderEmail}
                 >
                   {senderEmail}
@@ -149,7 +149,7 @@ export default function TicketTable({
           const val = info.getValue();
           return (
             <span
-              className={`inline-block px-[10px] py-[2px] rounded-full text-[0.65rem] font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[val]}`}
+              className={`inline-block px-[8px] py-[2px] rounded-full text-[0.62rem] font-bold uppercase tracking-[0.05em] ${STATUS_BADGE_CLASSES[val]}`}
             >
               {val}
             </span>
@@ -163,7 +163,7 @@ export default function TicketTable({
           return (
             <span
               title={CATEGORY_FULL_LABELS[val] || val}
-              className={`inline-block px-[10px] py-[2px] rounded-full text-[0.65rem] font-bold uppercase tracking-[0.05em] whitespace-nowrap ${
+              className={`inline-block px-[8px] py-[2px] rounded-full text-[0.62rem] font-bold uppercase tracking-[0.05em] whitespace-nowrap ${
                 CATEGORY_BADGE_CLASSES[val] || CATEGORY_BADGE_CLASSES.general_question
               }`}
             >
@@ -180,14 +180,14 @@ export default function TicketTable({
           const ticket = info.row.original;
           if (ticket.isAiResolved) {
             return (
-              <span className="text-text-primary text-sm font-semibold">
+              <span className="bg-accent/15 text-accent font-mono text-[0.62rem] px-2 py-0.5 border border-accent/40 rounded uppercase tracking-wider">
                 AI
               </span>
             );
           }
           return (
-            <span className={val ? 'text-text-primary text-sm font-semibold' : 'text-text-muted text-xs italic'}>
-              {val ? val.name : 'Unassigned'}
+            <span className={val ? 'text-text-primary text-[0.8rem] font-semibold' : 'text-text-muted text-[0.72rem] font-mono italic'}>
+              {val ? val.name : 'UNASSIGNED'}
             </span>
           );
         },
@@ -195,7 +195,7 @@ export default function TicketTable({
       columnHelper.accessor('createdAt', {
         header: 'Created',
         cell: (info) => (
-          <span className="text-text-secondary text-sm">
+          <span className="text-text-secondary font-mono text-xs">
             {new Date(info.getValue()).toLocaleDateString()}
           </span>
         ),
@@ -205,8 +205,8 @@ export default function TicketTable({
         cell: (info) => {
           const val = info.getValue();
           return (
-            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold capitalize ${PRIORITY_TEXT_CLASSES[val] ?? 'text-text-secondary'}`}>
-              <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_DOT_CLASSES[val] ?? 'bg-text-muted'}`} />
+            <span className={`inline-flex items-center gap-1.5 text-[0.7rem] font-mono uppercase tracking-wider font-semibold ${PRIORITY_TEXT_CLASSES[val] ?? 'text-text-secondary'}`}>
+              <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_DOT_CLASSES[val] ?? 'bg-text-muted'}`} />
               {val}
             </span>
           );
@@ -221,7 +221,7 @@ export default function TicketTable({
             <div className="flex gap-[10px] items-center justify-end">
               <select
                 aria-label="Change status"
-                className="min-w-[110px] py-[6px] px-3 border border-border-color rounded-sm bg-bg-secondary text-text-primary font-sans text-[0.8rem] cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] hover:border-accent focus:outline-none focus:border-accent"
+                className="min-w-[110px] py-[4px] px-2.5 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-[0.68rem] uppercase tracking-wider cursor-pointer transition-all hover:border-accent/60 focus:outline-none focus:border-accent"
                 value={ticket.status}
                 onChange={(e) =>
                   onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)
@@ -235,7 +235,7 @@ export default function TicketTable({
                 <option value="closed">Closed</option>
               </select>
               <button
-                className="bg-danger text-white hover:bg-danger-hover inline-flex items-center gap-[6px] px-3 py-[6px] border-none rounded-md font-sans text-[0.75rem] font-semibold cursor-pointer transition-[0.2s_cubic-bezier(0.4,0,0.2,1)] whitespace-nowrap"
+                className="bg-danger/15 text-danger border border-danger/30 hover:bg-danger/25 hover:border-danger/50 inline-flex items-center gap-[6px] px-2.5 py-[5px] rounded font-mono text-[0.65rem] uppercase tracking-wider font-semibold cursor-pointer transition-all whitespace-nowrap"
                 onClick={() => onDelete(ticket.ticketNumber.toString())}
               >
                 Delete
@@ -261,9 +261,9 @@ export default function TicketTable({
 
   return (
     <section className="overflow-x-auto w-full">
-      <section className="min-w-[1000px] border border-border-color rounded-lg bg-bg-card overflow-hidden">
+      <section className="min-w-[1000px] border border-border-color/60 rounded bg-bg-card overflow-hidden">
         {/* Table Header */}
-        <section className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_120px_100px_110px_190px] border-b border-border-color bg-bg-secondary/40 text-text-secondary text-xs uppercase tracking-wider font-semibold px-6 py-3 items-center select-none">
+        <section className="grid grid-cols-[88px_1.5fr_1.2fr_110px_120px_120px_100px_110px_190px] border-b border-border-color/60 bg-bg-secondary/60 text-text-secondary text-[0.68rem] uppercase tracking-widest font-mono font-bold px-6 py-3.5 items-center select-none">
           {table.getHeaderGroups().map((headerGroup) =>
             headerGroup.headers.map((header) => {
               const canSort = header.column.getCanSort();
@@ -281,18 +281,18 @@ export default function TicketTable({
                       {canSort ? (
                         <button
                           onClick={header.column.getToggleSortingHandler()}
-                          className="flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer uppercase font-semibold text-xs tracking-wider"
+                          className="flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer uppercase font-mono font-bold text-[0.68rem] tracking-widest"
                         >
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
                           {sortingState === 'desc' ? (
-                            <ArrowDown className="size-3.5 text-accent" />
+                            <ArrowDown className="size-3 text-accent" />
                           ) : sortingState === 'asc' ? (
-                            <ArrowUp className="size-3.5 text-accent" />
+                            <ArrowUp className="size-3 text-accent" />
                           ) : (
-                            <ArrowUpDown className="size-3.5 text-text-muted" />
+                            <ArrowUpDown className="size-3 text-text-muted" />
                           )}
                         </button>
                       ) : (
@@ -310,7 +310,7 @@ export default function TicketTable({
         </section>
 
         {/* Table Body */}
-        <section className="divide-y divide-border-color">
+        <section className="divide-y divide-border-color/60">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <section

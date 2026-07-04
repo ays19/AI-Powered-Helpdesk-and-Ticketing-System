@@ -302,7 +302,11 @@ export async function registerQueueWorkers() {
         // Mark ticket as resolved and flag it as AI-resolved
         resolvedTicket = await tx.ticket.update({
           where: { id: ticketId },
-          data: { status: 'resolved', isAiResolved: true },
+          data: {
+            status: 'resolved',
+            isAiResolved: true,
+            assignedToId: (await tx.user.findUnique({ where: { email: 'ai@example.com' } }))?.id ?? null,
+          },
           include: { user: true },
         });
       });
