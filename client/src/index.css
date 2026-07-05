@@ -38,8 +38,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px rgba(0, 240, 255, 0.25);
-  --shadow-glow-purple: 0 0 20px rgba(189, 0, 255, 0.25);
+  --shadow-glow: 0 0 20px rgba(0, 212, 161, 0.25);
+  --shadow-glow-purple: 0 0 20px rgba(108, 99, 255, 0.25);
 
   --animate-slideUp: slideUp 0.3s ease;
   --animate-fadeIn: fadeIn 0.2s ease;
@@ -107,12 +107,12 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
-    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 212, 161, 0.15);
+    border-color: rgba(0, 212, 161, 0.4);
   }
   50% {
-    box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
-    border-color: rgba(0, 240, 255, 0.8);
+    box-shadow: 0 0 25px rgba(0, 212, 161, 0.35);
+    border-color: rgba(0, 212, 161, 0.8);
   }
 }
 
@@ -145,14 +145,15 @@
   --text-secondary: #a0a5b8;
   --text-muted: #62677a;
 
-  --accent-theme: #00f0ff;
-  --accent-theme-hover: #00d8e6;
-  --accent-theme-glow: rgba(0, 240, 255, 0.15);
+  /* Updated: jade replaces cyan as the primary accent */
+  --accent-theme: #00d4a1;
+  --accent-theme-hover: #00bfa0;
+  --accent-theme-glow: rgba(0, 212, 161, 0.15);
 
   --danger-theme: #ff0055;
   --danger-theme-hover: #d60048;
 
-  --status-open-theme: #00f0ff;
+  --status-open-theme: #00d4a1;
   --status-in-progress-theme: #ffd700;
   --status-resolved-theme: #00ff88;
   --status-closed-theme: #62677a;
@@ -168,7 +169,7 @@
   --card-foreground: oklch(0.95 0.01 240);
   --popover: oklch(0.12 0.02 240);
   --popover-foreground: oklch(0.95 0.01 240);
-  --primary: oklch(0.8 0.15 190);
+  --primary: oklch(0.75 0.14 168);
   --primary-foreground: oklch(0.05 0.01 240);
   --secondary: oklch(0.15 0.02 240);
   --secondary-foreground: oklch(0.95 0.01 240);
@@ -179,19 +180,19 @@
   --destructive: oklch(0.55 0.22 10);
   --border: oklch(0.2 0.02 240);
   --input: oklch(0.2 0.02 240);
-  --ring: oklch(0.8 0.15 190);
+  --ring: oklch(0.75 0.14 168);
   --radius: 0.625rem;
 
   --sidebar: oklch(0.1 0.01 240);
   --sidebar-foreground: oklch(0.9 0.01 240);
-  --sidebar-primary: oklch(0.8 0.15 190);
+  --sidebar-primary: oklch(0.75 0.14 168);
   --sidebar-primary-foreground: oklch(0.05 0.01 240);
   --sidebar-accent: oklch(0.15 0.02 240);
   --sidebar-accent-foreground: oklch(0.95 0.01 240);
   --sidebar-border: oklch(0.2 0.02 240);
-  --sidebar-ring: oklch(0.8 0.15 190);
-  
-  --chart-1: oklch(0.8 0.15 190);
+  --sidebar-ring: oklch(0.75 0.14 168);
+
+  --chart-1: oklch(0.75 0.14 168);
   --chart-2: oklch(0.7 0.2 300);
   --chart-3: oklch(0.85 0.2 140);
   --chart-4: oklch(0.75 0.15 40);
@@ -209,11 +210,11 @@
   --text-secondary: #a0a5b8;
   --text-muted: #62677a;
 
-  --accent-theme: #00f0ff;
-  --accent-theme-hover: #00d8e6;
-  --accent-theme-glow: rgba(0, 240, 255, 0.15);
+  --accent-theme: #00d4a1;
+  --accent-theme-hover: #00bfa0;
+  --accent-theme-glow: rgba(0, 212, 161, 0.15);
 
-  --status-open-theme: #00f0ff;
+  --status-open-theme: #00d4a1;
   --status-in-progress-theme: #ffd700;
   --status-resolved-theme: #00ff88;
   --status-closed-theme: #62677a;
@@ -229,7 +230,7 @@
   --card-foreground: oklch(0.95 0.01 240);
   --popover: oklch(0.12 0.02 240);
   --popover-foreground: oklch(0.95 0.01 240);
-  --primary: oklch(0.8 0.15 190);
+  --primary: oklch(0.75 0.14 168);
   --primary-foreground: oklch(0.05 0.01 240);
   --secondary: oklch(0.15 0.02 240);
   --secondary-foreground: oklch(0.95 0.01 240);
@@ -240,22 +241,22 @@
   --destructive: oklch(0.55 0.22 10);
   --border: oklch(0.2 0.02 240);
   --input: oklch(0.2 0.02 240);
-  --ring: oklch(0.8 0.15 190);
+  --ring: oklch(0.75 0.14 168);
 }
 
-/* Custom Cockpit utilities */
+/* ── Custom Cockpit utilities ── */
 .neon-glow {
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.12);
+  box-shadow: 0 0 15px rgba(0, 212, 161, 0.12);
 }
 
 .neon-glow-purple {
-  box-shadow: 0 0 15px rgba(189, 0, 255, 0.12);
+  box-shadow: 0 0 15px rgba(108, 99, 255, 0.12);
 }
 
 .neural-border {
   border: 1px solid transparent;
   background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
-              linear-gradient(135deg, #00f0ff, #bd00ff) border-box;
+              linear-gradient(135deg, #00d4a1, #6c63ff) border-box;
 }
 
 .cyber-panel {
@@ -272,11 +273,64 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00f0ff, transparent);
+  background: linear-gradient(90deg, #00d4a1, transparent);
   opacity: 0.4;
 }
 
-/* Custom cyber scrollbar */
+/* ── Login page — input & button styles ── */
+/*
+  These classes are applied directly in Login.tsx via className="login-input"
+  and className="login-btn" so they don't fight with shadcn's @theme inline
+  block overriding --color-accent. Hardcoded jade hex values are intentional.
+*/
+.login-input {
+  background-color: var(--bg-secondary);
+  border: 1px solid #1e2235;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-input::placeholder {
+  color: var(--text-muted);
+}
+
+.login-input:focus,
+.login-input:focus-visible {
+  outline: none;
+  border-color: #00d4a1;
+  box-shadow: 0 0 0 3px rgba(0, 212, 161, 0.15), 0 0 12px rgba(0, 212, 161, 0.12);
+}
+
+.login-input[aria-invalid="true"] {
+  border-color: var(--danger-theme);
+  box-shadow: 0 0 0 2px rgba(255, 0, 85, 0.15);
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #00d4a1 0%, #6c63ff 100%);
+  color: #06070a;
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 212, 161, 0.3), 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+  box-shadow: 0 0 35px rgba(0, 212, 161, 0.5), 0 0 20px rgba(108, 99, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.5);
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 0 15px rgba(0, 212, 161, 0.3);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Custom cyber scrollbar ── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
