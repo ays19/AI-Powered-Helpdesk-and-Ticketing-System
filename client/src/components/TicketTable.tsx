@@ -85,17 +85,6 @@ export default function TicketTable({
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor('id', {
-        header: 'ID',
-        cell: (info) => (
-          <span
-            className="text-[0.7rem] font-mono font-semibold text-text-muted whitespace-nowrap block"
-            title={`#${info.getValue()}`}
-          >
-            #{info.getValue().slice(0, 6)}
-          </span>
-        ),
-      }),
       columnHelper.accessor('title', {
         header: 'Subject',
         cell: (info) => {
@@ -212,40 +201,8 @@ export default function TicketTable({
           );
         },
       }),
-      columnHelper.display({
-        id: 'actions',
-        header: () => <span className="sr-only">Actions</span>,
-        cell: (info) => {
-          const ticket = info.row.original;
-          return (
-            <div className="flex gap-[10px] items-center justify-end">
-              <select
-                aria-label="Change status"
-                className="min-w-[110px] py-[4px] px-2.5 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-[0.68rem] uppercase tracking-wider cursor-pointer transition-all hover:border-accent-theme/60 focus:outline-none focus:border-accent-theme"
-                value={ticket.status}
-                onChange={(e) =>
-                  onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)
-                }
-              >
-                <option value="new">New</option>
-                <option value="processing">Processing</option>
-                <option value="open">Open</option>
-                <option value="in-progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-              <button
-                className="bg-danger/15 text-danger border border-danger/30 hover:bg-danger/25 hover:border-danger/50 inline-flex items-center gap-[6px] px-2.5 py-[5px] rounded font-mono text-[0.65rem] uppercase tracking-wider font-semibold cursor-pointer transition-all whitespace-nowrap"
-                onClick={() => onDelete(ticket.ticketNumber.toString())}
-              >
-                Delete
-              </button>
-            </div>
-          );
-        },
-      }),
     ],
-    [onStatusChange, onDelete]
+    []
   );
 
   const table = useReactTable({
