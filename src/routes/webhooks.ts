@@ -100,10 +100,21 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
         return;
       }
 
-      const resend = new Resend(apiKey);
-      const result = await resend.emails.get(email_id);
-      email = result.data;
-      error = result.error;
+      try {
+        const response = await fetch(`https://api.resend.com/emails/received/${email_id}`, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+          },
+        });
+        if (!response.ok) {
+          const errText = await response.text();
+          error = { message: `Resend API returned status ${response.status}: ${errText}` };
+        } else {
+          email = await response.json() as any;
+        }
+      } catch (err: any) {
+        error = err;
+      }
     }
 
     if (error || !email) {
