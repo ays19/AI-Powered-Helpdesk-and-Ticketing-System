@@ -19,6 +19,10 @@ import { boss, registerQueueWorkers } from './lib/queue';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Trust proxy — required when running behind a reverse proxy (Railway, Render, etc.)
+// Must be set before any middleware that reads IP addresses (e.g. rate limiters)
+app.set('trust proxy', 1);
+
 // --------------- Security Middleware ---------------
 app.use(helmet());
 app.use(cors({
@@ -136,4 +140,3 @@ app.listen(PORT, async () => {
 });
 
 export default app;
-
