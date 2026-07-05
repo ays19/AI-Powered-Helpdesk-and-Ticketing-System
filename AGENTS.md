@@ -17,10 +17,10 @@ Required in `.env` (mirrored in `.env.test` for E2E runs — see e2e-test-writer
 | `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:pass@host:5432/helpdesk?schema=public` |
 | `BETTER_AUTH_SECRET` | Better Auth session signing secret |
 | `BETTER_AUTH_URL` | The server's own URL (`http://localhost:4000` in dev) — used internally by Better Auth. Don't confuse with `CLIENT_URL` below. |
-| `CLIENT_URL` / `TRUSTED_ORIGINS` | Frontend origin (`http://localhost:5173` in dev), used for CORS and Better Auth `trustedOrigins`. Both vars are set to the same value in `.env`. <!-- TODO: confirm if the code actually reads both, or if one is legacy/unused --> |
+| `CLIENT_URL` / `TRUSTED_ORIGINS` | Frontend origin (`http://localhost:5173` in dev). Both variables are read by [server.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/server.ts) (for CORS) and [auth.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/auth.ts) (for `trustedOrigins`) and must be set to the same frontend origin value. |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | Credentials for the dev-seeded admin account, used by `seed.ts`. **Separate from** the E2E test credentials (`test-admin@example.com` / `testpassword123`) defined in `.env.test` — don't conflate the two when debugging login issues. |
-| `WEBHOOK_SECRET` | <!-- TODO: confirm purpose — the `whsec_` prefix is the Stripe convention for webhook signature verification. What endpoint receives this webhook, and where is the signature checked in the code? --> |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | <!-- TODO: not present in the `.env` shown — confirm actual var name, and whether it's required in dev or only when AI features are exercised --> Gemini API key for AI ticket features |
+| `WEBHOOK_SECRET` | Secret used to authenticate inbound email webhook requests at `POST /api/webhooks/email`. Verified via the `x-webhook-secret` header. |
+| `GROQ_API_KEY` | Groq API key for AI features (ticket classification, auto-resolve, polish reply, summarization). Get from console.groq.com. |
 
 ## Tools & Context
 ### Documentation Fetching with Context7
@@ -132,13 +132,13 @@ Component tests live in the `client/` directory and use **Vitest** as the test r
   | `refund_request` | Refund Request |
 
 ### AI-Powered Ticket Features
-- **SDK**: Vercel AI SDK (`ai` + `@ai-sdk/google`) calling the Gemini API.
-- **Model**: `gemini-2.0-flash`.
-- **Features**: ticket classification (auto-assigns `category`), ticket summaries, suggested replies for agents.
-- **API Key**: <!-- TODO: confirm exact env var name --> `GOOGLE_GENERATIVE_AI_API_KEY` is the default `@ai-sdk/google` expects; confirm it matches what's actually in `.env`.
-- **Location**: <!-- TODO: fill in actual file, e.g. src/lib/ai.ts or src/services/ticket-classifier.ts -->
-- **Failure handling**: <!-- TODO: does ticket creation still succeed if the Gemini call fails/times out? Does category fall back to `general_question`? Document the real behavior here. -->
-- **Note**: Don't confuse this with the Gemini CLI / Antigravity agent's own memory files — this section documents the app's runtime AI feature, not agent tooling.
+- **SDK**: Vercel AI SDK (`ai` + `@ai-sdk/groq`)
+- **Model**: `llama-3.1-8b-instant` via Groq
+- **API Key env var**: `GROQ_API_KEY`
+- **Features**: ticket classification (auto-assigns category), auto-resolve via [knowledge-base.md](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/knowledge-base.md), polish reply button, ticket summarization
+- **Location**: [src/routes/tickets.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/routes/tickets.ts) (polish, summarize) and [src/lib/queue.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/lib/queue.ts) (classification, auto-resolve)
+- **Failure handling**: ticket creation always succeeds even if Groq call fails — classification falls back to `general_question`, auto-resolve skips and leaves ticket open for human agent.
+- **Knowledge base**: [src/knowledge-base.md](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/knowledge-base.md) — read at runtime by the auto-resolve worker to determine if a ticket can be answered automatically.
 
 ### Ticket Replies
 - **DB Schema**: The `TicketReply` model maps to the `ticket_reply` table in PostgreSQL.
@@ -155,3 +155,5 @@ Component tests live in the `client/` directory and use **Vitest** as the test r
 - **Role Enum Usage**: Avoid using hardcoded magic strings like `'admin'` or `'agent'` for roles. Always import and use the `UserRole` enum (defined in `client/src/types.ts` for the client and `src/types/index.ts` for the server) to ensure strict type safety across components, page checks, and testing mocks.
 - **Prisma 7 Config Location**: As of Prisma 7, the database connection string lives in `prisma.config.ts`, not in the `datasource` block of `schema.prisma`. If migrations or `prisma generate` fail with a missing-connection-string error, check `prisma.config.ts` first.
 - **Testing Elements with Identical Text**: If a test involves text that could appear in multiple elements (e.g., matching the word `'Customer'` which shows up both as a ticket requester section heading and a reply role badge), use `getAllByText` or specific CSS selectors rather than a single `getByText` call to avoid Testing Library throwing a duplicate match error.
+- **trust proxy for Railway**: Add `app.set('trust proxy', 1)` in [server.ts](file:///media/ays19/Learning2/Claude%20Code%20for%20Professional%20Developers/code/AI%20Powered%20Helpdesk%20and%20Ticketing%20System/src/server.ts) before rate limiters when deploying behind a reverse proxy (Railway, Render, etc.) to prevent `express-rate-limit` from throwing `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR`.
+- **ticketNumber migration drift**: The `ticketNumber` column and updated `TicketStatus` enum (new, processing variants) were applied via db push locally, requiring a manual migration file to be created with `--create-only` to sync Railway's database.

@@ -44,7 +44,11 @@ const authLimit = rateLimit({
 // Better Auth API Route
 app.all("/api/auth/*", toNodeHandler(auth));
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req: any, _res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 
 // --------------- API Routes ---------------
 app.use('/api/webhooks', generalLimit, webhookRouter);

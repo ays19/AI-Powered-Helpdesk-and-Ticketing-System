@@ -1,4 +1,26 @@
 import { test, expect } from '@playwright/test';
+import crypto from 'crypto';
+
+const WEBHOOK_SECRET = 'whsec_dGVzdF93ZWJob29rX3NlY3JldF8xMjM=';
+
+function getSvixHeaders(secret: string, payload: any) {
+  const svixId = `msg_${Date.now()}`;
+  const svixTimestamp = Math.floor(Date.now() / 1000).toString();
+  const body = JSON.stringify(payload);
+  
+  const secretBytes = Buffer.from(secret.split('_')[1], 'base64');
+  const signedContent = `${svixId}.${svixTimestamp}.${body}`;
+  const signature = crypto
+    .createHmac('sha256', secretBytes)
+    .update(signedContent)
+    .digest('base64');
+    
+  return {
+    'svix-id': svixId,
+    'svix-timestamp': svixTimestamp,
+    'svix-signature': `v1,${signature}`,
+  };
+}
 
 test.describe('Email-to-Ticket Webhook', () => {
   // Configured server configurations based on your playwright.config.ts
@@ -39,7 +61,7 @@ test.describe('Email-to-Ticket Webhook', () => {
     // Use built-in Playwright request fixture instead of Axios
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(201);
     
@@ -67,7 +89,7 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(201);
     
@@ -95,7 +117,7 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(201);
     const data = await response.json();
@@ -119,7 +141,7 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(400);
     
@@ -136,7 +158,7 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(201);
     const data = await response.json();
@@ -208,7 +230,7 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     const response = await request.post(SERVER_URL, {
       data: payload,
-      headers: { 'x-webhook-secret': 'test_webhook_secret_123' }
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
     });
     expect(response.status()).toBe(201);
     const data = await response.json();
@@ -228,5 +250,56 @@ test.describe('Email-to-Ticket Webhook', () => {
 
     // Verify it has been unassigned from the AI agent
     await expect(page.locator('select#details-assign')).toHaveValue('unassigned');
+  });
+
+  test('should return 401 for invalid signature', async ({ request }) => {
+    const payload = {
+      from: AUTH_USER.email,
+      subject: 'Unauthorized Ticket',
+      body: 'Should not create this ticket',
+    };
+
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: {
+        'svix-id': 'invalid',
+        'svix-timestamp': 'invalid',
+        'svix-signature': 'v1,invalid',
+      }
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('should create a ticket using Resend webhook format', async ({ page, request }) => {
+    const payload = {
+      type: 'email.received' as const,
+      data: {
+        email_id: 'mock_resend_email_id_123',
+        from: AUTH_USER.email,
+        subject: 'E2E Resend Format Ticket',
+        to: [ 'support@example.com' ],
+      }
+    };
+
+    const response = await request.post(SERVER_URL, {
+      data: payload,
+      headers: getSvixHeaders(WEBHOOK_SECRET, payload)
+    });
+    expect(response.status()).toBe(201);
+
+    const data = await response.json();
+    expect(data).toHaveProperty('id');
+    expect(data.userId).not.toBeNull();
+    expect(data.customerEmail).toBe(payload.data.from);
+    expect(data.title).toBe(payload.data.subject);
+    expect(data.description).toBe('This is the mocked Resend email body content.');
+
+    // Verify UI mapping matches updated database state
+    await page.goto('/login');
+    await page.getByRole('textbox', { name: 'Email' }).fill(AUTH_USER.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(AUTH_USER.password);
+    await page.getByRole('button', { name: 'Sign In' }).click();
+
+    await expect(page.getByRole('heading', { name: 'E2E Resend Format Ticket' }).first()).toBeVisible();
   });
 });
