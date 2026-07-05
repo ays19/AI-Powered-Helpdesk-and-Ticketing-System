@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Login() {
   const [error, setError] = useState('');
@@ -52,7 +53,11 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#06070a] px-4 py-12">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg-primary px-4 py-12">
+      {/* Floating Theme Toggle in top-right */}
+      <div className="absolute right-6 top-6 z-50">
+        <ThemeToggle />
+      </div>
 
       {/* Animated gradient orbs — jade is now the dominant orb */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

@@ -221,15 +221,15 @@ export default function TicketsList() {
                 key={s}
                 className={`flex items-center gap-2.5 py-1.5 px-3.5 border rounded font-mono text-xs uppercase tracking-wider cursor-pointer transition-all ${
                   isActive
-                    ? 'bg-[#00d4a1]/15 border-[#00d4a1]/60 text-[#00d4a1] font-bold shadow-[0_0_12px_rgba(0,212,161,0.2)]'
-                    : 'bg-bg-card border-border-color/60 text-[#c0c0d0] hover:bg-bg-hover hover:border-[#00d4a1]/40 hover:text-white'
+                    ? 'bg-accent-theme/15 border-accent-theme/60 text-accent-theme font-bold shadow-glow'
+                    : 'bg-bg-card border-border-color/60 text-text-secondary hover:bg-bg-hover hover:border-accent-theme/40 hover:text-text-primary'
                 }`}
                 onClick={() => setFilterStatus(s)}
               >
                 <span>{s}</span>
                 <span
                   className={`py-[1px] px-1.5 rounded text-[0.68rem] font-bold ${
-                    isActive ? 'bg-[#00d4a1] text-[#0a0a0f]' : 'bg-bg-hover text-[#c0c0d0] border border-border-color/60'
+                    isActive ? 'bg-accent-theme text-bg-primary' : 'bg-bg-hover text-text-secondary border border-border-color/60'
                   }`}
                 >
                   {counts[s]}

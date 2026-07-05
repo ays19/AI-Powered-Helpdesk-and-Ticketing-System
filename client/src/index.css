@@ -18,9 +18,9 @@
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
 
-  --color-accent: var(--accent-theme);
-  --color-accent-hover: var(--accent-theme-hover);
-  --color-accent-glow: var(--accent-theme-glow);
+  --color-accent-theme: var(--accent-theme);
+  --color-accent-theme-hover: var(--accent-theme-hover);
+  --color-accent-theme-glow: var(--accent-theme-glow);
 
   --color-danger: var(--danger-theme);
   --color-danger-hover: var(--danger-theme-hover);
@@ -135,6 +135,71 @@
 }
 
 :root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-hover: #e2e8f0;
+  --border-color: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Updated: jade replaces cyan as the primary accent */
+  --accent-theme: #00a880;
+  --accent-theme-hover: #008d6c;
+  --accent-theme-glow: rgba(0, 168, 128, 0.08);
+
+  --danger-theme: #e11d48;
+  --danger-theme-hover: #be123c;
+
+  --status-open-theme: #00a880;
+  --status-in-progress-theme: #d97706;
+  --status-resolved-theme: #10b981;
+  --status-closed-theme: #64748b;
+
+  --priority-low-theme: #10b981;
+  --priority-medium-theme: #d97706;
+  --priority-high-theme: #ea580c;
+  --priority-critical-theme: #e11d48;
+
+  --background: oklch(0.99 0.005 240);
+  --foreground: oklch(0.15 0.02 240);
+  --card: oklch(1.0 0.0 240);
+  --card-foreground: oklch(0.15 0.02 240);
+  --popover: oklch(1.0 0.0 240);
+  --popover-foreground: oklch(0.15 0.02 240);
+  --primary: oklch(0.55 0.12 168);
+  --primary-foreground: oklch(0.99 0.005 240);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.15 0.02 240);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.55 0.02 240);
+  --accent: oklch(0.94 0.01 240);
+  --accent-foreground: oklch(0.15 0.02 240);
+  --destructive: oklch(0.6 0.25 20);
+  --border: oklch(0.9 0.01 240);
+  --input: oklch(0.9 0.01 240);
+  --ring: oklch(0.55 0.12 168);
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.98 0.005 240);
+  --sidebar-foreground: oklch(0.2 0.02 240);
+  --sidebar-primary: oklch(0.55 0.12 168);
+  --sidebar-primary-foreground: oklch(0.99 0.005 240);
+  --sidebar-accent: oklch(0.96 0.01 240);
+  --sidebar-accent-foreground: oklch(0.15 0.02 240);
+  --sidebar-border: oklch(0.9 0.01 240);
+  --sidebar-ring: oklch(0.55 0.12 168);
+
+  --chart-1: oklch(0.55 0.12 168);
+  --chart-2: oklch(0.6 0.18 300);
+  --chart-3: oklch(0.7 0.18 140);
+  --chart-4: oklch(0.65 0.13 40);
+  --chart-5: oklch(0.5 0.08 270);
+}
+
+.dark {
   --bg-primary: #06070a;
   --bg-secondary: #0b0d14;
   --bg-card: #0d0f17;
@@ -145,7 +210,6 @@
   --text-secondary: #a0a5b8;
   --text-muted: #62677a;
 
-  /* Updated: jade replaces cyan as the primary accent */
   --accent-theme: #00d4a1;
   --accent-theme-hover: #00bfa0;
   --accent-theme-glow: rgba(0, 212, 161, 0.15);
@@ -181,7 +245,6 @@
   --border: oklch(0.2 0.02 240);
   --input: oklch(0.2 0.02 240);
   --ring: oklch(0.75 0.14 168);
-  --radius: 0.625rem;
 
   --sidebar: oklch(0.1 0.01 240);
   --sidebar-foreground: oklch(0.9 0.01 240);
@@ -191,57 +254,6 @@
   --sidebar-accent-foreground: oklch(0.95 0.01 240);
   --sidebar-border: oklch(0.2 0.02 240);
   --sidebar-ring: oklch(0.75 0.14 168);
-
-  --chart-1: oklch(0.75 0.14 168);
-  --chart-2: oklch(0.7 0.2 300);
-  --chart-3: oklch(0.85 0.2 140);
-  --chart-4: oklch(0.75 0.15 40);
-  --chart-5: oklch(0.6 0.1 270);
-}
-
-.dark {
-  --bg-primary: #06070a;
-  --bg-secondary: #0b0d14;
-  --bg-card: #0d0f17;
-  --bg-hover: #171a26;
-  --border-color: #1e2235;
-
-  --text-primary: #f1f3f9;
-  --text-secondary: #a0a5b8;
-  --text-muted: #62677a;
-
-  --accent-theme: #00d4a1;
-  --accent-theme-hover: #00bfa0;
-  --accent-theme-glow: rgba(0, 212, 161, 0.15);
-
-  --status-open-theme: #00d4a1;
-  --status-in-progress-theme: #ffd700;
-  --status-resolved-theme: #00ff88;
-  --status-closed-theme: #62677a;
-
-  --priority-low-theme: #00ff88;
-  --priority-medium-theme: #ffd700;
-  --priority-high-theme: #ff8800;
-  --priority-critical-theme: #ff0055;
-
-  --background: oklch(0.08 0.01 240);
-  --foreground: oklch(0.95 0.01 240);
-  --card: oklch(0.12 0.02 240);
-  --card-foreground: oklch(0.95 0.01 240);
-  --popover: oklch(0.12 0.02 240);
-  --popover-foreground: oklch(0.95 0.01 240);
-  --primary: oklch(0.75 0.14 168);
-  --primary-foreground: oklch(0.05 0.01 240);
-  --secondary: oklch(0.15 0.02 240);
-  --secondary-foreground: oklch(0.95 0.01 240);
-  --muted: oklch(0.15 0.02 240);
-  --muted-foreground: oklch(0.65 0.02 240);
-  --accent: oklch(0.18 0.02 240);
-  --accent-foreground: oklch(0.95 0.01 240);
-  --destructive: oklch(0.55 0.22 10);
-  --border: oklch(0.2 0.02 240);
-  --input: oklch(0.2 0.02 240);
-  --ring: oklch(0.75 0.14 168);
 }
 
 /* ── Custom Cockpit utilities ── */
@@ -285,7 +297,7 @@
 */
 .login-input {
   background-color: var(--bg-secondary);
-  border: 1px solid #1e2235;
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -297,8 +309,8 @@
 .login-input:focus,
 .login-input:focus-visible {
   outline: none;
-  border-color: #00d4a1;
-  box-shadow: 0 0 0 3px rgba(0, 212, 161, 0.15), 0 0 12px rgba(0, 212, 161, 0.12);
+  border-color: var(--accent-theme);
+  box-shadow: 0 0 0 3px var(--accent-theme-glow), 0 0 12px var(--accent-theme-glow);
 }
 
 .login-input[aria-invalid="true"] {
@@ -307,22 +319,22 @@
 }
 
 .login-btn {
-  background: linear-gradient(135deg, #00d4a1 0%, #6c63ff 100%);
-  color: #06070a;
+  background: linear-gradient(135deg, var(--accent-theme) 0%, #6c63ff 100%);
+  color: var(--bg-primary);
   border: none;
-  box-shadow: 0 0 20px rgba(0, 212, 161, 0.3), 0 4px 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 20px var(--accent-theme-glow), 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
 }
 
 .login-btn:hover:not(:disabled) {
-  box-shadow: 0 0 35px rgba(0, 212, 161, 0.5), 0 0 20px rgba(108, 99, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 35px var(--accent-theme-glow), 0 0 20px rgba(108, 99, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.3);
   opacity: 0.95;
   transform: translateY(-1px);
 }
 
 .login-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 0 15px rgba(0, 212, 161, 0.3);
+  box-shadow: 0 0 15px var(--accent-theme-glow);
 }
 
 .login-btn:disabled {

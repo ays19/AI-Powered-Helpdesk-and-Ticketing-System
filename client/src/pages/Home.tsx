@@ -148,7 +148,7 @@ export default function Home() {
                   >
                     {/* Tooltip */}
                     <div className="absolute bottom-full mb-2 bg-bg-secondary/95 border border-border-color/80 text-text-primary text-[0.7rem] px-2.5 py-1.5 rounded shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none whitespace-nowrap z-30 flex flex-col gap-0.5 items-center font-mono">
-                      <span className="font-bold text-[0.72rem] text-accent">
+                      <span className="font-bold text-[0.72rem] text-accent-theme">
                         {d.count} {d.count === 1 ? 'ticket' : 'tickets'}
                       </span>
                       <span className="text-text-muted text-[0.62rem]">{d.label}</span>
@@ -157,7 +157,7 @@ export default function Home() {
                     {/* Bar */}
                     <div className="w-full flex items-end justify-center h-full">
                       <div
-                        className="w-full rounded-t-[2px] bg-[#00d4a1]/40 hover:bg-[#00d4a1] border-t border-[#00d4a1]/60 hover:shadow-[0_0_15px_rgba(0,212,161,0.4)] transition-all duration-300"
+                        className="w-full rounded-t-[2px] bg-accent-theme/40 hover:bg-accent-theme border-t border-accent-theme/60 hover:shadow-glow transition-all duration-300"
                         style={{
                           height: `${Math.max(heightPercent, 2)}%`,
                           minHeight: d.count > 0 ? '4px' : '2px',
