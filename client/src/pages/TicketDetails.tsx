@@ -171,7 +171,7 @@ export default function TicketDetails() {
       <main className="max-w-[1000px] mx-auto py-8 px-6">
         {/* Back Link */}
         <Link 
-          to="/" 
+          to="/tickets" 
           className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-6 text-sm font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
