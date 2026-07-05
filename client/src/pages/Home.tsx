@@ -81,7 +81,7 @@ export default function Home() {
               <span className="bg-accent/10 text-accent font-mono text-[0.6rem] font-bold px-1 py-0.5 rounded border border-accent/30 text-center tracking-widest">AI</span>
             </div>
             <div className="text-[1.8rem] font-bold font-heading text-[#a78bfa] mt-2 font-mono tracking-tight">{stats.resolvedByAI}</div>
-            <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">auto_resolved_via_gemini</span>
+            <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">auto_resolved_via_groq</span>
           </div>
 
           <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
@@ -157,7 +157,7 @@ export default function Home() {
                     {/* Bar */}
                     <div className="w-full flex items-end justify-center h-full">
                       <div
-                        className="w-full rounded-t-[2px] bg-[#a78bfa]/40 hover:bg-[#a78bfa] border-t border-[#a78bfa]/60 hover:shadow-[0_0_15px_rgba(167,139,250,0.4)] transition-all duration-300"
+                        className="w-full rounded-t-[2px] bg-[#00d4a1]/40 hover:bg-[#00d4a1] border-t border-[#00d4a1]/60 hover:shadow-[0_0_15px_rgba(0,212,161,0.4)] transition-all duration-300"
                         style={{
                           height: `${Math.max(heightPercent, 2)}%`,
                           minHeight: d.count > 0 ? '4px' : '2px',
