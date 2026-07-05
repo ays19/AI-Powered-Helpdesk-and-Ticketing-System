@@ -178,9 +178,9 @@ export default function TicketTable({
         cell: (info) => {
           const val = info.getValue();
           const ticket = info.row.original;
-          if (ticket.isAiResolved) {
+          if (ticket.isAiResolved || ticket.assigned_to?.email === 'ai@example.com') {
             return (
-              <span className="bg-accent/15 text-accent font-mono text-[0.62rem] px-2 py-0.5 border border-accent/40 rounded uppercase tracking-wider">
+              <span className="bg-accent-theme/15 text-accent-theme font-mono text-[0.62rem] px-2 py-0.5 border border-accent-theme/40 rounded uppercase tracking-wider">
                 AI
               </span>
             );
@@ -221,7 +221,7 @@ export default function TicketTable({
             <div className="flex gap-[10px] items-center justify-end">
               <select
                 aria-label="Change status"
-                className="min-w-[110px] py-[4px] px-2.5 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-[0.68rem] uppercase tracking-wider cursor-pointer transition-all hover:border-accent/60 focus:outline-none focus:border-accent"
+                className="min-w-[110px] py-[4px] px-2.5 border border-border-color/60 rounded bg-bg-secondary text-text-primary font-mono text-[0.68rem] uppercase tracking-wider cursor-pointer transition-all hover:border-accent-theme/60 focus:outline-none focus:border-accent-theme"
                 value={ticket.status}
                 onChange={(e) =>
                   onStatusChange(ticket.ticketNumber.toString(), e.target.value as TicketStatus)
@@ -288,9 +288,9 @@ export default function TicketTable({
                             header.getContext()
                           )}
                           {sortingState === 'desc' ? (
-                            <ArrowDown className="size-3 text-accent" />
+                            <ArrowDown className="size-3 text-accent-theme" />
                           ) : sortingState === 'asc' ? (
-                            <ArrowUp className="size-3 text-accent" />
+                            <ArrowUp className="size-3 text-accent-theme" />
                           ) : (
                             <ArrowUpDown className="size-3 text-text-muted" />
                           )}

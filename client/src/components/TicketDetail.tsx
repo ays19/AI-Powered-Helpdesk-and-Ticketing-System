@@ -88,7 +88,7 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
     <div className="space-y-6">
       {/* Ticket Card Main */}
       <div className="bg-bg-card border border-border-color/60 rounded p-6 shadow-md relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent-theme" />
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className="text-[0.68rem] font-mono font-bold text-text-muted bg-bg-secondary px-2.5 py-1 rounded border border-border-color/60 flex items-center gap-1.5 max-w-[240px] truncate">
             ID: {ticket.id}
@@ -97,7 +97,7 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
               className="text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0 ml-1"
               title="Copy Ticket ID"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-accent" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-accent-theme" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </span>
           
@@ -136,21 +136,21 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
         <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-text-secondary mb-4 before:content-['//_'] before:opacity-50">Requester Details</h3>
         
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center text-accent text-lg font-bold font-mono">
+          <div className="w-12 h-12 rounded-full bg-accent-theme/10 border border-accent-theme/30 flex items-center justify-center text-accent-theme text-lg font-bold font-mono">
             {senderName.charAt(0)}
           </div>
           <div>
             <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
               {senderName}
               {ticket.user && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.6rem] font-mono font-bold uppercase tracking-widest bg-accent/20 text-accent border border-accent/40">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[0.6rem] font-mono font-bold uppercase tracking-widest bg-accent-theme/20 text-accent-theme border border-accent-theme/40">
                   <Shield className="w-2.5 h-2.5" /> Registered
                 </span>
               )}
             </h4>
             <p className="text-xs font-mono text-text-secondary flex items-center gap-1.5 mt-1">
               <Mail className="w-3.5 h-3.5 text-text-muted" />
-              <a href={`mailto:${senderEmail}`} className="hover:underline hover:text-accent">
+              <a href={`mailto:${senderEmail}`} className="hover:underline hover:text-accent-theme">
                 {senderEmail}
               </a>
             </p>
@@ -174,12 +174,12 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
               type="button"
               onClick={handleSummarize}
               disabled={isSummarizing}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-accent/30 rounded bg-accent/10 text-accent font-mono text-xs uppercase tracking-wider cursor-pointer transition-all hover:bg-accent/20 hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,240,255,0.05)]"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-accent-theme/30 rounded bg-accent-theme/10 text-accent-theme font-mono text-xs uppercase tracking-wider cursor-pointer transition-all hover:bg-accent-theme/20 hover:border-accent-theme disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,240,255,0.05)]"
             >
               {isSummarizing ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin-slow text-accent" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin-slow text-accent-theme" />
               ) : (
-                <Sparkles className="w-3.5 h-3.5 text-accent" />
+                <Sparkles className="w-3.5 h-3.5 text-accent-theme" />
               )}
               {isSummarizing ? 'Summarizing...' : 'Summarize Ticket'}
             </button>
@@ -187,8 +187,8 @@ export default function TicketDetail({ ticket }: TicketDetailProps) {
 
           {summary && (
             <div className="neural-border rounded p-4 text-sm text-text-primary animate-fadeIn shadow-glow">
-              <h4 className="text-[0.68rem] font-mono font-bold uppercase tracking-widest text-accent mb-1.5 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" /> AI Summary
+              <h4 className="text-[0.68rem] font-mono font-bold uppercase tracking-widest text-accent-theme mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-accent-theme animate-pulse" /> AI Summary
               </h4>
               <p className="leading-relaxed whitespace-pre-wrap">{summary}</p>
             </div>

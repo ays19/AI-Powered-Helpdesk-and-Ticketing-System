@@ -164,7 +164,7 @@ describe('TicketDetail', () => {
     const { container } = renderWithQuery(<TicketDetail ticket={ticket} />);
 
     // The avatar is a rounded div whose text is the first letter of the name
-    const avatar = container.querySelector('.rounded-full.bg-accent\\/10');
+    const avatar = container.querySelector('.rounded-full.bg-accent-theme\\/10');
     expect(avatar).toBeInTheDocument();
     expect(avatar?.textContent).toBe('A');
   });

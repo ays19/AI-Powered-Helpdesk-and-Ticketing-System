@@ -49,7 +49,7 @@ export default function UserTable({ users, isLoading, onEdit, onDelete }: UserTa
               <tr key={user.id} className="hover:bg-bg-hover/30 transition-colors group border-b border-border-color/40">
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-accent/10 text-accent group-hover:bg-accent/20 transition-colors">
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-accent-theme/10 text-accent-theme group-hover:bg-accent-theme/20 transition-colors">
                       <UserIcon className="size-4" />
                     </div>
                     <span className="font-semibold text-text-primary text-sm">{user.name}</span>
@@ -64,7 +64,7 @@ export default function UserTable({ users, isLoading, onEdit, onDelete }: UserTa
                 <td className="px-4 py-4">
                   <span className={`px-2 py-0.5 rounded text-[0.62rem] font-mono font-bold uppercase tracking-wider ${
                     user.role === UserRole.ADMIN 
-                      ? 'bg-accent/15 text-accent border border-accent/45' 
+                      ? 'bg-accent-theme/15 text-accent-theme border border-accent-theme/45' 
                       : 'bg-bg-secondary text-text-secondary border border-border-color/60'
                   }`}>
                     {user.role}
@@ -80,7 +80,7 @@ export default function UserTable({ users, isLoading, onEdit, onDelete }: UserTa
                   <div className="flex items-center justify-end gap-2">
                     <button 
                       onClick={() => onEdit(user)}
-                      className="p-1.5 border border-border-color/60 bg-bg-secondary text-text-secondary hover:text-text-primary hover:border-accent/40 rounded transition-all"
+                      className="p-1.5 border border-border-color/60 bg-bg-secondary text-text-secondary hover:text-text-primary hover:border-accent-theme/40 rounded transition-all"
                       aria-label={`Edit ${user.name}`}
                     >
                       <Pencil className="size-3.5" />

@@ -232,6 +232,12 @@ ticketRouter.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: R
   if ('assigned_to' in validatedData) {
     updateData.assignedToId = validatedData.assigned_to;
     delete updateData.assigned_to;
+
+    // If a real agent is being manually assigned, clear the AI-resolved flag
+    // so the assignee dropdown no longer shows "AI" and the badge is removed.
+    if (validatedData.assigned_to !== null && validatedData.assigned_to !== undefined) {
+      updateData.isAiResolved = false;
+    }
   }
 
   const updatedTicket = await prisma.ticket.update({
@@ -311,7 +317,6 @@ ticketRouter.post('/polish', asyncHandler(async (req: AuthenticatedRequest, res:
 }));
 
 // POST /api/tickets/:id/replies
-
 ticketRouter.post('/:id/replies', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });

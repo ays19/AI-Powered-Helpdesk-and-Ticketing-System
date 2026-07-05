@@ -62,7 +62,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               className={`w-full py-[10px] px-[14px] border rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none placeholder:text-text-muted ${
                 errors.title 
                   ? 'border-danger/80 focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' 
-                  : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+                  : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
               }`}
             />
             {errors.title && <span className="text-danger font-mono text-[0.7rem] mt-1 block">{errors.title.message}</span>}
@@ -78,7 +78,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               className={`w-full py-[10px] px-[14px] border rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none placeholder:text-text-muted ${
                 errors.description 
                   ? 'border-danger/80 focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' 
-                  : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+                  : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
               }`}
             />
             {errors.description && <span className="text-danger font-mono text-[0.7rem] mt-1 block">{errors.description.message}</span>}
@@ -92,7 +92,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               className={`w-full py-[10px] px-[14px] border rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none placeholder:text-text-muted ${
                 errors.priority 
                   ? 'border-danger/80 focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' 
-                  : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+                  : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
               }`}
             >
               <option value="low">Low</option>
@@ -111,7 +111,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               className={`w-full py-[10px] px-[14px] border rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none placeholder:text-text-muted ${
                 errors.category 
                   ? 'border-danger/80 focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' 
-                  : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+                  : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
               }`}
             >
               <option value="none">None</option>
@@ -130,7 +130,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
               className={`w-full py-[10px] px-[14px] border rounded bg-bg-secondary text-text-primary font-mono text-xs transition-all focus:outline-none placeholder:text-text-muted ${
                 errors.assigned_to 
                   ? 'border-danger/80 focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' 
-                  : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+                  : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
               }`}
             >
               <option value="unassigned">Unassigned</option>
@@ -147,7 +147,7 @@ export default function CreateTicketModal({ onClose, onCreate }: Props) {
             <button type="button" className="border border-border-color/60 bg-transparent text-text-secondary font-mono text-xs uppercase tracking-wider rounded px-4 py-[8px] cursor-pointer hover:bg-bg-hover hover:text-text-primary transition-all" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </button>
-            <button type="submit" className="bg-accent hover:bg-accent-hover text-bg-primary font-mono text-xs uppercase tracking-wider font-bold rounded px-4 py-[8px] border-none cursor-pointer transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)]" disabled={isSubmitting}>
+            <button type="submit" className="bg-accent-theme hover:bg-accent-theme-hover text-bg-primary font-mono text-xs uppercase tracking-wider font-bold rounded px-4 py-[8px] border-none cursor-pointer transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)]" disabled={isSubmitting}>
               Create Ticket
             </button>
           </div>

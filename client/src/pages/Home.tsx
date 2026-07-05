@@ -60,8 +60,8 @@ export default function Home() {
       {/* Dashboard Metrics Grid */}
       {stats && typeof stats.totalTickets === 'number' && (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent" />
+          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent-theme/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent-theme" />
             <span className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary block before:content-['//_'] before:opacity-50">Total Tickets</span>
             <div className="text-[1.8rem] font-bold font-heading text-text-primary mt-2 font-mono tracking-tight">{stats.totalTickets}</div>
             <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">database_records_loaded</span>
@@ -74,27 +74,27 @@ export default function Home() {
             <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">awaiting_agent_response</span>
           </div>
 
-          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-[#bd00ff]" />
+          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent-theme/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent-theme to-[#bd00ff]" />
             <div className="flex justify-between items-start">
               <span className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary block before:content-['//_'] before:opacity-50">Resolved by AI</span>
-              <span className="bg-accent/10 text-accent font-mono text-[0.6rem] font-bold px-1 py-0.5 rounded border border-accent/30 text-center tracking-widest">AI</span>
+              <span className="bg-accent-theme/10 text-accent-theme font-mono text-[0.6rem] font-bold px-1 py-0.5 rounded border border-accent-theme/30 text-center tracking-widest">AI</span>
             </div>
             <div className="text-[1.8rem] font-bold font-heading text-[#a78bfa] mt-2 font-mono tracking-tight">{stats.resolvedByAI}</div>
             <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">auto_resolved_via_groq</span>
           </div>
 
-          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-[#bd00ff]" />
+          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent-theme/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent-theme to-[#bd00ff]" />
             <div className="flex justify-between items-start">
               <span className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary block before:content-['//_'] before:opacity-50">AI Resolution %</span>
-              <span className="bg-accent/10 text-accent font-mono text-[0.6rem] font-bold px-1 py-0.5 rounded border border-accent/30 text-center tracking-widest">AI</span>
+              <span className="bg-accent-theme/10 text-accent-theme font-mono text-[0.6rem] font-bold px-1 py-0.5 rounded border border-accent-theme/30 text-center tracking-widest">AI</span>
             </div>
             <div className="text-[1.8rem] font-bold font-heading text-[#a78bfa] mt-2 font-mono tracking-tight">{stats.percentResolvedByAI}%</div>
             <span className="text-[0.65rem] font-mono text-text-muted mt-2 block">ratio_of_total_traffic</span>
           </div>
 
-          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
+          <div className="relative bg-bg-card border border-border-color/60 rounded-lg p-5 shadow-md transition-all duration-300 hover:border-accent-theme/50 hover:shadow-[0_0_15px_rgba(0,240,255,0.12)] overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#00ff88]" />
             <span className="text-[0.68rem] font-mono font-bold uppercase tracking-wider text-text-secondary block before:content-['//_'] before:opacity-50">Avg Resolution Time</span>
             <div className="text-[1.8rem] font-bold font-heading text-[#00ff88] mt-2 font-mono tracking-tight">

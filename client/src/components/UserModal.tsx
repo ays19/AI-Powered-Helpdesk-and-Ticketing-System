@@ -101,7 +101,7 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
 
   const inputClass = (hasError?: string) =>
     `w-full px-3 py-2.5 rounded bg-bg-secondary text-text-primary placeholder:text-text-muted border transition-all duration-150 outline-none font-mono text-xs ${
-      hasError ? 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' : 'border-border-color/60 focus:border-accent/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
+      hasError ? 'border-danger focus:border-danger focus:shadow-[0_0_0_3px_rgba(255,0,85,0.15)]' : 'border-border-color/60 focus:border-accent-theme/60 focus:shadow-[0_0_0_3px_rgba(0,240,255,0.08)]'
     }`;
 
   return (
@@ -114,10 +114,10 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
       />
       <div role="dialog" aria-modal="true" aria-labelledby="user-modal-title" className="fixed inset-0 z-[201] flex items-center justify-center p-4">
         <div className="w-full max-w-md rounded bg-bg-card border border-border-color/60 shadow-[0_8px_30px_rgba(0,0,0,0.5)] animate-[slideUp_0.2s_cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent to-[#bd00ff] opacity-65" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent-theme to-[#bd00ff] opacity-65" />
           <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border-color/60">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-accent/15 text-accent border border-accent/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-accent-theme/15 text-accent-theme border border-accent-theme/20">
                 <UserIcon className="size-4" />
               </div>
               <h2 id="user-modal-title" className="text-sm font-bold font-heading uppercase tracking-widest text-text-primary before:content-['//_'] before:opacity-50">
@@ -182,7 +182,7 @@ function UserModal({ user, onClose, title }: { user?: User; onClose: () => void;
             </div>
             <div className="flex items-center justify-end gap-3 pt-1">
               <button type="button" onClick={onClose} className="px-4 py-2 border border-border-color/60 bg-transparent text-text-secondary font-mono text-xs uppercase tracking-wider rounded hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer">Cancel</button>
-              <button type="submit" disabled={mutation.isPending} className="inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent hover:bg-accent-hover text-bg-primary active:bg-accent-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+              <button type="submit" disabled={mutation.isPending} className="inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent-theme hover:bg-accent-theme-hover text-bg-primary active:bg-accent-theme-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
                 {mutation.isPending ? <><Loader2 className="size-4 animate-spin-slow" /> {isEditMode ? 'Saving...' : 'Creating...'}</> : <>{!isEditMode && <Plus className="size-4" />}{isEditMode ? 'Save Changes' : 'Create User'}</>}
               </button>
             </div>
@@ -198,7 +198,7 @@ export function CreateUserButton({ onClick }: { onClick: () => void }) {
     <button 
       type="button"
       onClick={onClick} 
-      className="inline-flex items-center gap-2 px-4 py-[8px] rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent hover:bg-accent-hover text-bg-primary active:bg-accent-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] cursor-pointer"
+      className="inline-flex items-center gap-2 px-4 py-[8px] rounded text-xs font-mono font-bold uppercase tracking-wider bg-accent-theme hover:bg-accent-theme-hover text-bg-primary active:bg-accent-theme-hover/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.2)] cursor-pointer"
     >
       <Plus className="size-4" /> Create User
     </button>
