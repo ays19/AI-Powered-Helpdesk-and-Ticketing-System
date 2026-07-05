@@ -192,7 +192,9 @@ export async function registerQueueWorkers() {
       }
 
       // Determine recipient email
-      const recipientEmail = ticketPrefetch.customerEmail ?? ticketPrefetch.user?.email ?? null;
+      const recipientEmail = ticketPrefetch.customerEmail 
+        || ticketPrefetch.user?.email 
+        || null;
       if (!recipientEmail) {
         console.warn(`[Queue] Ticket ${ticketId} has no customer email — auto-resolve email will be skipped if resolved`);
       }
