@@ -78,14 +78,14 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
   if ('type' in validatedData && validatedData.type === 'email.received') {
     const { email_id, from: resendFrom, subject: resendSubject } = validatedData.data;
 
-    let email: { from?: string; subject?: string; text?: string | null; html?: string | null } | null = null;
+    let receivedEmail: { from?: string; subject?: string; text?: string | null; html?: string | null } | null = null;
     let error: any = null;
 
     if (process.env.NODE_ENV === 'test' || email_id.startsWith('mock_')) {
       if (email_id === 'fail') {
         error = { message: 'Mocked API Error' };
       } else {
-        email = {
+        receivedEmail = {
           from: resendFrom,
           subject: resendSubject,
           text: 'This is the mocked Resend email body content.',
@@ -100,32 +100,22 @@ webhookRouter.post('/email', asyncHandler(async (req: Request, res: Response) =>
         return;
       }
 
-      try {
-        const response = await fetch(`https://api.resend.com/emails/received/${email_id}`, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-          },
-        });
-        if (!response.ok) {
-          const errText = await response.text();
-          error = { message: `Resend API returned status ${response.status}: ${errText}` };
-        } else {
-          email = await response.json() as any;
-        }
-      } catch (err: any) {
-        error = err;
-      }
+      const resend = new Resend(apiKey);
+      const result = await resend.emails.receiving.get(email_id);
+      receivedEmail = result.data;
+      error = result.error;
     }
 
-    if (error || !email) {
+    if (error || !receivedEmail) {
       console.error('[Webhook] Failed to fetch email from Resend:', error);
-      res.status(400).json({ error: `Failed to fetch email from Resend: ${error?.message || 'Unknown error'}` });
-      return;
+      // fallback to empty body
+      body = '';
+    } else {
+      body = receivedEmail.text || receivedEmail.html || '';
     }
 
-    from = email.from || resendFrom;
-    subject = email.subject || resendSubject;
-    body = email.text || email.html || '';
+    from = (receivedEmail && receivedEmail.from) || resendFrom;
+    subject = (receivedEmail && receivedEmail.subject) || resendSubject;
   } else {
     from = (validatedData as any).from;
     subject = (validatedData as any).subject;
