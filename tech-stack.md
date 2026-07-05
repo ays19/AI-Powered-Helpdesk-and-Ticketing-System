@@ -16,6 +16,7 @@
 - Express 4 + TypeScript
 - Better Auth (email/password, admin plugin, `disableSignUp`)
 - Helmet, express-rate-limit (security)
+- Sentry (`@sentry/node`) — error monitoring
 
 ## Database
 - PostgreSQL
@@ -27,8 +28,10 @@
 - `UserRole` enum — single source of truth
 
 ## AI
-- Vercel AI SDK (`ai` + `@ai-sdk/google`)
-- Google Gemini 2.0 Flash — ticket classification, summaries, suggested replies
+- Vercel AI SDK (`ai` + `@ai-sdk/groq`)
+- Groq — `llama-3.1-8b-instant` — ticket classification, auto-resolve, polish reply, summarization
+- PgBoss (`pg-boss`) — PostgreSQL-backed async job queue for AI worker pipelines
+- Resend — transactional email (ticket created, reply, status update, AI resolution)
 
 ## Testing
 - **Component**: Vitest v4 + React Testing Library + jsdom
