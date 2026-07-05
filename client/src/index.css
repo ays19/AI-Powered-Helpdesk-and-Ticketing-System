@@ -268,7 +268,7 @@
 .neural-border {
   border: 1px solid transparent;
   background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
-              linear-gradient(135deg, #00d4a1, #6c63ff) border-box;
+              linear-gradient(135deg, var(--accent-theme), #6c63ff) border-box;
 }
 
 .cyber-panel {
@@ -285,7 +285,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, #00d4a1, transparent);
+  background: linear-gradient(90deg, var(--accent-theme), transparent);
   opacity: 0.4;
 }
 
@@ -320,7 +320,7 @@
 
 .login-btn {
   background: linear-gradient(135deg, var(--accent-theme) 0%, #6c63ff 100%);
-  color: var(--bg-primary);
+  color: #ffffff;
   border: none;
   box-shadow: 0 0 20px var(--accent-theme-glow), 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.15s ease;

@@ -134,7 +134,7 @@ export default function Login() {
           {/* Title — no .sys */}
           <div className="text-center">
             <h1 className="font-heading text-3xl font-bold uppercase tracking-[0.2em]">
-              <span className="text-white/50 font-light">HELP</span>
+              <span className="text-text-primary/50 font-light">HELP</span>
               <span
                 className="font-extrabold"
                 style={{
