@@ -31,8 +31,7 @@ app.use(cors({
 }));
 
 app.get('/debug-sentry', (_req, res) => {
-  Sentry.captureMessage('Debug message from /debug-sentry');
-  res.json({ message: 'Debug message sent to Sentry' });
+  throw new Error('Debug sentry error');
 });
 // Rate Limiting
 const generalLimit = rateLimit({
