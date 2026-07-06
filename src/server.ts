@@ -30,7 +30,10 @@ app.use(cors({
   credentials: true
 }));
 
-
+app.get('/debug-sentry', (_req, res) => {
+  Sentry.captureMessage('Debug message from /debug-sentry');
+  res.json({ message: 'Debug message sent to Sentry' });
+});
 // Rate Limiting
 const generalLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
