@@ -25,6 +25,7 @@ app.set('trust proxy', 1);
 
 app.get('/debug-sentry', (_req, res) => {
   throw new Error('Debug sentry error');
+});
 
 // --------------- Security Middleware ---------------
 app.use(helmet());
