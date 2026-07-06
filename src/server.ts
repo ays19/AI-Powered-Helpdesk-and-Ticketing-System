@@ -23,6 +23,10 @@ const PORT = process.env.PORT || 4000;
 // Must be set before any middleware that reads IP addresses (e.g. rate limiters)
 app.set('trust proxy', 1);
 
+app.get('/debug-sentry', (_req, res) => {
+  throw new Error('Debug sentry error');
+});
+
 // --------------- Security Middleware ---------------
 app.use(helmet());
 app.use(cors({
@@ -30,9 +34,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.get('/debug-sentry', (_req, res) => {
-  throw new Error('Debug sentry error');
-});
+
 // Rate Limiting
 const generalLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
