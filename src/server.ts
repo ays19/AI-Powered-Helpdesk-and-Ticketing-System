@@ -30,6 +30,9 @@ app.use(cors({
   credentials: true
 }));
 
+app.get('/debug-sentry', (_req, res) => {
+  throw new Error('Debug Sentry error');
+});
 // Rate Limiting
 const generalLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
