@@ -4,13 +4,15 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Railway-brightgreen)](https://ai-powered-helpdesk-and-ticketing-system.up.railway.app)
 [![Tests](https://img.shields.io/badge/Tests-145%20passing-blue)](#testing)
+[![Kaggle](https://img.shields.io/badge/Kaggle-AI%20Agents%20Capstone-20BEFF)](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/projects)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 **Track:** Kaggle AI Agents Intensive Capstone — Agents for Business (Google × Kaggle 2026)
 
-🌐 **Live Demo:** https://ai-powered-helpdesk-and-ticketing-system.up.railway.app  
-📄 **Kaggle Writeup:** https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/writeups/new-writeup-1783086059176  
-🎬 **Demo Video:** https://www.youtube.com/watch?v=rSMxxQLQCcU&t=32s
+🌐 **Live Demo:** https://ai-powered-helpdesk-and-ticketing-system.up.railway.app
+📄 **Kaggle Writeup:** https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/projects
+🎬 **Demo Video:** *(YouTube link)*
+💻 **GitHub:** https://github.com/ays19/HELPDESK
 
 > **Demo credentials**
 > Email: `admin@example.com` · Password: `password123`
@@ -29,8 +31,12 @@
 - [Development](#development)
 - [Testing](#testing)
 - [Deployment](#deployment)
+- [Reproducing the Deployment](#reproducing-the-deployment)
 - [API Reference](#api-reference)
+- [Key Implementation Notes](#key-implementation-notes)
 - [AI Development Workflow](#ai-development-workflow)
+- [License](#license)
+- [Citation](#citation)
 
 ---
 
@@ -43,8 +49,8 @@ Every growing software business hits the same wall: a support inbox that grows f
 The AI Helpdesk & Ticketing System uses a **three-agent pipeline** to handle the entire ticket lifecycle autonomously:
 
 1. A customer sends an email or submits a ticket via the web UI
-2. **Agent 1** classifies it (General / Technical / Refund)
-3. **Agent 2** reads the knowledge base and resolves it if possible — sending the reply email automatically
+2. **Agent 1** classifies it (General / Technical / Refund) using Groq
+3. **Agent 2** reads the knowledge base and resolves it — sending the reply email automatically
 4. If it cannot resolve it, the ticket is escalated to a human agent with the classification already done
 
 For tickets that reach a human, **Agent 3** can polish their draft reply into professional, empathetic language before it is sent.
@@ -52,6 +58,8 @@ For tickets that reach a human, **Agent 3** can polish their draft reply into pr
 ---
 
 ## Agent Architecture
+
+![System Architecture](architecture.svg)
 
 ```
 Inbound Email / Web Form
@@ -116,7 +124,7 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 | Feature | Description |
 |---|---|
 | Auto-classification | Classifies every ticket into one of three categories using Groq |
-| Auto-resolution | Resolves tickets from a knowledge base, sends reply email automatically |
+| Auto-resolution | Resolves tickets from the knowledge base; sends reply email automatically |
 | Polish Reply | Rewrites human draft replies into professional, empathetic language |
 | Ticket Summarization | One-click LLM summary of any ticket's full conversation thread |
 | Inbound email → ticket | Converts inbound customer emails into tickets via Resend webhook |
@@ -161,6 +169,7 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 | Testing | Vitest + React Testing Library + Playwright (E2E) |
 | Deployment | Railway + Docker |
 | AI Coding Agent | Antigravity CLI |
+| MCP Servers | Context7 (live documentation access) |
 
 ---
 
@@ -171,6 +180,7 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 ├── src/                        # Express backend
 │   ├── server.ts               # App entry point, middleware, route registration
 │   ├── auth.ts                 # Better Auth configuration
+│   ├── knowledge-base.md       # AI agent's knowledge source (support policies)
 │   ├── lib/
 │   │   ├── queue.ts            # PgBoss workers — classification, auto-resolve, send-email
 │   │   ├── ai.ts               # Groq LLM calls (classify, resolve, polish, summarize)
@@ -185,7 +195,9 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 ├── client/                     # React frontend (Vite)
 │   └── src/
 │       ├── components/         # shadcn/ui + custom components
+│       │   └── __tests__/      # 67 Vitest component tests
 │       ├── pages/              # Route-level page components
+│       │   └── __tests__/      # 51 Vitest page tests
 │       ├── lib/
 │       │   ├── auth-client.ts  # Better Auth client
 │       │   └── api.ts          # Axios instance + API helpers
@@ -199,7 +211,7 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 │   ├── migrations/             # Migration history
 │   └── src/seed.ts             # Seeds admin + AI agent user
 │
-├── e2e/                        # Playwright end-to-end tests
+├── e2e/                        # Playwright end-to-end tests (27 tests)
 │   ├── auth.spec.ts
 │   ├── tickets.spec.ts
 │   ├── ticket-details.spec.ts
@@ -210,8 +222,17 @@ Using PgBoss (a PostgreSQL-backed job queue) rather than a simple `await` chain 
 │   ├── reset-admin.ts          # Deletes and re-seeds the admin user
 │   └── seed-100-tickets.ts     # Seeds demo ticket data
 │
-├── src/knowledge-base.md       # The AI agent's knowledge source (support policies)
+├── .agents/skills/             # Custom AI agent instruction sets
+│   ├── better-auth-best-practices/
+│   ├── e2e-test-writer/
+│   ├── frontend-design/
+│   └── security-reviewer/
+│
 ├── AGENTS.md                   # AI coding agent rules and project context
+├── project-scope.md            # Goals, non-goals, system boundaries
+├── implementation-plan.md      # Phased build order and dependencies
+├── tech-stack.md               # Technology choices and rationale
+├── architecture.svg            # System architecture diagram
 ├── Dockerfile
 └── .env.example
 ```
@@ -263,7 +284,7 @@ bun run db:seed
 
 The seed script creates two accounts using the credentials from your `.env`:
 - **Admin:** `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`
-- **AI Agent:** `ai@example.com` (internal use only)
+- **AI Agent:** `ai@example.com` (internal use only — handles AI-resolved tickets)
 
 ### 5. Start the development servers
 
@@ -275,6 +296,8 @@ bun run dev:all
 |---|---|
 | Express API | http://localhost:4000 |
 | React frontend | http://localhost:5173 |
+
+> **Important:** Always use `bun run dev:all` for local development. The frontend at port 5173 proxies all `/api` requests to the backend at port 4000. Starting only the Vite server will cause authentication and all API calls to fail.
 
 ---
 
@@ -299,7 +322,7 @@ Copy `.env.example` to `.env` and fill in the values below.
 | `SENTRY_ORG` | ⬜ | Sentry organisation slug |
 | `SENTRY_PROJECT` | ⬜ | Sentry project slug |
 
-> **Note:** For E2E tests, create a separate `.env.test` file pointing to a test database (e.g. `helpdesk_test`). The test suite resets and re-seeds this database before every run.
+> **E2E Testing:** Create a separate `.env.test` file pointing to a test database (e.g. `helpdesk_test`) with test server ports `4100` and `5174`. The test suite resets and re-seeds this database before every run.
 
 ---
 
@@ -337,17 +360,22 @@ The project has **145 tests across 20 files**.
 cd client && bun run test
 ```
 
-Covers 9 component files (TicketCard, ReplyForm, CreateTicketModal, UserModal, UserTable, LoginForm, ThemeToggle, TicketDetail, DeleteUserModal) and 6 page files (TicketDetails × 3, TicketsList, Users, Home).
+| File group | Files | Tests |
+|---|---|---|
+| Component tests | 9 files | 67 tests |
+| Page tests | 6 files | 51 tests |
+
+Covers: TicketCard, ReplyForm, CreateTicketModal, UserModal, UserTable, LoginForm, ThemeToggle, TicketDetail, DeleteUserModal, TicketDetails (×3 files), TicketsList, Users, Home.
 
 ### E2E Tests — Playwright (27 tests)
 
-> E2E tests require a separate `.env.test` file and a running test database.
+> E2E tests require a separate `.env.test` file and a test database.
 
 ```bash
 # Headless
 bun run test:e2e
 
-# Interactive UI mode (recommended for development)
+# Interactive UI mode (recommended)
 bun run test:e2e:ui
 
 # Debug mode
@@ -355,12 +383,18 @@ bun run test:e2e:debug
 ```
 
 The `test:e2e` command automatically:
-1. Resets the test database
-2. Runs all Prisma migrations
+1. Resets the test database to a clean state
+2. Runs all Prisma migrations against the test DB
 3. Seeds the test admin user
-4. Runs all 27 Playwright specs
+4. Runs all 27 Playwright specs in parallel
 
-Covers: authentication flows, ticket creation and persistence, ticket status updates, user management (CRUD), and inbound email webhook processing.
+| Spec file | Tests | Covers |
+|---|---|---|
+| `auth.spec.ts` | 4 | Login, session, sign out |
+| `tickets.spec.ts` | 4 | Create, list, status update |
+| `ticket-details.spec.ts` | 3 | Reply thread, AI badge |
+| `users.spec.ts` | 7 | CRUD, role enforcement |
+| `webhooks.spec.ts` | 9 | Inbound email → ticket creation |
 
 ---
 
@@ -368,15 +402,17 @@ Covers: authentication flows, ticket creation and persistence, ticket status upd
 
 ### Railway (recommended)
 
-The project is deployed on Railway. On every deploy, the `start` command runs automatically:
+The project is live at: **https://ai-powered-helpdesk-and-ticketing-system.up.railway.app**
+
+On every Railway deploy, the `start` command runs automatically:
 
 ```bash
 bunx prisma migrate deploy   # runs pending migrations
 bun run db:seed              # creates admin if not exists (idempotent)
-bun run src/server.ts        # starts the Express server
+bun run src/server.ts        # starts the Express server (serves built client)
 ```
 
-Set all environment variables from the [Environment Variables](#environment-variables) section in your Railway project settings.
+Set all environment variables from the [Environment Variables](#environment-variables) section in your Railway project settings before deploying.
 
 ### Docker
 
@@ -388,8 +424,8 @@ docker build -t helpdesk .
 docker run -p 4000:4000 \
   -e DATABASE_URL="postgresql://..." \
   -e BETTER_AUTH_SECRET="..." \
-  -e BETTER_AUTH_URL="..." \
-  -e TRUSTED_ORIGINS="..." \
+  -e BETTER_AUTH_URL="http://localhost:4000" \
+  -e TRUSTED_ORIGINS="http://localhost:4000" \
   -e GROQ_API_KEY="..." \
   -e RESEND_API_KEY="..." \
   -e WEBHOOK_SECRET="..." \
@@ -400,10 +436,26 @@ docker run -p 4000:4000 \
 
 The Docker image:
 - Installs all dependencies with `bun install --frozen-lockfile`
-- Generates the Prisma client
-- Builds the React frontend (`client/dist/`)
+- Generates the Prisma client (`bunx prisma generate`)
+- Builds the React frontend into `client/dist/`
 - Exposes port 4000
-- On start: runs migrations → seeds → starts server
+- On container start: runs migrations → seeds admin → starts server
+
+---
+
+## Reproducing the Deployment
+
+To reproduce the exact Railway deployment from source:
+
+1. Fork the repository: https://github.com/ays19/HELPDESK
+2. Create a new Railway project and connect your fork
+3. Add a PostgreSQL plugin in Railway (auto-sets `DATABASE_URL`)
+4. Set all required environment variables listed in the [Environment Variables](#environment-variables) section
+5. Railway detects the `Dockerfile` automatically and builds it
+6. On first deploy, the `start` command runs migrations and seeds the admin user
+7. The app is served on a Railway-provided domain at port 4000
+
+No manual migration or seed step is required — the `start` command handles everything automatically and is idempotent (safe to run on every deploy).
 
 ---
 
@@ -419,12 +471,12 @@ The Docker image:
 ### Tickets
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/tickets` | Agent | List all tickets (supports status filter + search) |
-| GET | `/api/tickets/:id` | Agent | Get single ticket with replies |
+| GET | `/api/tickets` | Agent | List all tickets (status filter + search) |
+| GET | `/api/tickets/:id` | Agent | Get single ticket with full reply thread |
 | POST | `/api/tickets` | Agent | Create a new ticket |
 | PATCH | `/api/tickets/:id` | Agent | Update ticket (status, priority, assignee) |
 | DELETE | `/api/tickets/:id` | Admin | Soft-delete a ticket |
-| POST | `/api/tickets/:id/summarize` | Agent | Generate AI summary |
+| POST | `/api/tickets/:id/summarize` | Agent | Generate AI summary of ticket thread |
 
 ### Replies
 | Method | Endpoint | Auth | Description |
@@ -450,29 +502,56 @@ The Docker image:
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/api/webhooks/email` | Svix signature | Inbound email → ticket creation |
+| GET | `/debug-sentry` | None | Triggers a test Sentry error |
+
+---
+
+## Key Implementation Notes
+
+These are the most architecturally significant parts of the codebase. Judges reviewing the code should look here first.
+
+### `src/lib/queue.ts` — The Agent Pipeline
+
+This file contains all three PgBoss worker registrations. Key design decisions documented in comments:
+
+- **Binary output contract** — the auto-resolve worker is explicitly constrained to return either a complete reply or the exact string `CANNOT_RESOLVE`. No partial replies, no hedging. This eliminates a class of downstream error handling.
+- **Row-level locking** — the auto-resolve worker uses `SELECT ... FOR UPDATE` inside a transaction to prevent duplicate AI replies when PgBoss retries a failed job. The pre-check outside the transaction acts as a fast-path guard.
+- **Three named queues** — `ticket-classification`, `ticket-auto-resolve`, and `send-email` are registered at server startup. Each worker has a single, well-defined responsibility.
+
+### `src/knowledge-base.md` — The Agent's Brain
+
+The auto-resolve worker reads this entire file on every job execution and passes it to Groq as context. It is the agent's only source of truth. The agent is explicitly instructed not to invent information outside this file.
+
+### `prisma/schema.prisma` — Data Model Design
+
+Key fields that reflect agent decisions:
+- `isAiResolved: Boolean` — flags tickets resolved without human intervention; enables the dashboard's AI resolution rate metric
+- `senderType: agent | customer` on `TicketReply` — distinguishes AI-generated from human-generated replies
+- `status: TicketStatus` — tracks the pipeline state (`new → processing → open → resolved`)
+- `deletedAt` — soft-delete on all user records; never hard-deleted
+
+### `src/server.ts` — Security Middleware
+
+Helmet, CORS, and rate limiting are applied at the Express app level before any routes are registered. The trust proxy configuration is set for Railway's reverse proxy environment.
 
 ---
 
 ## AI Development Workflow
 
-This project was built with [Antigravity CLI](https://antigravity.dev) as the primary AI coding agent.
-
-### AGENTS.md
-
-`AGENTS.md` is the project memory file — it contains the full tech stack, environment variable reference, testing rules, architectural decisions, and all context an AI coding agent needs to work correctly in this codebase. Every new session, the agent reads this file first.
+This project was built with [Antigravity CLI](https://antigravity.dev) as the primary AI coding agent, with [MCP Context7](https://context7.com) providing live library documentation during development.
 
 ### Planning Documents
 
 | File | Purpose |
 |---|---|
-| `AGENTS.md` | AI agent rules, stack reference, testing constraints |
+| `AGENTS.md` | Project memory — AI agent rules, stack reference, env vars, testing constraints |
 | `project-scope.md` | Goals, non-goals, and system boundaries |
-| `implementation-plan.md` | Phased build order and dependencies |
-| `tech-stack.md` | Technology choices and rationale |
+| `implementation-plan.md` | Phased build order and feature dependencies |
+| `tech-stack.md` | Technology choices with rationale |
 
 ### Custom Agent Skills
 
-The `.agents/skills/` directory contains four reusable instruction sets:
+The `.agents/skills/` directory contains four reusable instruction sets that kept AI-assisted development consistent:
 
 | Skill | Purpose |
 |---|---|
@@ -481,22 +560,21 @@ The `.agents/skills/` directory contains four reusable instruction sets:
 | `frontend-design/` | UI component and styling constraints |
 | `security-reviewer/` | Security checklist — enforced Helmet, Zod, and XSS rules |
 
-### Knowledge Base
+### Why This Approach Works
 
-`src/knowledge-base.md` is the auto-resolve agent's only source of truth. It contains official support policies (password reset, refund policy, certificate questions, etc.). The agent is explicitly instructed not to answer from outside this file — if it can't find a clear answer, it returns `CANNOT_RESOLVE` and escalates to a human agent.
+Every new Antigravity CLI session reads `AGENTS.md` first. This means the AI coding agent always knows the stack, the testing rules, the architectural constraints, and the environment variables — without re-explaining them. The custom skills enforce consistency across authentication, testing, and security patterns session after session. This is what made it possible to build a production-grade system with AI assistance while maintaining code quality throughout.
 
 ---
 
 ## License
 
+**Code:** MIT — see [LICENSE](LICENSE) for details.
 
 **Kaggle Writeup:** Released under the [Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) license.
 
 ---
 
 ## Citation
-
-If you reference this project, please cite it as:
 
 ```
 AHSAN YASIR SHARAR. HELPDESK: AI Agents That Resolve Support Tickets Before a Human Sees Them.
