@@ -5,13 +5,12 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Railway-brightgreen)](https://ai-powered-helpdesk-and-ticketing-system.up.railway.app)
 [![Tests](https://img.shields.io/badge/Tests-145%20passing-blue)](#testing)
 [![Kaggle](https://img.shields.io/badge/Kaggle-AI%20Agents%20Capstone-20BEFF)](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/projects)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 **Track:** Kaggle AI Agents Intensive Capstone — Agents for Business (Google × Kaggle 2026)
 
 🌐 **Live Demo:** https://ai-powered-helpdesk-and-ticketing-system.up.railway.app
 📄 **Kaggle Writeup:** https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/projects
-🎬 **Demo Video:** *(YouTube link)*
+🎬 **Demo Video:** https://www.youtube.com/watch?v=rSMxxQLQCcU
 💻 **GitHub:** https://github.com/ays19/HELPDESK
 
 > **Demo credentials**
